@@ -1,0 +1,22 @@
+body {
+    margin: 30px;
+}
+
+.row {
+    --bs-gutter-x: 0;
+}
+
+div.execution,
+div.text-editor {
+    margin-bottom: 10px;
+}
+
+div.execution div.button{
+    text-align: right;
+}
+
+div.console div.text-console textarea,
+div.console div.text-console input {
+    width: 90%;
+    resize: none;
+}
