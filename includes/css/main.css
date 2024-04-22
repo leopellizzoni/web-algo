@@ -6,6 +6,11 @@ body {
     --bs-gutter-x: 0;
 }
 
+/* Estilo para o marcador de breakpoint */
+.CodeMirror-gutter-elt.breakpoints {
+    cursor: pointer;
+}
+
 div.execution,
 div.text-editor {
     margin-bottom: 10px;
