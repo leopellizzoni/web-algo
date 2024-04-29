@@ -1,13 +1,15 @@
 var code = '';
 // Contadores de linha e coluna para alertar erros léxicos ou sintáticos.
 var count_column = 0;
-var count_line = 0;
+var count_line = 1;
 // Caracter utilizado para obter o token
 var caracter = null;
 // Variável indica a posição na variável de leitura do código digitado pelo aluno
-var code_position = 0;
+var code_position = -1;
 // Variável utilizada para montar token
 var lexico = '';
+// Indica Erro léxico
+var erro_lexico = false;
 
 TKs = {
     "TKId": 1,
@@ -46,9 +48,16 @@ TKs = {
     "TKDiv": 34,
     "TKRestoIgual": 35,
     "TKResto": 36,
-    "": 37,
-    "": 38,
-
+    "TKCompare": 37,
+    "TKIgual": 38,
+    "TKDiferent": 39,
+    "TKLogicalNot": 40,
+    "TKMenorIgual": 41,
+    "TKMenor": 42,
+    "TKMaiorIgual": 43,
+    "TKMaior": 44,
+    "TKLogicalAnd": 45,
+    "TKLogicalOr": 46
 }
 
 // Palavras reservadas da linguagem
@@ -67,6 +76,7 @@ reserved_words = {
     "end_reserved_words": TKs['TKId']
 }
 
+
 // Função que busca o próximo caractér do código digitado pelo usuário
 function proxC(){
     count_column += 1;
@@ -80,11 +90,32 @@ function proxC(){
 }
 
 
+function inicializa_compilacao(){
+    code_position = -1;
+    erro_lexico = false;
+    // Limpa console
+    textareaElement.value = "";
+}
+
 
 function compiler(){
-    alert('oi');
     // Pega código digitado pelo usuário
     code = editor.getValue();
     console.log(code);
     proxC();
+    // Teste analisador léxico somente
+    // while(code.length > code_position && !erro_lexico){
+    //     lexico = '';
+    //     getToken();
+    //     console.log(lexico);
+    // }
+
+    // Teste analisador léxico e sintático
+    getToken();
+    debugger;
+    if (Programa()){
+        textareaElement.value += 'Reconheceu OK' + '\n';
+    } else {
+        textareaElement.value += 'Erro sintático' + '\n';
+    }
 }
