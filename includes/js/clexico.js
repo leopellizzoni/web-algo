@@ -8,8 +8,9 @@ var regexNumero = /\d+/;
 function getToken(){
     var fim = false;
     var estado = 0;
+	lexico = '';
     while (!fim){
-        lexico=character;
+		lexico += caracter;
         switch (estado){
             case 0:
                 if (regexIdentificador.test(caracter)){
@@ -94,7 +95,7 @@ function getToken(){
 					return;
 				}
 				if (caracter === '}'){ // verifica '}'
-					lexico = '\0';
+					lexico += '\0';
 					proxC();
 					tk = TKs['TKFechaChaves'];
 					return;
@@ -171,12 +172,12 @@ function getToken(){
 				 	proxC();
 	             	if (caracter === '='){ // '%='
 	             		lexico += '=';
-	     			    lexico = '\0';
+	     			    lexico += '\0';
 				 		proxC();
 				 		tk = TKs['TKRestoIgual'];
 				 		return;
 					} else { // '%'
-						lexico = '\0';
+						lexico += '\0';
 				 		tk = TKs['TKResto'];
 				 		return;
 					}
@@ -248,7 +249,7 @@ function getToken(){
 				}
 				if (caracter === '|'){ // verifica '||'
 	             	proxC();
-	             	if (caracter == '|'){ // ||
+	             	if (caracter === '|'){ // ||
 	             		lexico += '|';
 	     			    lexico += '\0';
 				 		proxC();
@@ -256,14 +257,40 @@ function getToken(){
 				 		return;
 					}
 				}
+				if (caracter === '"'){ // verifica '"'
+					lexico += '"';
+					lexico += '\0';
+					proxC();
+					tk = TKs['TKDoubleQuotes'];
+					break;
+				}
+				if (caracter === '\n' || caracter === '\t' || caracter === ' '){
+					lexico = lexico.slice(0, -1);
+					proxC();
+					break;
+				}
+				textareaElement.value += 'Erro léxico encontrado no caractere ' + lexico + ' (' + count_line + ', ' + count_column + ')' + '\n';
+				erro_lexico = true;
+				return;
             case 1:
                 if (regexIdentificador.test(caracter)){
                     proxC();
 					break;
                 }
-                lexico='\0';
-                console.log(lexico);
-				tk = palavra_reservada(lex);
+				if (caracter === '"') { // verifica '"'
+					lexico += '"';
+					lexico += '\0';
+					proxC();
+					tk = TKs['TKDoubleQuotes'];
+					break;
+				}
+
+				lexico = lexico.slice(0, -1);
+				tk = reserved_words[lexico.replace(/\s/g, '')];
+				if (typeof tk === 'undefined') {
+					tk = TKs['TKId'];
+				}
+				lexico += '\0';
 				return;
         }
     }
