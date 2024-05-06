@@ -10,6 +10,10 @@ var code_position = -1;
 var lexico = '';
 // Indica Erro léxico
 var erro_lexico = false;
+// Dicionário de controle
+var dic_control = {
+    encontrou_main: false
+}
 
 TKs = {
     "TKId": 1,
@@ -38,7 +42,7 @@ TKs = {
     "TKFechaChaves": 24,
     "TKDuploMais": 25,
     "TKMaisIgual": 26,
-    "TKSoma": 27,
+    "TKMais": 27,
     "TKDuploMenos": 28,
     "TKMenosIgual": 29,
     "TKMenos": 30,
@@ -97,9 +101,31 @@ function inicializa_compilacao(){
     textareaElement.value = "";
 }
 
+function backtracking(funcao){
+    var dic = dic_backtracking;
+    if (funcao === 'push'){
+        dic["caracter"] = caracter;
+        dic["lexema"] = lexico;
+        dic["posicao"] = code_position;
+        dic["token"] = tk;
+        dic["count_column"] = count_column;
+        dic["count_line"] = count_line;
+        lista_backtracking.push(dic);
+    } else {
+        ultima_posicao = lista_backtracking.pop();
+        caracter = ultima_posicao["caracter"];
+        lexico = ultima_posicao["lexema"];
+        code_position = ultima_posicao["posicao"];
+        tk = ultima_posicao["token"];
+        count_column = ultima_posicao["count_column"];
+        count_line = ultima_posicao["count_line"];
+    }
+}
+
 
 function compiler(){
     // Pega código digitado pelo usuário
+    inicializa_compilacao();
     code = editor.getValue();
     console.log(code);
     proxC();
@@ -112,7 +138,6 @@ function compiler(){
 
     // Teste analisador léxico e sintático
     getToken();
-    debugger;
     if (Programa()){
         textareaElement.value += 'Reconheceu OK' + '\n';
     } else {
