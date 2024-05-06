@@ -116,7 +116,7 @@ function getToken(){
 					   return;
 					} else { // '+'
 		               lexico += '\0';
-					   tk = TKs['TKSoma'];
+					   tk = TKs['TKMais'];
 					   return;
 					}
 				}
@@ -268,6 +268,10 @@ function getToken(){
 					lexico = lexico.slice(0, -1);
 					proxC();
 					break;
+				}
+				if (code.length === code_position){
+					tk = -1;
+					return true;
 				}
 				textareaElement.value += 'Erro léxico encontrado no caractere ' + lexico + ' (' + count_line + ', ' + count_column + ')' + '\n';
 				erro_lexico = true;
