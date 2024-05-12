@@ -12,7 +12,9 @@ var lexico = '';
 var erro_lexico = false;
 // Dicionário de controle
 var dic_control = {
-    encontrou_main: false
+    encontrou_main: false,
+    encontrou_expressao: false,
+    msg_erro: ''
 }
 
 TKs = {
@@ -99,6 +101,9 @@ function inicializa_compilacao(){
     erro_lexico = false;
     // Limpa console
     textareaElement.value = "";
+    count_column = 0;
+    count_line = 1;
+    dic_control['msg_erro'] = ''
 }
 
 function backtracking(funcao){
@@ -141,6 +146,7 @@ function compiler(){
     if (Programa()){
         textareaElement.value += 'Reconheceu OK' + '\n';
     } else {
+        textareaElement.value += dic_control['msg_erro']
         textareaElement.value += 'Erro sintático' + '\n';
     }
 }

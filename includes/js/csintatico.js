@@ -16,6 +16,7 @@ function OperadorUnario(){
         getToken();
         return true;
     } else if (tk === TKs['TKLogicalNot']){
+        getToken();
         return true;
     } else {
         return false;
@@ -110,6 +111,7 @@ function ListaParam(){
 
 function ExpressaoPosRestante(){
     if (tk === TKs['TKAbreColchete']){
+        getToken();
         if (Expressao()){
             if (tk === TKs['TKFechaColchete']){
                 getToken();
@@ -142,8 +144,16 @@ function ExpressaoPosRestante(){
 }
 
 
-function ExpressaoPrima(){
-    return false;
+function ExpressaoPrima() {
+    if (tk === TKs['TKId']) {
+        getToken();
+        return true;
+    } else if (tk === TKs['TKCteInt'] || tk === TKs['TKCteDouble']){
+        getToken();
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
@@ -173,8 +183,271 @@ function ExpressUnaria(){
 }
 
 
+function ExpressMultiplRestante(){
+    if (tk === TKs['TKMult']){
+        getToken();
+        if (ExpressUnaria()){
+            if (ExpressMultiplRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKDiv']){
+        getToken();
+        if (ExpressUnaria()){
+            if (ExpressMultiplRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKResto']){
+        getToken();
+        if (ExpressUnaria()){
+            if (ExpressMultiplRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+
+function ExpressMultipl(){
+    if (ExpressUnaria()){
+        if (ExpressMultiplRestante()){
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+
+function ExpressAddRestante(){
+    if (tk === TKs['TKMais']){
+        getToken();
+        if (ExpressMultipl()){
+            if (ExpressAddRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKMenos']) {
+        getToken();
+        if (ExpressMultipl()) {
+            if (ExpressAddRestante()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+
+function ExpressAdd(){
+    if (ExpressMultipl()){
+        if (ExpressAddRestante()){
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+
+function ExpressRelacionalRestante(){
+    if (tk === TKs['TKMenor']){
+        getToken();
+        if (ExpressAdd()){
+            if (ExpressRelacionalRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKMaior']){
+        getToken();
+        if (ExpressAdd()){
+            if (ExpressRelacionalRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKMenorIgual']){
+        getToken();
+        if (ExpressAdd()){
+            if (ExpressRelacionalRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKMaiorIgual']){
+        getToken();
+        if (ExpressAdd()){
+            if (ExpressRelacionalRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+
+function ExpressRelacional() {
+    if (ExpressAdd()){
+        if (ExpressRelacionalRestante()){
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+
+function ExpressIgualRestante(){
+    if (tk === TKs['TKCompare']) {
+        getToken();
+        if (ExpressRelacional()) {
+            if (ExpressIgualRestante()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKDiferent']) {
+        getToken();
+        if (ExpressRelacional()) {
+            if (ExpressIgualRestante()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+
+function ExpressIgual(){
+    if (ExpressRelacional()){
+        if (ExpressIgualRestante()){
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+
+function ExpressLogicAndRestante(){
+    if (tk === TKs['TKLogicalAnd']){
+        getToken();
+        if (ExpressIgual()){
+            if (ExpressLogicAndRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+
+function ExpressLogicAnd(){
+    if (ExpressIgual()){
+        if (ExpressLogicAndRestante()){
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+
+function ExpressLogicOrRestante(){
+    if (tk === TKs['TKLogicalOr']){
+        getToken();
+        if (ExpressLogicAnd()){
+            if (ExpressLogicOrRestante()){
+                return true;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+
+function ExpressLogicOr(){
+    if (ExpressLogicAnd()){
+        if (ExpressLogicOrRestante()){
+            return true;
+        }
+    } else {
+        return false;
+    }
+}
+
+
 function ExpressCondic(){
-    return false;
+    if (ExpressLogicOr()){
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
@@ -229,13 +502,17 @@ function Expressao(){
 
 
 function InstrExpress(){
+    dic_control['encontrou_expressao'] = false;
     if (tk === TKs['TKPontoEVirgula']){
         getToken();
         return true;
-    } else if (Expressao()){
+    } else if (tk !== TKs['TKFechaChaves'] && Expressao()){
+        dic_control['encontrou_expressao'] = true;
         if (tk === TKs['TKPontoEVirgula']){
+            getToken();
             return true;
         } else {
+            dic_control['msg_erro'] += "Não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
             return false;
         }
     } else {
@@ -261,6 +538,9 @@ function ListaInstrRestante() {
             return false;
         }
     } else {
+        if (dic_control['encontrou_expressao']){
+            return false;
+        }
         return true;
     }
 }
@@ -271,6 +551,52 @@ function ListaInstr(){
         if (ListaInstrRestante()){
             return true;
         } else {
+            backtracking('pop');
+            return false;
+        }
+    } else {
+        backtracking('pop');
+        return false;
+    }
+}
+
+function Dec(){
+    if (tk === TKs['TKId']){
+        getToken();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+function DecInicial(){
+    if (Dec()){
+        if (tk === TKs['TKIgual']){
+            getToken();
+            if (ExpressAtrib()){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        return false
+    }
+}
+
+
+function ListaDecInicialRestante(){
+    if (tk === TKs['TKVirgula']){
+        getToken();
+        if (DecInicial()){
+            if (ListaDecInicialRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
             return false;
         }
     } else {
@@ -279,30 +605,109 @@ function ListaInstr(){
 }
 
 
-function CorpoFunc(){
-    if (tk === TKs['TKAbreChaves']){
-        getToken();
-        if (tk === TKs['TKFechaChaves']){
-            debugger;
+function ListaDecInicial(){
+    if (DecInicial()){
+        if (ListaDecInicialRestante()){
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+
+function Declaracao(){
+    if (Tipo()){
+        if (tk === TKs['TKPontoEVirgula']){
             getToken();
             return true;
-        } else if (ListaInstr()){
-            if (tk === TKs['TKFechaChaves']){
+        } else if (ListaDecInicial()){
+            if (tk === TKs['TKPontoEVirgula']){
                 getToken();
-                return true;
-            } else {
-                textareaElement.value += "Não encontrou o caracter '}' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
-                return false;
+                return true
             }
         } else {
             return false;
         }
+    } else {
+        return false;
+    }
+}
+
+
+function ListaDecRestante(){
+    if (Declaracao()){
+        if (ListaDecRestante()){
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+
+function ListaDec(){
+    if (Declaracao()){
+        if (ListaDecRestante()){
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+
+function CorpoFunc(){
+    debugger;
+    if (tk === TKs['TKAbreChaves']) {
+        getToken();
+        backtracking('push');
+        if (tk === TKs['TKFechaChaves']) {
+            getToken();
+            return true;
+        } else if (ListaInstr()) {
+            if (tk === TKs['TKFechaChaves']) {
+                getToken();
+                return true;
+            } else {
+                dic_control['msg_erro'] += "Não encontrou o caracter '}' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                return false;
+            }
+        } else if (ListaDec()) {
+            if (tk === TKs['TKFechaChaves']) {
+                getToken();
+                return true;
+            } else {
+                dic_control['msg_erro'] += "Não encontrou o caracter '}' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                return false;
+            }
+        } else if (ListaDec()){
+            if (ListaInstr()){
+                if (tk === TKs['TKFechaChaves']){
+                    getToken();
+                    return true;
+                } else {
+                    dic_control['msg_erro'] += "Não encontrou o caracter '}' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+    } else {
+        dic_control['msg_erro'] += "Não encontrou o caracter '{' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+        return false;
     }
 }
 
 
 function DecFunc(){
-    debugger;
     if (Tipo()){
         if (NomeFunc()){
             if (tk === TKs['TKAbreParenteses']){
@@ -334,6 +739,7 @@ function DecVariavel(){
         if (tk === TKs['TKId']){
             getToken();
             if (tk === TKs['TKPontoEVirgula']){
+                getToken();
                 return true;
             } else {
                 backtracking('pop');
@@ -350,8 +756,7 @@ function DecVariavel(){
 }
 
 
-function Dec(){
-    debugger;
+function Dec2(){
     backtracking('push');
     if (DecVariavel()){
         return true;
@@ -362,12 +767,12 @@ function Dec(){
 }
 
 
-function ListaDec(){
-    if (Dec()){
+function ListaDec2(){
+    if (Dec2()){
         if (dic_control['encontrou_main']){
             return true;
         }
-        if (ListaDec()){
+        if (ListaDec2()){
             return true;
         }
     } else {
@@ -377,5 +782,5 @@ function ListaDec(){
 
 
 function Programa(){
-    return ListaDec();
+    return ListaDec2();
 }
