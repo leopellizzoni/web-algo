@@ -63,7 +63,8 @@ TKs = {
     "TKMaiorIgual": 43,
     "TKMaior": 44,
     "TKLogicalAnd": 45,
-    "TKLogicalOr": 46
+    "TKLogicalOr": 46,
+    "TKContinue": 47
 }
 
 // Palavras reservadas da linguagem
@@ -79,6 +80,7 @@ reserved_words = {
     "for": TKs['TKFor'],
     "break": TKs['TKBreak'],
     "return": TKs['TKReturn'],
+    "continue": TKs['TKContinue'],
     "end_reserved_words": TKs['TKId']
 }
 
