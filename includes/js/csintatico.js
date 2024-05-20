@@ -7,6 +7,10 @@ dic_backtracking = {
     token: 0
 }
 
+// identificador da variável no momento
+identificador = ''
+dimensao = 0;
+
 
 function OperadorUnario(){
     if (tk === TKs['TKMais']){
@@ -109,13 +113,14 @@ function ListaParam(){
 }
 
 
-function ExpressaoPosRestante(){
+function ExpressaoPosRestante(lado_atribuicao){
     if (tk === TKs['TKAbreColchete']){
         getToken();
         if (Expressao()){
             if (tk === TKs['TKFechaColchete']){
                 getToken();
-                if (ExpressaoPosRestante()){
+                dimensao += 1;
+                if (ExpressaoPosRestante(lado_atribuicao)){
                     return true;
                 } else {
                     return false;
@@ -126,50 +131,65 @@ function ExpressaoPosRestante(){
         } else {
             return false;
         }
-    } else if (tk === TKs['TKAbreParenteses']){
-        getToken();
-        if (tk === TKs['TKFechaParenteses']){
+    // } else if (tk === TKs['TKAbreParenteses']){
+    //     getToken();
+    //     if (tk === TKs['TKFechaParenteses']){
+    //         getToken();
+    //         if (ExpressaoPosRestante()){
+    //             return true;
+    //         } else {
+    //             return false;
+    //         }
+    //     } else {
+    //         return false;
+    //     }
+    } else {
+        return true;
+    }
+}
+
+
+function ExpressaoPrima(lado_atribuicao) {
+    if (tk === TKs['TKId']) {
+        identificador = lexico.toString().replace(/\x00/g, '');
+        if (verifica_variavel_declarada(identificador)){
             getToken();
-            if (ExpressaoPosRestante()){
-                return true;
-            } else {
-                return false;
+            return true;
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKCteInt'] || tk === TKs['TKCteDouble']){
+        if (lado_atribuicao !== 'esquerdo'){
+            getToken();
+            return true;
+        } else {
+            if (dic_control['msg_erro'] === '') {
+                dic_control['msg_erro'] += "operador do lado esquerdo de uma atribuição requere um identificador válido " + ' (' + count_line + ', ' + count_column + ')' + '\n';
             }
+            return false;
+        }
+
+    } else {
+        return false;
+    }
+}
+
+
+function ExpressPos(lado_atribuicao){
+    if (ExpressaoPrima(lado_atribuicao)){
+        if (ExpressaoPosRestante(lado_atribuicao)){
+            return true;
         } else {
             return false;
         }
     } else {
-        return true;
-    }
-}
-
-
-function ExpressaoPrima() {
-    if (tk === TKs['TKId']) {
-        getToken();
-        return true;
-    } else if (tk === TKs['TKCteInt'] || tk === TKs['TKCteDouble']){
-        getToken();
-        return true;
-    } else {
         return false;
     }
 }
 
 
-function ExpressPos(){
-    if (ExpressaoPrima()){
-        return true;
-    } else if (ExpressaoPosRestante()){
-        return true;
-    } else {
-        return false;
-    }
-}
-
-
-function ExpressUnaria(){
-    if (ExpressPos()){
+function ExpressUnaria(lado_atribuicao){
+    if (ExpressPos(lado_atribuicao)){
         return true;
     } else if (OperadorUnario()){
         if (ExpressUnaria()){
@@ -451,12 +471,18 @@ function ExpressCondic(){
 }
 
 
-function ExpressAtrib(){
+function ExpressAtrib(lado_atribuicao){
+    console.log('passou aqui');
     backtracking('push');
-    if (ExpressUnaria()){
+    if (ExpressUnaria(lado_atribuicao)){
         if (OperadorAtrib()){
-            if (ExpressAtrib()){
-                return true;
+            debugger;
+            if (lado_atribuicao === 'esquerdo' && verifica_variavel_declarada(identificador, dimensao)){
+                if (ExpressAtrib()){
+                    return true;
+                }
+            } else {
+                return false;
             }
         }
     }
@@ -465,11 +491,12 @@ function ExpressAtrib(){
 }
 
 
-function ExpressaoRestante(){
+function ExpressaoRestante(lado_atribuicao){
     if (tk === TKs['TKVirgula']){
         getToken();
-        if (ExpressAtrib()){
-            if (ExpressaoRestante()){
+        dimensao = 0;
+        if (ExpressAtrib(lado_atribuicao)){
+            if (ExpressaoRestante(lado_atribuicao)){
                 return true;
             } else {
                 return false;
@@ -483,9 +510,9 @@ function ExpressaoRestante(){
 }
 
 
-function Expressao(){
-    if (ExpressAtrib()){
-        if (ExpressaoRestante()){
+function Expressao(lado_atribuicao){
+    if (ExpressAtrib(lado_atribuicao)){
+        if (ExpressaoRestante(lado_atribuicao)){
             return true;
         } else {
             return false;
@@ -496,18 +523,20 @@ function Expressao(){
 }
 
 
-function InstrExpress(){
+function InstrExpress(lado_atribuicao){
     dic_control['encontrou_expressao'] = false;
     if (tk === TKs['TKPontoEVirgula']){
         getToken();
         return true;
-    } else if (tk !== TKs['TKFechaChaves'] && Expressao()){
+    } else if (tk !== TKs['TKFechaChaves'] && Expressao(lado_atribuicao)){
         dic_control['encontrou_expressao'] = true;
         if (tk === TKs['TKPontoEVirgula']){
             getToken();
             return true;
         } else {
-            dic_control['msg_erro'] += "Não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            if (dic_control['msg_erro'] === '') {
+                dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else {
@@ -575,16 +604,22 @@ function InstrIteracao(){
                             if (tk === TKs['TKPontoEVirgula']){
                                 return true;
                             } else {
-                                dic_control['msg_erro'] += "Não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                                if (dic_control['msg_erro'] === '') {
+                                    dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                                }
                                 return false;
                             }
                         } else {
-                            dic_control['msg_erro'] += "Não encontrou o caracter ')' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                            if (dic_control['msg_erro'] === ''){
+                                dic_control['msg_erro'] += "não encontrou o caracter ')' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                            }
                             return false;
                         }
                     }
                 } else {
-                    dic_control['msg_erro'] += "Não encontrou o caracter '(' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                    if (dic_control['msg_erro'] === '') {
+                        dic_control['msg_erro'] += "não encontrou o caracter '(' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                    }
                     return false;
                 }
             } else {
@@ -607,7 +642,9 @@ function InstrIteracao(){
                             return false
                         }
                     } else {
-                        dic_control['msg_erro'] += "Não encontrou o caracter ')' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                        if (dic_control['msg_erro'] === '') {
+                            dic_control['msg_erro'] += "não encontrou o caracter ')' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                        }
                         return false
                     }
                 } else {
@@ -617,7 +654,9 @@ function InstrIteracao(){
                 return false
             }
         } else {
-            dic_control['msg_erro'] += "Não encontrou o caracter '(' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            if (dic_control['msg_erro'] === '') {
+                dic_control['msg_erro'] += "não encontrou o caracter '(' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else {
@@ -633,7 +672,9 @@ function InstrSalto(){
             getToken();
             return true;
         } else {
-            dic_control['msg_erro'] += "Não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            if (dic_control['msg_erro'] === '') {
+                dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false
         }
     } else if (tk === TKs['TKBreak']){
@@ -654,11 +695,15 @@ function InstrSalto(){
                  getToken();
                  return true;
              } else {
-                 dic_control['msg_erro'] += "Não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                 if (dic_control['msg_erro'] === '') {
+                     dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                 }
                  return false;
              }
         } else {
-             dic_control['msg_erro'] += "Não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+             if (dic_control['msg_erro'] === '') {
+                 dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+             }
              return false;
         }
     } else {
@@ -668,9 +713,7 @@ function InstrSalto(){
 
 
 function Instr() {
-    if (CorpoFunc()){
-        return true;
-    } else if (InstrCondicional()) {
+    if (InstrCondicional()) {
         return true;
     } else if (InstrIteracao()) {
         return true;
@@ -678,7 +721,9 @@ function Instr() {
         return true;
     } else if (ListaDec()){
         return true;
-    } else if (InstrExpress()) {
+    } else if (InstrExpress('esquerdo')) {
+        return true;
+    } else if (CorpoFunc()){
         return true;
     } else {
         return false;
@@ -714,9 +759,37 @@ function ListaInstr(){
     }
 }
 
-function Dec(){
-    if (tk === TKs['TKId']){
+function DecRestante(tipo, variavel, vetor_matriz){
+    if (tk === TKs['TKAbreColchete']){
         getToken();
+        var tam_vetor = lexico.toString().replace(/\x00/g, '');
+        if (ExpressCondic()){
+            if (tk === TKs['TKFechaColchete']){
+                getToken();
+                tabela_simbolos('tamanho', tipo, variavel, tam_vetor, vetor_matriz);
+                if (DecRestante(tipo, variavel, vetor_matriz + 1)){
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                 return false;
+            }
+        } else {
+            return false
+        }
+    } else {
+        return true;
+    }
+}
+
+function Dec(tipo, variavel) {
+    if (tk === TKs['TKId']) {
+        tabela_simbolos('grava', tipo, variavel);
+        getToken();
+        if (DecRestante(tipo, variavel, 1)){
+            return true;
+        }
         return true;
     } else {
         return false;
@@ -724,8 +797,9 @@ function Dec(){
 }
 
 
-function DecInicial(){
-    if (Dec()){
+function DecInicial(tipo){
+    var variavel = lexico.toString().replace(/\x00/g, '');
+    if (Dec(tipo, variavel)){
         if (tk === TKs['TKIgual']){
             getToken();
             if (ExpressAtrib()){
@@ -741,11 +815,11 @@ function DecInicial(){
 }
 
 
-function ListaDecInicialRestante(){
+function ListaDecInicialRestante(tipo){
     if (tk === TKs['TKVirgula']){
         getToken();
-        if (DecInicial()){
-            if (ListaDecInicialRestante()){
+        if (DecInicial(tipo)){
+            if (ListaDecInicialRestante(tipo)){
                 return true;
             } else {
                 return false;
@@ -759,9 +833,9 @@ function ListaDecInicialRestante(){
 }
 
 
-function ListaDecInicial(){
-    if (DecInicial()){
-        if (ListaDecInicialRestante()){
+function ListaDecInicial(tipo){
+    if (DecInicial(tipo)){
+        if (ListaDecInicialRestante(tipo)){
             return true;
         } else {
             return false;
@@ -773,19 +847,26 @@ function ListaDecInicial(){
 
 
 function Declaracao(){
+    dimensao = 0;
+    var tipo = {'tk': tk,
+                                   'tipo': lexico.toString().replace(/\x00/g, '')};
     if (Tipo()){
         if (tk === TKs['TKPontoEVirgula']){
             getToken();
             return true;
-        } else if (ListaDecInicial()){
+        } else if (ListaDecInicial(tipo)){
             if (tk === TKs['TKPontoEVirgula']){
                 getToken();
                 return true;
             } else {
-                dic_control['msg_erro'] += "Não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                if (dic_control['msg_erro'] === '') {
+                    dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
             }
         } else {
-            dic_control['msg_erro'] += "Não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            if (dic_control['msg_erro'] === '') {
+                dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else {
@@ -831,7 +912,9 @@ function CorpoFunc(){
                 getToken();
                 return true;
             } else {
-                dic_control['msg_erro'] += "Não encontrou o caracter '}' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                if (dic_control['msg_erro'] === '') {
+                    dic_control['msg_erro'] += "não encontrou o caracter '}' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
                 return false;
             }
         // } else if (ListaDec()) {
@@ -851,11 +934,15 @@ function CorpoFunc(){
         //         return false;
         //     }
         } else {
-            dic_control['msg_erro'] += "Não encontrou o caracter '}' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] += "não encontrou o caracter '}' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else {
-        dic_control['msg_erro'] += "Não encontrou o caracter '{' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+        if (dic_control['msg_erro'] === ''){
+            dic_control['msg_erro'] += "não encontrou o caracter '{' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+        }
         return false;
     }
 }

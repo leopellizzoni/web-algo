@@ -16,6 +16,7 @@ var dic_control = {
     encontrou_expressao: false,
     msg_erro: ''
 }
+var tabela_de_simbolos = {};
 
 TKs = {
     "TKId": 1,
@@ -85,6 +86,50 @@ reserved_words = {
 }
 
 
+function verifica_variavel_declarada(identificador, dimensao=0){
+    if (identificador in tabela_de_simbolos){
+        if (dimensao > 0){
+            // verifica dimensao do vetor da atribuição e compara com o que foi declarado
+            if (dimensao === Object.keys(tabela_de_simbolos[identificador]['dimensao']).length){
+                return true;
+            } else {
+                if (dic_control['msg_erro'] === '') {
+                    dic_control['msg_erro'] += "dimensão do vetor '" + identificador + "' diferente do especificado" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
+                return false;
+            }
+        }
+        return true;
+    } else {
+        if (dic_control['msg_erro'] === '') {
+            dic_control['msg_erro'] += "variável '" + identificador + "' não declarada" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+        }
+        return false;
+    }
+}
+
+
+function tabela_simbolos(acao, tipo, variavel, tamanho, dimensao_vetor){
+    if (acao === 'grava'){
+        tabela_de_simbolos[variavel.toString()] = {
+            'tipo': tipo,
+            'valor': null,
+            'dimensao': {},
+            'matriz_vetor': ''};
+    }
+    if (acao === 'tamanho'){
+        if (dimensao_vetor === 1){
+            tabela_de_simbolos[variavel.toString()]['matriz_vetor'] = 'vetor';
+            tabela_de_simbolos[variavel.toString()]['dimensao'][dimensao_vetor] = tamanho
+        } else {
+            tabela_de_simbolos[variavel.toString()]['matriz_vetor'] = 'matriz';
+            tabela_de_simbolos[variavel.toString()]['dimensao'][dimensao_vetor] = tamanho
+        }
+
+    }
+}
+
+
 // Função que busca o próximo caractér do código digitado pelo usuário
 function proxC(){
     count_column += 1;
@@ -117,6 +162,7 @@ function backtracking(funcao){
         dic["token"] = tk;
         dic["count_column"] = count_column;
         dic["count_line"] = count_line;
+        // dic["msg_erro"] = dic_control["msg_erro"];
         lista_backtracking.push(dic);
     } else {
         ultima_posicao = lista_backtracking.pop();
@@ -126,6 +172,7 @@ function backtracking(funcao){
         tk = ultima_posicao["token"];
         count_column = ultima_posicao["count_column"];
         count_line = ultima_posicao["count_line"];
+        // dic_control["msg_erro"] = ultima_posicao["msg_erro"];
     }
 }
 
@@ -148,7 +195,6 @@ function compiler(){
     if (Programa()){
         textareaElement.value += 'Reconheceu OK' + '\n';
     } else {
-        textareaElement.value += dic_control['msg_erro']
-        textareaElement.value += 'Erro sintático' + '\n';
+        textareaElement.value += 'erro: ' + dic_control['msg_erro']
     }
 }
