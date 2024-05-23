@@ -1,15 +1,25 @@
 lista_backtracking = []
 
-dic_backtracking = {
-    posicao: 0,
-    caracter: '',
-    lexico: '',
-    token: 0
+// identificador da variável no momento
+var identificador = ''
+var dimensao = 0;
+var tempCount = 0;
+var labelCount = 0;
+
+var instrucoes = [];
+
+function newTemp() {
+    return `t${tempCount++}`;
 }
 
-// identificador da variável no momento
-identificador = ''
-dimensao = 0;
+function newLabel() {
+    return `L${labelCount++}`;
+}
+
+function emit(op, arg1, arg2, result) {
+    arg2 = arg2.toString().replace(/\x00/g, '');
+    instrucoes.push({ op, arg1, arg2, result });
+}
 
 
 function OperadorUnario(){
@@ -203,37 +213,31 @@ function ExpressUnaria(lado_atribuicao){
 }
 
 
-function ExpressMultiplRestante(){
+function ExpressMultiplRestante(temp){
     if (tk === TKs['TKMult']){
         getToken();
+        let t1 = newTemp();
         if (ExpressUnaria()){
-            if (ExpressMultiplRestante()){
-                return true;
-            } else {
-                return false;
-            }
+            emit('*', temp, lexico, t1);
+            return ExpressMultiplRestante(t1);
         } else {
             return false;
         }
     } else if (tk === TKs['TKDiv']){
         getToken();
-        if (ExpressUnaria()){
-            if (ExpressMultiplRestante()){
-                return true;
-            } else {
-                return false;
-            }
+        let t1 = newTemp();
+        if (ExpressUnaria()) {
+            emit('/', temp, lexico, t1);
+            return ExpressMultiplRestante(t1);
         } else {
             return false;
         }
     } else if (tk === TKs['TKResto']){
         getToken();
-        if (ExpressUnaria()){
-            if (ExpressMultiplRestante()){
-                return true;
-            } else {
-                return false;
-            }
+        let t1 = newTemp();
+        if (ExpressUnaria()) {
+            emit('%', temp, lexico, t1);
+            return ExpressMultiplRestante(t1);
         } else {
             return false;
         }
@@ -243,55 +247,48 @@ function ExpressMultiplRestante(){
 }
 
 
-function ExpressMultipl(){
-    if (ExpressUnaria()){
-        if (ExpressMultiplRestante()){
-            return true;
-        } else {
-            return false;
-        }
+function ExpressMultipl() {
+    let temp = newTemp();
+    let variavel = lexico;
+    if (ExpressUnaria()) {
+        emit('', '', variavel, temp);  // Primeiro operando
+        return ExpressMultiplRestante(temp);
     } else {
         return false;
     }
 }
 
 
-function ExpressAddRestante(){
-    if (tk === TKs['TKMais']){
+function ExpressAddRestante(temp) {
+    if (tk === TKs['TKMais']) {
         getToken();
-        if (ExpressMultipl()){
-            if (ExpressAddRestante()){
-                return true;
-            } else {
-                return false;
-            }
+        let variavel = lexico;
+        let t1 = newTemp();
+        if (ExpressMultipl()) {
+            emit('+', temp, variavel, t1);
+            return ExpressAddRestante(t1);
         } else {
             return false;
         }
     } else if (tk === TKs['TKMenos']) {
         getToken();
+        let t1 = newTemp();
         if (ExpressMultipl()) {
-            if (ExpressAddRestante()) {
-                return true;
-            } else {
-                return false;
-            }
+            emit('-', temp, lexico, t1);
+            return ExpressAddRestante(t1);
         } else {
             return false;
         }
     } else {
-        return true;
+        return temp;
     }
 }
 
 
-function ExpressAdd(){
-    if (ExpressMultipl()){
-        if (ExpressAddRestante()){
-            return true;
-        } else {
-            return false;
-        }
+function ExpressAdd() {
+    let temp = ExpressMultipl();
+    if (temp) {
+        return ExpressAddRestante(temp);
     } else {
         return false;
     }
@@ -476,13 +473,10 @@ function ExpressAtrib(lado_atribuicao){
     backtracking('push');
     if (ExpressUnaria(lado_atribuicao)){
         if (OperadorAtrib()){
-            debugger;
             if (lado_atribuicao === 'esquerdo' && verifica_variavel_declarada(identificador, dimensao)){
                 if (ExpressAtrib()){
                     return true;
                 }
-            } else {
-                return false;
             }
         }
     }
@@ -547,10 +541,12 @@ function InstrExpress(lado_atribuicao){
 
 function InstrCondicional(){
     if (tk === TKs['TKIf']){
+        debugger;
         getToken();
         if (tk === TKs['TKAbreParenteses']){
             getToken();
-            if (Expressao()){
+            dimensao = 0;
+            if (Expressao('esquerdo')){
                 if (tk === TKs['TKFechaParenteses']) {
                     getToken();
                     if (Instr()) {
@@ -798,7 +794,7 @@ function Dec(tipo, variavel) {
 
 
 function DecInicial(tipo){
-    var variavel = lexico.toString().replace(/\x00/g, '');
+    let variavel = lexico.toString().replace(/\x00/g, '');
     if (Dec(tipo, variavel)){
         if (tk === TKs['TKIgual']){
             getToken();

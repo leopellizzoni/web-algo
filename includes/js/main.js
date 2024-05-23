@@ -14,7 +14,8 @@ var erro_lexico = false;
 var dic_control = {
     encontrou_main: false,
     encontrou_expressao: false,
-    msg_erro: ''
+    msg_erro: '',
+    c3e: ''
 }
 var tabela_de_simbolos = {};
 
@@ -150,19 +151,20 @@ function inicializa_compilacao(){
     textareaElement.value = "";
     count_column = 0;
     count_line = 1;
-    dic_control['msg_erro'] = ''
+    dic_control['msg_erro'] = '';
+    tabela_de_simbolos = {};
+    instrucoes = []
 }
 
 function backtracking(funcao){
-    var dic = dic_backtracking;
     if (funcao === 'push'){
+        dic = {};
         dic["caracter"] = caracter;
         dic["lexema"] = lexico;
         dic["posicao"] = code_position;
         dic["token"] = tk;
         dic["count_column"] = count_column;
         dic["count_line"] = count_line;
-        // dic["msg_erro"] = dic_control["msg_erro"];
         lista_backtracking.push(dic);
     } else {
         ultima_posicao = lista_backtracking.pop();
