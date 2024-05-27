@@ -124,13 +124,13 @@ function ListaParam(){
 
 
 function ExpressaoPosRestante(lado_atribuicao){
-    if (tk === TKs['TKAbreColchete']){
+    if (tk === TKs['TKAbreColchete']) {
         getToken();
-        if (Expressao()){
-            if (tk === TKs['TKFechaColchete']){
+        if (Expressao()) {
+            if (tk === TKs['TKFechaColchete']) {
                 getToken();
                 dimensao += 1;
-                if (ExpressaoPosRestante(lado_atribuicao)){
+                if (ExpressaoPosRestante(lado_atribuicao)) {
                     return true;
                 } else {
                     return false;
@@ -141,18 +141,32 @@ function ExpressaoPosRestante(lado_atribuicao){
         } else {
             return false;
         }
-    // } else if (tk === TKs['TKAbreParenteses']){
-    //     getToken();
-    //     if (tk === TKs['TKFechaParenteses']){
-    //         getToken();
-    //         if (ExpressaoPosRestante()){
-    //             return true;
-    //         } else {
-    //             return false;
-    //         }
-    //     } else {
-    //         return false;
-    //     }
+        // } else if (tk === TKs['TKAbreParenteses']){
+        //     getToken();
+        //     if (tk === TKs['TKFechaParenteses']){
+        //         getToken();
+        //         if (ExpressaoPosRestante()){
+        //             return true;
+        //         } else {
+        //             return false;
+        //         }
+        //     } else {
+        //         return false;
+        //     }
+    } else if (tk === TKs['TKDuploMais']){
+        getToken();
+        if (ExpressaoPosRestante(lado_atribuicao)) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKDuploMenos']){
+        getToken();
+        if (ExpressaoPosRestante(lado_atribuicao)) {
+            return true;
+        } else {
+            return false;
+        }
     } else {
         return true;
     }
@@ -161,7 +175,9 @@ function ExpressaoPosRestante(lado_atribuicao){
 
 function ExpressaoPrima(lado_atribuicao) {
     if (tk === TKs['TKId']) {
-        identificador = lexico.toString().replace(/\x00/g, '');
+        if (lado_atribuicao === 'esquerdo'){
+            identificador = lexico.toString().replace(/\x00/g, '');
+        }
         if (verifica_variavel_declarada(identificador)){
             getToken();
             return true;
@@ -201,6 +217,20 @@ function ExpressPos(lado_atribuicao){
 function ExpressUnaria(lado_atribuicao){
     if (ExpressPos(lado_atribuicao)){
         return true;
+    } else if (tk === TKs['TKDuploMais']){
+        getToken();
+        if (ExpressUnaria()){
+            return true;
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKDuploMenos']){
+        getToken();
+        if (ExpressUnaria()){
+            return true;
+        } else {
+            return false;
+        }
     } else if (OperadorUnario()){
         if (ExpressUnaria()){
             return true;
@@ -213,31 +243,25 @@ function ExpressUnaria(lado_atribuicao){
 }
 
 
-function ExpressMultiplRestante(temp){
-    if (tk === TKs['TKMult']){
+function ExpressMultiplRestante(){
+    if (tk === TKs['TKDiv']){
         getToken();
-        let t1 = newTemp();
-        if (ExpressUnaria()){
-            emit('*', temp, lexico, t1);
-            return ExpressMultiplRestante(t1);
+        if (ExpressUnaria()) {
+            return ExpressMultiplRestante();
         } else {
             return false;
         }
-    } else if (tk === TKs['TKDiv']){
+    } else if (tk === TKs['TKMult']){
         getToken();
-        let t1 = newTemp();
         if (ExpressUnaria()) {
-            emit('/', temp, lexico, t1);
-            return ExpressMultiplRestante(t1);
+            return ExpressMultiplRestante();
         } else {
             return false;
         }
     } else if (tk === TKs['TKResto']){
         getToken();
-        let t1 = newTemp();
         if (ExpressUnaria()) {
-            emit('%', temp, lexico, t1);
-            return ExpressMultiplRestante(t1);
+            return ExpressMultiplRestante();
         } else {
             return false;
         }
@@ -248,47 +272,38 @@ function ExpressMultiplRestante(temp){
 
 
 function ExpressMultipl() {
-    let temp = newTemp();
-    let variavel = lexico;
     if (ExpressUnaria()) {
-        emit('', '', variavel, temp);  // Primeiro operando
-        return ExpressMultiplRestante(temp);
+        return ExpressMultiplRestante();
     } else {
         return false;
     }
 }
 
 
-function ExpressAddRestante(temp) {
+function ExpressAddRestante() {
     if (tk === TKs['TKMais']) {
         getToken();
-        let variavel = lexico;
-        let t1 = newTemp();
         if (ExpressMultipl()) {
-            emit('+', temp, variavel, t1);
-            return ExpressAddRestante(t1);
+            return ExpressAddRestante();
         } else {
             return false;
         }
     } else if (tk === TKs['TKMenos']) {
         getToken();
-        let t1 = newTemp();
         if (ExpressMultipl()) {
-            emit('-', temp, lexico, t1);
-            return ExpressAddRestante(t1);
+            return ExpressAddRestante();
         } else {
             return false;
         }
     } else {
-        return temp;
+        return false;
     }
 }
 
 
 function ExpressAdd() {
-    let temp = ExpressMultipl();
-    if (temp) {
-        return ExpressAddRestante(temp);
+    if (ExpressMultipl()) {
+        return ExpressAddRestante();
     } else {
         return false;
     }
@@ -469,7 +484,6 @@ function ExpressCondic(){
 
 
 function ExpressAtrib(lado_atribuicao){
-    console.log('passou aqui');
     backtracking('push');
     if (ExpressUnaria(lado_atribuicao)){
         if (OperadorAtrib()){
@@ -541,7 +555,6 @@ function InstrExpress(lado_atribuicao){
 
 function InstrCondicional(){
     if (tk === TKs['TKIf']){
-        debugger;
         getToken();
         if (tk === TKs['TKAbreParenteses']){
             getToken();

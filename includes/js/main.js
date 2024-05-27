@@ -165,6 +165,7 @@ function backtracking(funcao){
         dic["token"] = tk;
         dic["count_column"] = count_column;
         dic["count_line"] = count_line;
+        dic["instrucoes_c3e"] = instrucoes.slice();
         lista_backtracking.push(dic);
     } else {
         ultima_posicao = lista_backtracking.pop();
@@ -174,7 +175,7 @@ function backtracking(funcao){
         tk = ultima_posicao["token"];
         count_column = ultima_posicao["count_column"];
         count_line = ultima_posicao["count_line"];
-        // dic_control["msg_erro"] = ultima_posicao["msg_erro"];
+        instrucoes = ultima_posicao['instrucoes_c3e'];
     }
 }
 
@@ -196,6 +197,9 @@ function compiler(){
     getToken();
     if (Programa()){
         textareaElement.value += 'Reconheceu OK' + '\n';
+        instrucoes.forEach(inst => {
+            console.log(`${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
+        });
     } else {
         textareaElement.value += 'erro: ' + dic_control['msg_erro']
     }
