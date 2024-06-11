@@ -1,7 +1,7 @@
-lista_backtracking = []
+lista_backtracking = [];
 
 // identificador da variável no momento
-var identificador = ''
+var identificador = '';
 var dimensao = 0;
 var tempCount = 0;
 var labelCount = 0;
@@ -9,18 +9,16 @@ var labelCount = 0;
 var instrucoes = [];
 
 function newTemp() {
-    return `t${tempCount++}`;
+    return "t" + tempCount++;
 }
 
 function newLabel() {
-    return `L${labelCount++}`;
+    return "L" + labelCount++;
 }
 
-function emit(op, arg1, arg2, result) {
-    arg2 = arg2.toString().replace(/\x00/g, '');
-    instrucoes.push({ op, arg1, arg2, result });
+function geraInstrucao(op, arg1, arg2, result, salto=false) {
+    instrucoes.push({ op, arg1, arg2, result, salto });
 }
-
 
 function OperadorUnario(){
     if (tk === TKs['TKMais']){
@@ -68,7 +66,7 @@ function Tipo(){
         getToken();
         return true;
     } else {
-        return false
+        return false;
     }
 }
 
@@ -178,6 +176,9 @@ function ExpressaoPrima(lado_atribuicao) {
         if (lado_atribuicao === 'esquerdo'){
             identificador = lexico.toString().replace(/\x00/g, '');
         }
+        if (!identificador){
+            identificador = lexico.toString().replace(/\x00/g, '');
+        }
         if (verifica_variavel_declarada(identificador)){
             getToken();
             return true;
@@ -243,25 +244,49 @@ function ExpressUnaria(lado_atribuicao){
 }
 
 
-function ExpressMultiplRestante(){
+function ExpressMultiplRestante(temp, arg1){
     if (tk === TKs['TKDiv']){
         getToken();
+        let arg2 = lexico.toString().replace(/\x00/g, '');
         if (ExpressUnaria()) {
-            return ExpressMultiplRestante();
+            geraInstrucao('/', arg1, arg2, temp);
+            let temp2 = ExpressMultiplRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return temp;
+            }
         } else {
             return false;
         }
     } else if (tk === TKs['TKMult']){
         getToken();
+        let arg2 = lexico.toString().replace(/\x00/g, '');
         if (ExpressUnaria()) {
-            return ExpressMultiplRestante();
+            geraInstrucao('*', arg1, arg2, temp);
+            let temp2 = ExpressMultiplRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return temp;
+            }
         } else {
             return false;
         }
     } else if (tk === TKs['TKResto']){
         getToken();
+        let arg2 = lexico.toString().replace(/\x00/g, '');
         if (ExpressUnaria()) {
-            return ExpressMultiplRestante();
+            geraInstrucao('%', arg1, arg2, temp);
+            let temp2 = ExpressMultiplRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return temp;
+            }
         } else {
             return false;
         }
@@ -272,28 +297,87 @@ function ExpressMultiplRestante(){
 
 
 function ExpressMultipl() {
+    let temp = newTemp();
+    var arg1 = lexico.toString().replace(/\x00/g, '');
     if (ExpressUnaria()) {
-        return ExpressMultiplRestante();
+        let result = ExpressMultiplRestante(temp, arg1);
+        if (result){
+            return result;
+        } else {
+            return false;
+        }
     } else {
         return false;
     }
 }
 
 
-function ExpressAddRestante() {
+function ExpressAddRestante(temp, arg1) {
     if (tk === TKs['TKMais']) {
         getToken();
-        if (ExpressMultipl()) {
-            return ExpressAddRestante();
+        let arg2 = lexico.toString().replace(/\x00/g, '');
+        let result = ExpressMultipl();
+        if (result) {
+            if (typeof result !== 'string'){
+                geraInstrucao('+', arg1, arg2, temp);
+            } else {
+                geraInstrucao('+', arg1, result, temp);
+            }
+            let temp2 = ExpressAddRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return temp;
+            }
         } else {
             return false;
         }
     } else if (tk === TKs['TKMenos']) {
         getToken();
-        if (ExpressMultipl()) {
-            return ExpressAddRestante();
+        let arg2 = lexico.toString().replace(/\x00/g, '');
+        let result = ExpressMultipl();
+        if (result) {
+            if (typeof result !== 'string'){
+                geraInstrucao('-', arg1, arg2, temp);
+            } else {
+                geraInstrucao('-', arg1, result, temp);
+            }
+            let temp2 = ExpressAddRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return temp;
+            }
         } else {
             return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+
+function ExpressAdd() {
+    let arg1 = lexico.toString().replace(/\x00/g, '');
+    let result = ExpressMultipl();
+    if (result) {
+        if (typeof result !== 'string'){
+            let temp = newTemp();
+            result = ExpressAddRestante(temp, arg1);
+            if (result){
+                return result;
+            } else {
+                return false;
+            }
+        } else {
+            result = ExpressAddRestante(newTemp(), result);
+            if (result){
+                return result;
+            } else {
+                return false;
+            }
         }
     } else {
         return false;
@@ -301,56 +385,63 @@ function ExpressAddRestante() {
 }
 
 
-function ExpressAdd() {
-    if (ExpressMultipl()) {
-        return ExpressAddRestante();
-    } else {
-        return false;
-    }
-}
-
-
-function ExpressRelacionalRestante(){
+function ExpressRelacionalRestante(temp, arg1){
     if (tk === TKs['TKMenor']){
         getToken();
+        let arg2 = lexico.toString().replace(/\x00/g, '');
         if (ExpressAdd()){
-            if (ExpressRelacionalRestante()){
-                return true;
+            geraInstrucao('<', arg1, arg2, temp);
+            let temp2 = ExpressRelacionalRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
             } else {
-                return false;
+                tempCount--;
+                return temp;
             }
         } else {
             return false;
         }
     } else if (tk === TKs['TKMaior']){
         getToken();
+        let arg2 = lexico.toString().replace(/\x00/g, '');
         if (ExpressAdd()){
-            if (ExpressRelacionalRestante()){
-                return true;
+            geraInstrucao('>', arg1, arg2, temp);
+            let temp2 = ExpressRelacionalRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
             } else {
-                return false;
+                tempCount--;
+                return temp;
             }
         } else {
             return false;
         }
     } else if (tk === TKs['TKMenorIgual']){
         getToken();
+        let arg2 = lexico.toString().replace(/\x00/g, '');
         if (ExpressAdd()){
-            if (ExpressRelacionalRestante()){
-                return true;
+            geraInstrucao('<=', arg1, arg2, temp);
+            let temp2 = ExpressRelacionalRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
             } else {
-                return false;
+                tempCount--;
+                return temp;
             }
         } else {
             return false;
         }
     } else if (tk === TKs['TKMaiorIgual']){
         getToken();
+        let arg2 = lexico.toString().replace(/\x00/g, '');
         if (ExpressAdd()){
-            if (ExpressRelacionalRestante()){
-                return true;
+            geraInstrucao('>=', arg1, arg2, temp);
+            let temp2 = ExpressRelacionalRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
             } else {
-                return false;
+                tempCount--;
+                return temp;
             }
         } else {
             return false;
@@ -362,11 +453,25 @@ function ExpressRelacionalRestante(){
 
 
 function ExpressRelacional() {
-    if (ExpressAdd()){
-        if (ExpressRelacionalRestante()){
-            return true;
+    let arg1 = lexico.toString().replace(/\x00/g, '');
+    let result = ExpressAdd();
+    if (result){
+        if (typeof result !== 'string'){
+            let temp = newTemp();
+            result = ExpressRelacionalRestante(temp, arg1);
+            if (result){
+                return result;
+            } else {
+                return false;
+            }
         } else {
-            return false;
+            let temp2 = ExpressRelacionalRestante(newTemp(), result);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return result;
+            }
         }
     } else {
         return false;
@@ -404,9 +509,10 @@ function ExpressIgualRestante(){
 
 
 function ExpressIgual(){
-    if (ExpressRelacional()){
+    let result = ExpressRelacional();
+    if (result){
         if (ExpressIgualRestante()){
-            return true;
+            return result;
         } else {
             return false;
         }
@@ -416,14 +522,23 @@ function ExpressIgual(){
 }
 
 
-function ExpressLogicAndRestante(){
+function ExpressLogicAndRestante(temp, arg1){
     if (tk === TKs['TKLogicalAnd']){
         getToken();
-        if (ExpressIgual()){
-            if (ExpressLogicAndRestante()){
-                return true;
+        let arg2 = lexico.toString().replace(/\x00/g, '');
+        let result = ExpressIgual();
+        if (result){
+            if (typeof result !== 'string'){
+                geraInstrucao('&&', arg1, arg2, temp);
             } else {
-                return false;
+                geraInstrucao('&&', arg1, result, temp);
+            }
+            let temp2 = ExpressLogicAndRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return temp;
             }
         } else {
             return false;
@@ -435,11 +550,25 @@ function ExpressLogicAndRestante(){
 
 
 function ExpressLogicAnd(){
-    if (ExpressIgual()){
-        if (ExpressLogicAndRestante()){
-            return true;
+    let arg1 = lexico.toString().replace(/\x00/g, '');
+    let result = ExpressIgual();
+    if (result){
+        if (typeof result !== 'string'){
+            let temp = newTemp();
+            result = ExpressLogicAndRestante(temp, arg1);
+            if (result){
+                return result;
+            } else {
+                return false;
+            }
         } else {
-            return false;
+            let temp2 = ExpressLogicAndRestante(newTemp(), result);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return result;
+            }
         }
     } else {
         return false;
@@ -447,12 +576,23 @@ function ExpressLogicAnd(){
 }
 
 
-function ExpressLogicOrRestante(){
+function ExpressLogicOrRestante(temp, arg1){
     if (tk === TKs['TKLogicalOr']){
         getToken();
-        if (ExpressLogicAnd()){
-            if (ExpressLogicOrRestante()){
-                return true;
+        let arg2 = lexico.toString().replace(/\x00/g, '');
+        let result = ExpressLogicAnd();
+        if (result){
+            if (typeof result !== 'string'){
+                geraInstrucao('||', arg1, arg2, temp);
+            } else {
+                geraInstrucao('||', arg1, result, temp);
+            }
+            let temp2 = ExpressLogicOrRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return temp;
             }
         } else {
             return false;
@@ -464,9 +604,25 @@ function ExpressLogicOrRestante(){
 
 
 function ExpressLogicOr(){
-    if (ExpressLogicAnd()){
-        if (ExpressLogicOrRestante()){
-            return true;
+    let arg1 = lexico.toString().replace(/\x00/g, '');
+    let result = ExpressLogicAnd();
+    if (result){
+        if (typeof result !== 'string'){
+            let temp = newTemp();
+            result = ExpressLogicOrRestante(temp, arg1);
+            if (result){
+                return result;
+            } else {
+                return false;
+            }
+        } else {
+            let temp2 = ExpressLogicOrRestante(newTemp(), result);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return result;
+            }
         }
     } else {
         return false;
@@ -475,8 +631,9 @@ function ExpressLogicOr(){
 
 
 function ExpressCondic(){
-    if (ExpressLogicOr()){
-        return true;
+    let result = ExpressLogicOr();
+    if (result){
+        return result;
     } else {
         return false;
     }
@@ -488,14 +645,42 @@ function ExpressAtrib(lado_atribuicao){
     if (ExpressUnaria(lado_atribuicao)){
         if (OperadorAtrib()){
             if (lado_atribuicao === 'esquerdo' && verifica_variavel_declarada(identificador, dimensao)){
-                if (ExpressAtrib()){
+                var arg1 = lexico.toString().replace(/\x00/g, '');
+                let result = ExpressAtrib();
+                if (result){
+                    if (typeof result !== 'string'){
+                        geraInstrucao('', arg1, '', identificador);
+                    } else {
+                        geraInstrucao('', result, '', identificador);
+                    }
                     return true;
                 }
             }
         }
     }
     backtracking('pop');
-    return ExpressCondic();
+    var arg1 = lexico.toString().replace(/\x00/g, '');
+    let result = ExpressCondic();
+    if (result){
+        if (lado_atribuicao === 'esquerdo'){
+            if (typeof result !== 'string'){
+                geraInstrucao('', arg1, '', identificador);
+                return arg1;
+            } else {
+                geraInstrucao('', result, '', identificador);
+                return result;
+            }
+        } else {
+            if (typeof result !== 'string'){
+                return arg1;
+            } else {
+                return result;
+            }
+        }
+
+    } else {
+        return false;
+    }
 }
 
 
@@ -519,9 +704,10 @@ function ExpressaoRestante(lado_atribuicao){
 
 
 function Expressao(lado_atribuicao){
-    if (ExpressAtrib(lado_atribuicao)){
+    let result = ExpressAtrib(lado_atribuicao);
+    if (result){
         if (ExpressaoRestante(lado_atribuicao)){
-            return true;
+            return result;
         } else {
             return false;
         }
@@ -559,9 +745,13 @@ function InstrCondicional(){
         if (tk === TKs['TKAbreParenteses']){
             getToken();
             dimensao = 0;
-            if (Expressao('esquerdo')){
+            let result = Expressao();
+            if (result){
                 if (tk === TKs['TKFechaParenteses']) {
                     getToken();
+                    let labelElse = newLabel();
+                    geraInstrucao('goto', result, labelElse, 'ifFalse', true);
+                    debugger;
                     if (Instr()) {
                         if (tk === TKs['TKElse']){
                             getToken();
@@ -684,7 +874,7 @@ function InstrSalto(){
             if (dic_control['msg_erro'] === '') {
                 dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
             }
-            return false
+            return false;
         }
     } else if (tk === TKs['TKBreak']){
         getToken();
@@ -692,7 +882,7 @@ function InstrSalto(){
             getToken();
             return true;
         } else {
-            return false
+            return false;
         }
     } else if (tk === TKs['TKReturn']){
         getToken();
@@ -785,7 +975,7 @@ function DecRestante(tipo, variavel, vetor_matriz){
                  return false;
             }
         } else {
-            return false
+            return false;
         }
     } else {
         return true;
@@ -819,7 +1009,7 @@ function DecInicial(tipo){
         }
         return true;
     } else {
-        return false
+        return false;
     }
 }
 
@@ -1032,5 +1222,6 @@ function ListaDec2(){
 
 
 function Programa(){
+    console.log(tabela_de_simbolos);
     return ListaDec2();
 }

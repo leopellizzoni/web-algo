@@ -17,7 +17,7 @@ var dic_control = {
     msg_erro: '',
     c3e: ''
 }
-var tabela_de_simbolos = {};
+var tabela_de_simbolos;
 
 TKs = {
     "TKId": 1,
@@ -152,8 +152,11 @@ function inicializa_compilacao(){
     count_column = 0;
     count_line = 1;
     dic_control['msg_erro'] = '';
-    tabela_de_simbolos = {};
-    instrucoes = []
+    tabela_de_simbolos = new Object();
+    instrucoes = [];
+    tempCount = 0;
+    labelCount = 0;
+    identificador = '';
 }
 
 function backtracking(funcao){
@@ -198,7 +201,12 @@ function compiler(){
     if (Programa()){
         textareaElement.value += 'Reconheceu OK' + '\n';
         instrucoes.forEach(inst => {
-            console.log(`${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
+            if (inst.salto){
+                console.log(`${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
+            } else {
+                console.log(`${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
+            }
+
         });
     } else {
         textareaElement.value += 'erro: ' + dic_control['msg_erro']
