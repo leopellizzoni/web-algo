@@ -153,6 +153,7 @@ function ExpressaoPosRestante(lado_atribuicao){
         //     }
     } else if (tk === TKs['TKDuploMais']){
         getToken();
+        geraInstrucao('+', identificador, 1, identificador);
         if (ExpressaoPosRestante(lado_atribuicao)) {
             return true;
         } else {
@@ -160,6 +161,7 @@ function ExpressaoPosRestante(lado_atribuicao){
         }
     } else if (tk === TKs['TKDuploMenos']){
         getToken();
+        geraInstrucao('-', identificador, 1, identificador);
         if (ExpressaoPosRestante(lado_atribuicao)) {
             return true;
         } else {
@@ -722,19 +724,26 @@ function InstrExpress(lado_atribuicao){
     if (tk === TKs['TKPontoEVirgula']){
         getToken();
         return true;
-    } else if (tk !== TKs['TKFechaChaves'] && Expressao(lado_atribuicao)){
-        dic_control['encontrou_expressao'] = true;
-        if (tk === TKs['TKPontoEVirgula']){
-            getToken();
-            return true;
-        } else {
-            if (dic_control['msg_erro'] === '') {
-                dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+    } else {
+        if (tk !== TKs['TKFechaChaves']){
+            let result = Expressao(lado_atribuicao);
+            if (result){
+                dic_control['encontrou_expressao'] = true;
+                if (tk === TKs['TKPontoEVirgula']){
+                    getToken();
+                    return result;
+                } else {
+                    if (dic_control['msg_erro'] === '') {
+                        dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                    }
+                    return false;
+                }
+            } else {
+                return false;
             }
+        } else {
             return false;
         }
-    } else {
-        return false;
     }
 }
 
@@ -751,8 +760,8 @@ function InstrCondicional(){
                     getToken();
                     let labelElse = newLabel();
                     geraInstrucao('goto', result, labelElse, 'ifFalse', true);
-                    debugger;
                     if (Instr()) {
+                        geraInstrucao('', '', '', labelElse, true);
                         if (tk === TKs['TKElse']){
                             getToken();
                             if (Instr()){
@@ -779,28 +788,51 @@ function InstrCondicional(){
 
 function InstrIteracao(){
     if (tk === TKs['TKWhile']){
+        let labelInicio = newLabel();
+        geraInstrucao('', '', '', labelInicio, true);
         getToken();
         if (tk === TKs['TKAbreParenteses']){
             getToken();
-            if (Expressao()){
+            let result = Expressao();
+            if (result){
+                let labelFim = newLabel();
+                geraInstrucao('goto', result, labelFim, 'ifFalse', true);
                 if (tk === TKs['TKFechaParenteses']){
                     getToken();
                     if (Instr()) {
+                        geraInstrucao('', labelInicio, '', 'goto', true);
+                        geraInstrucao('', '', '', labelFim, true);
                         return true;
                     }
+                } else {
+                    return false;
                 }
+            } else {
+                return false;
             }
+        } else {
+            return false;
         }
     } else if (tk === TKs['TKDo']){
+        debugger;
+        let labelInicio = newLabel();
+        geraInstrucao('', '', '', labelInicio, true);
         getToken();
         if (Instr()) {
             if (tk === TKs['TKWhile']){
+                getToken();
                 if (tk === TKs['TKAbreParenteses']){
                     getToken();
-                    if (Expressao()) {
+                    let result = Expressao();
+                    if (result){
+                        let labelFim = newLabel();
+                        geraInstrucao('goto', result, labelFim, 'ifFalse', true);
+                        geraInstrucao('', labelInicio, '', 'goto', true);
+                        geraInstrucao('', '', '', labelFim, true);
                         if (tk === TKs['TKFechaParenteses']){
                             getToken();
                             if (tk === TKs['TKPontoEVirgula']){
+                                getToken();
                                 return true;
                             } else {
                                 if (dic_control['msg_erro'] === '') {
@@ -814,6 +846,8 @@ function InstrIteracao(){
                             }
                             return false;
                         }
+                    } else {
+                        return false;
                     }
                 } else {
                     if (dic_control['msg_erro'] === '') {
@@ -828,29 +862,46 @@ function InstrIteracao(){
             return false;
         }
     } else if (tk === TKs['TKFor']){
+        let labelInicio = newLabel();
         getToken();
         if (tk === TKs['TKAbreParenteses']){
             getToken();
-            if (InstrExpress()){
-                if (InstrExpress()){
-                    if (tk === TKs['TKFechaParenteses']){
-                        getToken();
-                        if (Instr()){
-                            return true;
+            if (InstrExpress('esquerdo')){
+                geraInstrucao('', '', '', labelInicio, true);
+                let result = InstrExpress();
+                if (result){
+                    let labelFim = newLabel();
+                    geraInstrucao('goto', result, labelFim, 'ifFalse', true);
+                    let labelInstr = newLabel();
+                    geraInstrucao('', labelInstr, '', 'goto', true);
+                    let labelIncremento = newLabel();
+                    geraInstrucao('', '', '', labelIncremento, true);
+                    if(Expressao()){
+                        geraInstrucao('', labelInicio, '', 'goto', true);
+                        if (tk === TKs['TKFechaParenteses']){
+                            getToken();
+                            geraInstrucao('', '', '', labelInstr, true);
+                            if (Instr()){
+                                geraInstrucao('', labelIncremento, '', 'goto', true);
+                                geraInstrucao('', '', '', labelFim, true);
+                                return true;
+                            } else {
+                                return false;
+                            }
                         } else {
-                            return false
+                            if (dic_control['msg_erro'] === '') {
+                                dic_control['msg_erro'] += "não encontrou o caracter ')' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                            }
+                            return false;
                         }
                     } else {
-                        if (dic_control['msg_erro'] === '') {
-                            dic_control['msg_erro'] += "não encontrou o caracter ')' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
-                        }
-                        return false
+                        return false;
                     }
                 } else {
                     return false;
                 }
             } else {
-                return false
+                return false;
             }
         } else {
             if (dic_control['msg_erro'] === '') {
