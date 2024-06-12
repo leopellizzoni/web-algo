@@ -11,3 +11,13 @@ int main(){
         b = 1;
     }
 }
+
+int main(){
+    int a,b,c,d,e,i;
+    do{
+        for (i=0;i<10;i++){
+            b = 1;
+        }
+        a++;
+    } while (a < 10);
+}

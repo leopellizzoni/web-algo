@@ -42,7 +42,7 @@ function OperadorAtrib(){
         return true;
     } else if (tk === TKs['TKMultIgual']){
         getToken();
-        return true
+        return true;
     } else if (tk === TKs['TKDivIgual']){
         getToken();
         return true;
@@ -223,6 +223,7 @@ function ExpressUnaria(lado_atribuicao){
     } else if (tk === TKs['TKDuploMais']){
         getToken();
         if (ExpressUnaria()){
+            geraInstrucao('+', identificador, '1', identificador);
             return true;
         } else {
             return false;
@@ -230,6 +231,7 @@ function ExpressUnaria(lado_atribuicao){
     } else if (tk === TKs['TKDuploMenos']){
         getToken();
         if (ExpressUnaria()){
+            geraInstrucao('-', identificador, '1', identificador);
             return true;
         } else {
             return false;
@@ -481,25 +483,43 @@ function ExpressRelacional() {
 }
 
 
-function ExpressIgualRestante(){
+function ExpressIgualRestante(temp, arg1){
     if (tk === TKs['TKCompare']) {
         getToken();
-        if (ExpressRelacional()) {
-            if (ExpressIgualRestante()) {
-                return true;
+        let arg2 = lexico.toString().replace(/\x00/g, '');
+        let result = ExpressRelacional();
+        if (result){
+            if (typeof result !== 'string'){
+                geraInstrucao('==', arg1, arg2, temp);
             } else {
-                return false;
+                geraInstrucao('==', arg1, result, temp);
+            }
+            let temp2 = ExpressIgualRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return temp;
             }
         } else {
             return false;
         }
     } else if (tk === TKs['TKDiferent']) {
         getToken();
-        if (ExpressRelacional()) {
-            if (ExpressIgualRestante()) {
-                return true;
+        let arg2 = lexico.toString().replace(/\x00/g, '');
+        let result = ExpressRelacional();
+        if (result){
+            if (typeof result !== 'string'){
+                geraInstrucao('!=', arg1, arg2, temp);
             } else {
-                return false;
+                geraInstrucao('!=', arg1, result, temp);
+            }
+            let temp2 = ExpressIgualRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return temp;
             }
         } else {
             return false;
@@ -511,12 +531,25 @@ function ExpressIgualRestante(){
 
 
 function ExpressIgual(){
+    let arg1 = lexico.toString().replace(/\x00/g, '');
     let result = ExpressRelacional();
     if (result){
-        if (ExpressIgualRestante()){
-            return result;
+        if (typeof result !== 'string'){
+            let temp = newTemp();
+            result = ExpressIgualRestante(temp, arg1);
+            if (result){
+                return result;
+            } else {
+                return false;
+            }
         } else {
-            return false;
+            let temp2 = ExpressIgualRestante(newTemp(), result);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return result;
+            }
         }
     } else {
         return false;
@@ -645,19 +678,30 @@ function ExpressCondic(){
 function ExpressAtrib(lado_atribuicao){
     backtracking('push');
     if (ExpressUnaria(lado_atribuicao)){
+        let operador = lexico.toString().replace(/\x00/g, '');
         if (OperadorAtrib()){
             if (lado_atribuicao === 'esquerdo' && verifica_variavel_declarada(identificador, dimensao)){
                 var arg1 = lexico.toString().replace(/\x00/g, '');
                 let result = ExpressAtrib();
                 if (result){
                     if (typeof result !== 'string'){
-                        geraInstrucao('', arg1, '', identificador);
+                        if (operador !== '='){
+                            geraInstrucao(operador[0], identificador, arg1, identificador);
+                        } else {
+                            geraInstrucao('', arg1, '', identificador);
+                        }
                     } else {
-                        geraInstrucao('', result, '', identificador);
+                        if (operador !== '='){
+                            geraInstrucao(operador[0], identificador, result, identificador);
+                        } else {
+                            geraInstrucao('', result, '', identificador);
+                        }
                     }
                     return true;
                 }
             }
+        } else {
+            lado_atribuicao = undefined;
         }
     }
     backtracking('pop');
@@ -814,7 +858,6 @@ function InstrIteracao(){
             return false;
         }
     } else if (tk === TKs['TKDo']){
-        debugger;
         let labelInicio = newLabel();
         geraInstrucao('', '', '', labelInicio, true);
         getToken();
