@@ -21,3 +21,14 @@ int main(){
         a++;
     } while (a < 10);
 }
+
+int main(){
+    int a, b, c, d, i, j;
+    a = 5 + (10*2-(2*1+2));
+    for (i=0; i<10; i++){
+		continue;
+        for (j=0; j<10; j++){
+            break;
+        }
+    }
+}

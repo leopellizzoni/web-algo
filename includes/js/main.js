@@ -66,7 +66,10 @@ TKs = {
     "TKMaior": 44,
     "TKLogicalAnd": 45,
     "TKLogicalOr": 46,
-    "TKContinue": 47
+    "TKContinue": 47,
+    "TKPrintf": 48,
+    "TKScanf": 49,
+    "TKString": 50
 }
 
 // Palavras reservadas da linguagem
@@ -83,6 +86,8 @@ reserved_words = {
     "break": TKs['TKBreak'],
     "return": TKs['TKReturn'],
     "continue": TKs['TKContinue'],
+    "printf": TKs["TKPrintf"],
+    "scanf": TKs["TKScanf"],
     "end_reserved_words": TKs['TKId']
 }
 
@@ -157,6 +162,7 @@ function inicializa_compilacao(){
     tempCount = 0;
     labelCount = 0;
     identificador = '';
+    lista_param_printf = [];
 }
 
 function backtracking(funcao){
@@ -201,8 +207,10 @@ function compiler(){
     if (Programa()){
         textareaElement.value += 'Reconheceu OK' + '\n';
         instrucoes.forEach(inst => {
-            if (inst.salto){
+            if (inst.salto) {
                 console.log(`${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
+            } else if (inst.escrita){
+                console.log(`${inst.result}`);
             } else {
                 console.log(`${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
             }

@@ -258,10 +258,8 @@ function getToken(){
 					}
 				}
 				if (caracter === '"'){ // verifica '"'
-					lexico += '"';
-					lexico += '\0';
 					proxC();
-					tk = TKs['TKDoubleQuotes'];
+					estado = 2;
 					break;
 				}
 				if (caracter === '\n' || caracter === '\t' || caracter === ' '){
@@ -285,7 +283,7 @@ function getToken(){
 					lexico += '"';
 					lexico += '\0';
 					proxC();
-					tk = TKs['TKDoubleQuotes'];
+					tk = TKs['TKString'];
 					break;
 				}
 
@@ -296,6 +294,28 @@ function getToken(){
 				}
 				lexico += '\0';
 				return;
+
+			case 2:
+				if (caracter === '%'){  // verifica parametro float, double ou int
+					proxC();
+					lexico += caracter;
+					if (caracter === 'd'){  // integer
+						lista_param_printf.push('int');
+						proxC();
+						break;
+					}
+					if (caracter === 'f'){  // float
+						lista_param_printf.push('float');
+						proxC();
+						break;
+					}
+				}
+				if (caracter === '"') { // verifica '"'
+					lexico += '\0';
+					tk = TKs['TKString'];
+					proxC();
+					return;
+				}
         }
     }
 }

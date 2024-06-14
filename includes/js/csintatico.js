@@ -1,4 +1,6 @@
-lista_backtracking = [];
+var lista_backtracking = [];
+
+var lista_param_printf = []
 
 // identificador da variável no momento
 var identificador = '';
@@ -16,8 +18,8 @@ function newLabel() {
     return "L" + labelCount++;
 }
 
-function geraInstrucao(op, arg1, arg2, result, salto=false) {
-    instrucoes.push({ op, arg1, arg2, result, salto });
+function geraInstrucao(op, arg1, arg2, result, salto=false, escrita=false) {
+    instrucoes.push({ op, arg1, arg2, result, salto, escrita });
 }
 
 function OperadorUnario(){
@@ -121,36 +123,47 @@ function ListaParam(){
 }
 
 
-function ExpressaoPosRestante(lado_atribuicao){
+function ExpressaoPosRestante(lado_atribuicao, arg1){
     if (tk === TKs['TKAbreColchete']) {
         getToken();
-        if (Expressao()) {
+        let result = Expressao();
+        if (result) {
             if (tk === TKs['TKFechaColchete']) {
                 getToken();
                 dimensao += 1;
-                if (ExpressaoPosRestante(lado_atribuicao)) {
-                    return true;
+                let temp2 = ExpressaoPosRestante(lado_atribuicao);
+                if (arg1){
+                    if (typeof temp2 === 'string') {
+                        return arg1 + "[" + result + "]" + temp2;
+                    } else {
+                        return arg1 + "[" + result + "]";
+                    }
                 } else {
-                    return false;
+                    if (typeof temp2 === 'string') {
+                        return "[" + result + "]" + temp2;
+                    } else {
+                        return "[" + result + "]";
+                    }
                 }
+
             } else {
                 return false;
             }
         } else {
             return false;
         }
-        // } else if (tk === TKs['TKAbreParenteses']){
-        //     getToken();
-        //     if (tk === TKs['TKFechaParenteses']){
-        //         getToken();
-        //         if (ExpressaoPosRestante()){
-        //             return true;
-        //         } else {
-        //             return false;
-        //         }
-        //     } else {
-        //         return false;
-        //     }
+    } else if (tk === TKs['TKAbreParenteses']){
+        getToken();
+        if (tk === TKs['TKFechaParenteses']){
+            getToken();
+            if (ExpressaoPosRestante()){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     } else if (tk === TKs['TKDuploMais']){
         getToken();
         geraInstrucao('+', identificador, 1, identificador);
@@ -178,17 +191,19 @@ function ExpressaoPrima(lado_atribuicao) {
         if (lado_atribuicao === 'esquerdo'){
             identificador = lexico.toString().replace(/\x00/g, '');
         }
-        if (!identificador){
-            identificador = lexico.toString().replace(/\x00/g, '');
-        }
-        if (verifica_variavel_declarada(identificador)){
+        // if (!identificador || identificador !== lexico.toString().replace(/\x00/g, '')){
+        //     if (!verifica_variavel_declarada(lexico.toString().replace(/\x00/g, ''))){
+        //         return false;
+        //     }
+        // }
+        if (verifica_variavel_declarada(lexico.toString().replace(/\x00/g, ''))){
             getToken();
             return true;
         } else {
             return false;
         }
-    } else if (tk === TKs['TKCteInt'] || tk === TKs['TKCteDouble']){
-        if (lado_atribuicao !== 'esquerdo'){
+    } else if (tk === TKs['TKCteInt'] || tk === TKs['TKCteDouble']) {
+        if (lado_atribuicao !== 'esquerdo') {
             getToken();
             return true;
         } else {
@@ -197,17 +212,16 @@ function ExpressaoPrima(lado_atribuicao) {
             }
             return false;
         }
-
-    } else {
-        return false;
-    }
-}
-
-
-function ExpressPos(lado_atribuicao){
-    if (ExpressaoPrima(lado_atribuicao)){
-        if (ExpressaoPosRestante(lado_atribuicao)){
-            return true;
+    } else if(tk === TKs['TKAbreParenteses']){
+        getToken();
+        let result = Expressao();
+        if (result){
+            if (tk === TKs['TKFechaParenteses']){
+                getToken();
+                return result;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -217,9 +231,38 @@ function ExpressPos(lado_atribuicao){
 }
 
 
+function ExpressPos(lado_atribuicao){
+    let arg1 = lexico.toString().replace(/\x00/g, '');
+    let result = ExpressaoPrima(lado_atribuicao);
+    if (result){
+
+        if (typeof result !== 'string'){
+            let temp = newTemp();
+            result = ExpressaoPosRestante(lado_atribuicao, arg1);
+            if (result){
+                return result;
+            } else {
+                return false;
+            }
+        } else {
+            let temp2 = ExpressaoPosRestante(lado_atribuicao, arg1);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return result;
+            }
+        }
+    } else {
+        return false;
+    }
+}
+
+
 function ExpressUnaria(lado_atribuicao){
-    if (ExpressPos(lado_atribuicao)){
-        return true;
+    let result = ExpressPos(lado_atribuicao);
+    if (result){
+        return result;
     } else if (tk === TKs['TKDuploMais']){
         getToken();
         if (ExpressUnaria()){
@@ -236,12 +279,12 @@ function ExpressUnaria(lado_atribuicao){
         } else {
             return false;
         }
-    } else if (OperadorUnario()){
-        if (ExpressUnaria()){
-            return true;
-        } else {
-            return false;
-        }
+    // } else if (OperadorUnario()){
+    //     if (ExpressUnaria()){
+    //         return true;
+    //     } else {
+    //         return false;
+    //     }
     } else {
         return false;
     }
@@ -252,8 +295,13 @@ function ExpressMultiplRestante(temp, arg1){
     if (tk === TKs['TKDiv']){
         getToken();
         let arg2 = lexico.toString().replace(/\x00/g, '');
-        if (ExpressUnaria()) {
-            geraInstrucao('/', arg1, arg2, temp);
+        let result = ExpressUnaria();
+        if (result) {
+            if (typeof result !== 'string') {
+                geraInstrucao('/', arg1, arg2, temp);
+            } else {
+                geraInstrucao('/', arg1, result, temp);
+            }
             let temp2 = ExpressMultiplRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
                 return temp2;
@@ -267,8 +315,13 @@ function ExpressMultiplRestante(temp, arg1){
     } else if (tk === TKs['TKMult']){
         getToken();
         let arg2 = lexico.toString().replace(/\x00/g, '');
-        if (ExpressUnaria()) {
-            geraInstrucao('*', arg1, arg2, temp);
+        let result = ExpressUnaria();
+        if (result) {
+            if (typeof result !== 'string') {
+                geraInstrucao('*', arg1, arg2, temp);
+            } else {
+                geraInstrucao('*', arg1, result, temp);
+            }
             let temp2 = ExpressMultiplRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
                 return temp2;
@@ -282,8 +335,13 @@ function ExpressMultiplRestante(temp, arg1){
     } else if (tk === TKs['TKResto']){
         getToken();
         let arg2 = lexico.toString().replace(/\x00/g, '');
-        if (ExpressUnaria()) {
-            geraInstrucao('%', arg1, arg2, temp);
+        let result = ExpressUnaria();
+        if (result) {
+            if (typeof result !== 'string') {
+                geraInstrucao('%', arg1, arg2, temp);
+            } else {
+                geraInstrucao('%', arg1, result, temp);
+            }
             let temp2 = ExpressMultiplRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
                 return temp2;
@@ -303,12 +361,24 @@ function ExpressMultiplRestante(temp, arg1){
 function ExpressMultipl() {
     let temp = newTemp();
     var arg1 = lexico.toString().replace(/\x00/g, '');
-    if (ExpressUnaria()) {
-        let result = ExpressMultiplRestante(temp, arg1);
-        if (result){
-            return result;
+    let result = ExpressUnaria();
+    if (result) {
+        if (typeof result !== 'string'){
+            let temp = newTemp();
+            result = ExpressMultiplRestante(temp, arg1);
+            if (result){
+                return result;
+            } else {
+                return false;
+            }
         } else {
-            return false;
+            let temp2 = ExpressMultiplRestante(newTemp(), result);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return result;
+            }
         }
     } else {
         return false;
@@ -376,11 +446,12 @@ function ExpressAdd() {
                 return false;
             }
         } else {
-            result = ExpressAddRestante(newTemp(), result);
-            if (result){
-                return result;
+            let temp2 = ExpressAddRestante(newTemp(), result);
+            if (typeof temp2 === 'string'){
+                return temp2;
             } else {
-                return false;
+                tempCount--;
+                return result;
             }
         }
     } else {
@@ -730,13 +801,23 @@ function ExpressAtrib(lado_atribuicao){
 }
 
 
-function ExpressaoRestante(lado_atribuicao){
+function ExpressaoRestante(lado_atribuicao, printf){
     if (tk === TKs['TKVirgula']){
         getToken();
         dimensao = 0;
-        if (ExpressAtrib(lado_atribuicao)){
-            if (ExpressaoRestante(lado_atribuicao)){
-                return true;
+        let result = ExpressAtrib(lado_atribuicao);
+        if (result){
+            let temp2 = ExpressaoRestante(lado_atribuicao, printf);
+            if (temp2){
+                if (printf){
+                    if (typeof temp2 === 'string') {
+                        return result + ',' + temp2;
+                    } else {
+                        return result;
+                    }
+                } else {
+                    return true;
+                }
             } else {
                 return false;
             }
@@ -843,7 +924,7 @@ function InstrIteracao(){
                 geraInstrucao('goto', result, labelFim, 'ifFalse', true);
                 if (tk === TKs['TKFechaParenteses']){
                     getToken();
-                    if (Instr()) {
+                    if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
                         geraInstrucao('', labelInicio, '', 'goto', true);
                         geraInstrucao('', '', '', labelFim, true);
                         return true;
@@ -859,16 +940,16 @@ function InstrIteracao(){
         }
     } else if (tk === TKs['TKDo']){
         let labelInicio = newLabel();
+        let labelFim = newLabel();
         geraInstrucao('', '', '', labelInicio, true);
         getToken();
-        if (Instr()) {
+        if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
             if (tk === TKs['TKWhile']){
                 getToken();
                 if (tk === TKs['TKAbreParenteses']){
                     getToken();
                     let result = Expressao();
                     if (result){
-                        let labelFim = newLabel();
                         geraInstrucao('goto', result, labelFim, 'ifFalse', true);
                         geraInstrucao('', labelInicio, '', 'goto', true);
                         geraInstrucao('', '', '', labelFim, true);
@@ -924,7 +1005,7 @@ function InstrIteracao(){
                         if (tk === TKs['TKFechaParenteses']){
                             getToken();
                             geraInstrucao('', '', '', labelInstr, true);
-                            if (Instr()){
+                            if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})){
                                 geraInstrucao('', labelIncremento, '', 'goto', true);
                                 geraInstrucao('', '', '', labelFim, true);
                                 return true;
@@ -958,24 +1039,36 @@ function InstrIteracao(){
 }
 
 
-function InstrSalto(){
+function InstrSalto(esta_no_laco){
     if (tk === TKs['TKContinue']){
-        getToken();
-        if (tk === TKs['TKPontoEVirgula']){
+        if (esta_no_laco){
+            geraInstrucao('', esta_no_laco['labelInicio'], '', 'goto', true);
             getToken();
-            return true;
-        } else {
-            if (dic_control['msg_erro'] === '') {
-                dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            if (tk === TKs['TKPontoEVirgula']){
+                getToken();
+                return true;
+            } else {
+                if (dic_control['msg_erro'] === '') {
+                    dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
+                return false;
             }
+        } else {
+            dic_control['msg_erro'] = "Comando continue não está dentro de um laço" + '\n';
             return false;
         }
     } else if (tk === TKs['TKBreak']){
-        getToken();
-        if (tk === TKs['TKPontoEVirgula']){
+        if (esta_no_laco) {
+            geraInstrucao('', esta_no_laco['labelFim'], '', 'goto', true);
             getToken();
-            return true;
+            if (tk === TKs['TKPontoEVirgula']) {
+                getToken();
+                return true;
+            } else {
+                return false;
+            }
         } else {
+            dic_control['msg_erro'] = "Comando break não está dentro de um laço" + '\n';
             return false;
         }
     } else if (tk === TKs['TKReturn']){
@@ -1005,18 +1098,57 @@ function InstrSalto(){
 }
 
 
-function Instr() {
+function InstrEscrita(){
+    if (tk === TKs["TKPrintf"]){
+        getToken();
+        if (tk === TKs["TKAbreParenteses"]){
+            lista_param_printf = [];
+            getToken();
+            if (tk === TKs["TKString"]){
+                printf = lexico.toString().replace(/\x00/g, '');
+                getToken();
+                let result = ExpressaoRestante('', true);
+                if(result){
+                    if (tk === TKs["TKFechaParenteses"]){
+                        getToken();
+                        debugger;
+                        if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === result.split(',').length){
+                            geraInstrucao('', '', '', "printf("+printf+","+result+")", false, true);
+                            return true;
+                        } else {
+                            dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + '\n';
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+
+function Instr(esta_em_laco) {
     if (InstrCondicional()) {
         return true;
     } else if (InstrIteracao()) {
         return true;
-    } else if (InstrSalto()){
+    } else if (InstrSalto(esta_em_laco)){
         return true;
     } else if (ListaDec()){
         return true;
     } else if (InstrExpress('esquerdo')) {
         return true;
-    } else if (CorpoFunc()){
+    } else if (InstrEscrita()){
+        return true;
+    } else if (CorpoFunc(esta_em_laco)){
         return true;
     } else {
         return false;
@@ -1024,9 +1156,9 @@ function Instr() {
 }
 
 
-function ListaInstrRestante() {
-    if (Instr()){
-        if (ListaInstrRestante()){
+function ListaInstrRestante(esta_no_laco) {
+    if (Instr(esta_no_laco)){
+        if (ListaInstrRestante(esta_no_laco)){
             return true;
         } else {
             return false;
@@ -1040,9 +1172,9 @@ function ListaInstrRestante() {
 }
 
 
-function ListaInstr(){
-    if (Instr()){
-        if (ListaInstrRestante()){
+function ListaInstr(esta_no_laco){
+    if (Instr(esta_no_laco)){
+        if (ListaInstrRestante(esta_no_laco)){
             return true;
         } else {
             return false;
@@ -1194,13 +1326,13 @@ function ListaDec(){
 }
 
 
-function CorpoFunc(){
+function CorpoFunc(esta_no_laco){
     if (tk === TKs['TKAbreChaves']) {
         getToken();
         if (tk === TKs['TKFechaChaves']) {
             getToken();
             return true;
-        } else if (ListaInstr()) {
+        } else if (ListaInstr(esta_no_laco)) {
             if (tk === TKs['TKFechaChaves']) {
                 getToken();
                 return true;
