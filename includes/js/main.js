@@ -15,6 +15,7 @@ var dic_control = {
     encontrou_main: false,
     encontrou_expressao: false,
     msg_erro: '',
+    printf: '',
     c3e: ''
 }
 var tabela_de_simbolos;
@@ -157,12 +158,16 @@ function inicializa_compilacao(){
     count_column = 0;
     count_line = 1;
     dic_control['msg_erro'] = '';
+    dic_control['printf'] = '';
     tabela_de_simbolos = new Object();
     instrucoes = [];
     tempCount = 0;
     labelCount = 0;
     identificador = '';
     lista_param_printf = [];
+    variaveis = {};
+    historico_variaveis = [];
+    index_goto = {}
 }
 
 function backtracking(funcao){
@@ -195,6 +200,7 @@ function compiler(){
     code = editor.getValue();
     console.log(code);
     proxC();
+    let c3e = []
     // Teste analisador léxico somente
     // while(code.length > code_position && !erro_lexico){
     //     lexico = '';
@@ -207,15 +213,22 @@ function compiler(){
     if (Programa()){
         textareaElement.value += 'Reconheceu OK' + '\n';
         instrucoes.forEach(inst => {
-            if (inst.salto) {
+            if (inst.salto || inst.label) {
                 console.log(`${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
+                dic_control['c3e'] = `${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
             } else if (inst.escrita){
                 console.log(`${inst.result}`);
+                dic_control['c3e'] = `${inst.result}\n`
             } else {
                 console.log(`${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
+                dic_control['c3e'] = `${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
             }
 
         });
+        executaC3E(instrucoes);
+        if (dic_control["printf"] !== ''){
+            textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
+        }
     } else {
         textareaElement.value += 'erro: ' + dic_control['msg_erro']
     }
