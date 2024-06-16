@@ -873,7 +873,7 @@ function InstrExpress(lado_atribuicao){
 }
 
 
-function InstrCondicional(){
+function InstrCondicional(esta_em_laco){
     if (tk === TKs['TKIf']){
         getToken();
         if (tk === TKs['TKAbreParenteses']){
@@ -885,7 +885,7 @@ function InstrCondicional(){
                     getToken();
                     let labelElse = newLabel();
                     geraInstrucao('goto', result, labelElse, 'ifFalse', true);
-                    if (Instr()) {
+                    if (Instr(esta_em_laco)) {
                         geraInstrucao('', '', '', labelElse, false, false, true);
                         if (tk === TKs['TKElse']){
                             getToken();
@@ -1005,7 +1005,7 @@ function InstrIteracao(){
                         if (tk === TKs['TKFechaParenteses']){
                             getToken();
                             geraInstrucao('', '', '', labelInstr, false, false, true);
-                            if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})){
+                            if (Instr({'labelInicio': labelIncremento, 'labelFim': labelFim})){
                                 geraInstrucao('', labelIncremento, '', 'goto', true);
                                 geraInstrucao('', '', '', labelFim, false, false, true);
                                 return true;
@@ -1111,12 +1111,21 @@ function InstrEscrita(){
                 if(result){
                     if (tk === TKs["TKFechaParenteses"]){
                         getToken();
-                        if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === result.split(',').length){
-                            geraInstrucao('', '', '', "printf("+printf+","+result+")", false, true);
-                            return true;
+                        let qtd_args = 0;
+                        if (typeof result === 'string'){
+                            qtd_args = result.split(',').length;
+                        }
+                        if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
+                            if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
+                                geraInstrucao('', '', '', "printf(" + printf + "," + result + ")", false, true);
+                                return true;
+                            } else {
+                                dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + '\n';
+                                return false;
+                            }
                         } else {
-                            dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + '\n';
-                            return false;
+                            geraInstrucao('', '', '', "printf(" + printf + ")", false, true);
+                            return true;
                         }
                     } else {
                         return false;
@@ -1135,7 +1144,7 @@ function InstrEscrita(){
 
 
 function Instr(esta_em_laco) {
-    if (InstrCondicional()) {
+    if (InstrCondicional(esta_em_laco)) {
         return true;
     } else if (InstrIteracao()) {
         return true;

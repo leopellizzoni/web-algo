@@ -167,7 +167,8 @@ function inicializa_compilacao(){
     lista_param_printf = [];
     variaveis = {};
     historico_variaveis = [];
-    index_goto = {}
+    index_goto = {};
+    flag_saida_escrita = true;
 }
 
 function backtracking(funcao){
@@ -226,9 +227,9 @@ function compiler(){
 
         });
         executaC3E(instrucoes);
-        if (dic_control["printf"] !== ''){
-            textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
-        }
+        // if (dic_control["printf"] !== ''){
+        //     textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
+        // }
     } else {
         textareaElement.value += 'erro: ' + dic_control['msg_erro']
     }

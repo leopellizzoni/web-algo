@@ -310,6 +310,22 @@ function getToken(){
 						break;
 					}
 				}
+				if (regexIdentificadorNumero.test(caracter)){
+                    proxC();
+					break;
+                }
+				if (caracter === ' '){
+					proxC();
+					break;
+				}
+				if (caracter.includes("\\") ){
+					proxC();
+					lexico += caracter;
+					if (caracter === 'n' || caracter === 't'){
+						proxC();
+						break;
+					}
+				}
 				if (caracter === '"') { // verifica '"'
 					lexico += '\0';
 					tk = TKs['TKString'];

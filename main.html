@@ -28,7 +28,7 @@
 
     <div class="row text-editor">
         <!-- O elemento textarea que será transformado pelo CodeMirror -->
-        <textarea id="code" style="height: 600px"></textarea>
+        <textarea id="code" style="height: 500px"></textarea>
     </div>
 
     <div class="row console">
@@ -73,7 +73,7 @@
             height: "30em", // Definir a altura do editor para 30 linhas
             extraKeys: { "Ctrl-Space": "autocomplete" } // Trigger autocomplete
         });
-        editor.setSize(null, 500);
+        editor.setSize(null, 400);
 
         // Captura o elemento input e textarea
         var inputElement = document.getElementById('inputText');
