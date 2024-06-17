@@ -1332,7 +1332,9 @@ function DecInicial(tipo){
     if (Dec(tipo, variavel)){
         if (tk === TKs['TKIgual']){
             getToken();
-            if (ExpressAtrib()){
+            let result = ExpressAtrib();
+            if (result){
+                geraInstrucao('', result, '', variavel);
                 return true;
             } else {
                 return false;

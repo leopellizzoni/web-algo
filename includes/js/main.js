@@ -245,5 +245,5 @@ function compiler(){
             textareaElement.value += 'erro: ' + dic_control['msg_erro']
         }
         esconde_tela_aguarde();
-    }, 1500);
+    }, 500);
 }
