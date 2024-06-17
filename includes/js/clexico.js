@@ -156,12 +156,17 @@ function getToken(){
 				}
                 if (caracter === '/') { // verifica '/' '/='
 				 	proxC();
-	             	if (caracter === '='){ // '/='
-	             		lexico += '=';
-	     			    lexico += '\0';
-				 		proxC();
-				 		tk = TKs['TKDivIgual'];
-				 		return;
+	             	if (caracter === '=') { // '/='
+						lexico += '=';
+						lexico += '\0';
+						proxC();
+						tk = TKs['TKDivIgual'];
+						return;
+					} else if (caracter === '*') {
+						lexico += '*';
+					 	proxC();
+						estado = 3;
+						break;
 					} else { // '/'
 						lexico += '\0';
 				 		tk = TKs['TKDiv'];
@@ -278,6 +283,7 @@ function getToken(){
 				textareaElement.value += 'Erro léxico encontrado no caractere ' + lexico + ' (' + count_line + ', ' + count_column + ')' + '\n';
 				erro_lexico = true;
 				return;
+			// Token
             case 1:
                 if (regexIdentificador.test(caracter)){
                     proxC();
@@ -299,6 +305,7 @@ function getToken(){
 				lexico += '\0';
 				return;
 
+			// String
 			case 2:
 				if (caracter === '%'){  // verifica parametro float, double ou int
 					proxC();
@@ -335,6 +342,19 @@ function getToken(){
 					tk = TKs['TKString'];
 					proxC();
 					return;
+				}
+			// Comentário
+			case 3:
+				if (caracter === '*'){
+					proxC();
+					if (caracter === '/'){
+						proxC();
+						return getToken();
+					}
+				} else {
+					lexico += caracter;
+					proxC();
+					break;
 				}
         }
     }
