@@ -131,6 +131,15 @@ function indexa_linhas(codigo_c3e) {
     }
 }
 
+
+function inicializa_vetor(tam_vetor){
+    let vetor = [];
+    for (let i=0; i<tam_vetor; i++){
+        vetor.push('');
+    }
+    return vetor;
+}
+
 async function executaC3E(codigo_c3e, signal){
     if (signal.aborted) {
         throw new Error('Task was aborted before it started');
@@ -191,7 +200,20 @@ async function executaC3E(codigo_c3e, signal){
                 textareaElement.value += 'Digite um valor para variável ' + values[i] + ': ';
                 // Espera pela entrada do usuário
                 userInput = await getUserInput(signal);
-                variaveis[values[i]] = {'valor': userInput};
+                let var_tabela_simbolos = tabela_de_simbolos[values[i].split('[')[0]];
+                if (var_tabela_simbolos['matriz_vetor'] === 'vetor'){
+                    let primeira_dimensao = values[i].split('[')[1].replace(']', '');
+                    let var_vetor;
+                    if (values[i].split('[')[0] in variaveis){
+                        var_vetor = variaveis[values[i].split('[')[0]]['valor'];
+                    } else {
+                        var_vetor = inicializa_vetor(Number(var_tabela_simbolos['dimensao'][1]));
+                    }
+                    var_vetor[Number(variaveis[primeira_dimensao]['valor'])] = userInput;
+                    variaveis[values[i].split('[')[0]] = {'valor': var_vetor};
+                } else {
+                    variaveis[values[i]] = {'valor': userInput};
+                }
             }
         } else {
             // Verifica Identifcador

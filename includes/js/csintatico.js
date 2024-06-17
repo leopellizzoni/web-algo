@@ -746,7 +746,11 @@ function ExpressCondic(){
 
 function ExpressAtrib(lado_atribuicao){
     backtracking('push');
-    if (ExpressUnaria(lado_atribuicao)){
+    let id = ExpressUnaria(lado_atribuicao);
+    if (id){
+        if (typeof id !== 'string'){
+            id = identificador;
+        }
         let operador = lexico.toString().replace(/\x00/g, '');
         if (OperadorAtrib()){
             if (lado_atribuicao === 'esquerdo' && verifica_variavel_declarada(identificador, dimensao)){
@@ -755,15 +759,15 @@ function ExpressAtrib(lado_atribuicao){
                 if (result){
                     if (typeof result !== 'string'){
                         if (operador !== '='){
-                            geraInstrucao(operador[0], identificador, arg1, identificador);
+                            geraInstrucao(operador[0], id, arg1, id);
                         } else {
-                            geraInstrucao('', arg1, '', identificador);
+                            geraInstrucao('', arg1, '', id);
                         }
                     } else {
                         if (operador !== '='){
-                            geraInstrucao(operador[0], identificador, result, identificador);
+                            geraInstrucao(operador[0], id, result, id);
                         } else {
-                            geraInstrucao('', result, '', identificador);
+                            geraInstrucao('', result, '', id);
                         }
                     }
                     return true;
@@ -1105,6 +1109,9 @@ function LeituraRestante(){
             let arg1 = lexico.toString().replace(/\x00/g, '');
             let result = ExpressPos();
             if (result) {
+                if (typeof result === 'string') {
+                    arg1 = result;
+                }
                 let temp2 = LeituraRestante();
                 if (temp2) {
                     if (typeof temp2 === 'string') {
@@ -1365,6 +1372,7 @@ function Declaracao(){
                 if (dic_control['msg_erro'] === '') {
                     dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
                 }
+                return false;
             }
         } else {
             if (dic_control['msg_erro'] === '') {
@@ -1501,13 +1509,15 @@ function Dec2(){
     backtracking('push');
     if (DecVariavel()){
         return true;
-    } else {
-        backtracking('pop');
-        if (DecFunc()){
-            dic_control["encontrou_main"] = true;
-            return true;
-        }
     }
+    backtracking('pop');
+    if (DecFunc()){
+        dic_control["encontrou_main"] = true;
+        return true;
+    } else {
+        return false;
+    }
+
 }
 
 
@@ -1526,6 +1536,5 @@ function ListaDec2(){
 
 
 function Programa(){
-    debugger;
     return ListaDec2();
 }
