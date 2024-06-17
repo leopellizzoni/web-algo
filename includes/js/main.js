@@ -110,9 +110,7 @@ function verifica_variavel_declarada(identificador, dimensao=0){
         }
         return true;
     } else {
-        if (dic_control['msg_erro'] === '') {
-            dic_control['msg_erro'] += "variável '" + identificador + "' não declarada" + ' (' + count_line + ', ' + count_column + ')' + '\n';
-        }
+        dic_control['msg_erro'] = "variável '" + identificador + "' não declarada" + ' (' + count_line + ', ' + count_column + ')' + '\n';
         return false;
     }
 }

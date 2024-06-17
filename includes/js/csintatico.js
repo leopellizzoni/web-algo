@@ -462,8 +462,13 @@ function ExpressRelacionalRestante(temp, arg1){
     if (tk === TKs['TKMenor']){
         getToken();
         let arg2 = lexico.toString().replace(/\x00/g, '');
-        if (ExpressAdd()){
-            geraInstrucao('<', arg1, arg2, temp);
+        let result = ExpressAdd();
+        if (result){
+            if (typeof result !== 'string'){
+                geraInstrucao('<', arg1, arg2, temp);
+            } else {
+                geraInstrucao('<', arg1, result, temp);
+            }
             let temp2 = ExpressRelacionalRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
                 return temp2;
@@ -477,8 +482,13 @@ function ExpressRelacionalRestante(temp, arg1){
     } else if (tk === TKs['TKMaior']){
         getToken();
         let arg2 = lexico.toString().replace(/\x00/g, '');
-        if (ExpressAdd()){
-            geraInstrucao('>', arg1, arg2, temp);
+        let result = ExpressAdd();
+        if (result){
+            if (typeof result !== 'string'){
+                geraInstrucao('>', arg1, arg2, temp);
+            } else {
+                geraInstrucao('>', arg1, result, temp);
+            }
             let temp2 = ExpressRelacionalRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
                 return temp2;
@@ -492,8 +502,13 @@ function ExpressRelacionalRestante(temp, arg1){
     } else if (tk === TKs['TKMenorIgual']){
         getToken();
         let arg2 = lexico.toString().replace(/\x00/g, '');
-        if (ExpressAdd()){
-            geraInstrucao('<=', arg1, arg2, temp);
+        let result = ExpressAdd();
+        if (result){
+            if (typeof result !== 'string'){
+                geraInstrucao('<=', arg1, arg2, temp);
+            } else {
+                geraInstrucao('<=', arg1, result, temp);
+            }
             let temp2 = ExpressRelacionalRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
                 return temp2;
@@ -507,8 +522,13 @@ function ExpressRelacionalRestante(temp, arg1){
     } else if (tk === TKs['TKMaiorIgual']){
         getToken();
         let arg2 = lexico.toString().replace(/\x00/g, '');
-        if (ExpressAdd()){
-            geraInstrucao('>=', arg1, arg2, temp);
+        let result = ExpressAdd();
+        if (result){
+            if (typeof result !== 'string'){
+                geraInstrucao('>=', arg1, arg2, temp);
+            } else {
+                geraInstrucao('>=', arg1, result, temp);
+            }
             let temp2 = ExpressRelacionalRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
                 return temp2;
