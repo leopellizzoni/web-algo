@@ -1,7 +1,5 @@
 var lista_backtracking = [];
 
-var lista_param_printf = []
-
 // identificador da variável no momento
 var identificador = '';
 var dimensao = 0;
@@ -18,8 +16,8 @@ function newLabel() {
     return "L" + labelCount++;
 }
 
-function geraInstrucao(op, arg1, arg2, result, salto=false, escrita=false, label=false) {
-    instrucoes.push({ op, arg1, arg2, result, salto, escrita, label });
+function geraInstrucao(op, arg1, arg2, result, salto=false, escrita=false, label=false, leitura=false) {
+    instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura });
 }
 
 function OperadorUnario(){
@@ -1098,11 +1096,81 @@ function InstrSalto(esta_no_laco){
 }
 
 
+function LeituraRestante(){
+    if (tk === TKs['TKVirgula']) {
+        getToken();
+        //dimensao = 0;
+        if (tk === TKs['TKEnderecoVariavel']) {
+            getToken();
+            let arg1 = lexico.toString().replace(/\x00/g, '');
+            let result = ExpressPos();
+            if (result) {
+                let temp2 = LeituraRestante();
+                if (temp2) {
+                    if (typeof temp2 === 'string') {
+                        return arg1 + ',' + temp2;
+                    } else {
+                        return arg1;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            dic_control['msg_erro'] = "Não encontrou o caracter '&' no scanf" + '\n';
+        }
+    } else {
+        return true;
+    }
+}
+
+
+function InstrLeitura(){
+    if (tk === TKs["TKScanf"]){
+        getToken();
+        if (tk === TKs["TKAbreParenteses"]){
+            getToken();
+            if (tk === TKs["TKString"]){
+                let scanf = lexico.toString().replace(/\x00/g, '');
+                getToken();
+                let result = LeituraRestante();
+                if(result){
+                    if (tk === TKs["TKFechaParenteses"]){
+                        getToken();
+                        let qtd_args = 0;
+                        if (typeof result === 'string'){
+                            qtd_args = result.split(',').length;
+                        }
+                        if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
+                            if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
+                                geraInstrucao('', '', '', "scanf(" + scanf + "," + result + ")", false, false, false, true);
+                                return true;
+                            } else {
+                                dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + '\n';
+                                return false;
+                            }
+                        } else {
+                            geraInstrucao('', '', '', "scanf(" + printf + ")", false, false, false, true);
+                            return true;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+    }
+}
+
+
 function InstrEscrita(){
     if (tk === TKs["TKPrintf"]){
         getToken();
         if (tk === TKs["TKAbreParenteses"]){
-            lista_param_printf = [];
             getToken();
             if (tk === TKs["TKString"]){
                 printf = lexico.toString().replace(/\x00/g, '');
@@ -1155,6 +1223,8 @@ function Instr(esta_em_laco) {
     } else if (InstrExpress('esquerdo')) {
         return true;
     } else if (InstrEscrita()){
+        return true;}
+    else if (InstrLeitura()){
         return true;
     } else if (CorpoFunc(esta_em_laco)){
         return true;
@@ -1456,6 +1526,6 @@ function ListaDec2(){
 
 
 function Programa(){
-    console.log(tabela_de_simbolos);
+    debugger;
     return ListaDec2();
 }

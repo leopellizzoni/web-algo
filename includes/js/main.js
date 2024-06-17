@@ -19,6 +19,7 @@ var dic_control = {
     c3e: ''
 }
 var tabela_de_simbolos;
+let currentController = null;
 
 TKs = {
     "TKId": 1,
@@ -70,7 +71,8 @@ TKs = {
     "TKContinue": 47,
     "TKPrintf": 48,
     "TKScanf": 49,
-    "TKString": 50
+    "TKString": 50,
+    "TKEnderecoVariavel": 51
 }
 
 // Palavras reservadas da linguagem
@@ -169,6 +171,7 @@ function inicializa_compilacao(){
     historico_variaveis = [];
     index_goto = {};
     flag_saida_escrita = true;
+    cancelarExecucao = false;
 }
 
 function backtracking(funcao){
@@ -196,41 +199,53 @@ function backtracking(funcao){
 
 
 function compiler(){
-    // Pega código digitado pelo usuário
-    inicializa_compilacao();
-    code = editor.getValue();
-    console.log(code);
-    proxC();
-    let c3e = []
-    // Teste analisador léxico somente
-    // while(code.length > code_position && !erro_lexico){
-    //     lexico = '';
-    //     getToken();
-    //     console.log(lexico);
-    // }
-
-    // Teste analisador léxico e sintático
-    getToken();
-    if (Programa()){
-        textareaElement.value += 'Reconheceu OK' + '\n';
-        instrucoes.forEach(inst => {
-            if (inst.salto || inst.label) {
-                console.log(`${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
-                dic_control['c3e'] = `${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
-            } else if (inst.escrita){
-                console.log(`${inst.result}`);
-                dic_control['c3e'] = `${inst.result}\n`
-            } else {
-                console.log(`${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
-                dic_control['c3e'] = `${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
-            }
-
-        });
-        executaC3E(instrucoes);
-        // if (dic_control["printf"] !== ''){
-        //     textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
-        // }
-    } else {
-        textareaElement.value += 'erro: ' + dic_control['msg_erro']
+    if (currentController) {
+        currentController.abort();
     }
+    currentController = new AbortController();
+    const { signal } = currentController;
+    mostra_tela_aguarde('Compilando...');
+    // $("#button2")[0].hidden = true;
+    // $("#button3")[0].hidden = false;
+    setTimeout(function (){
+        cancelarExecucao = false;
+        // Pega código digitado pelo usuário
+        inicializa_compilacao();
+        code = editor.getValue();
+        console.log(code);
+        proxC();
+        let c3e = []
+        // Teste analisador léxico somente
+        // while(code.length > code_position && !erro_lexico){
+        //     lexico = '';
+        //     getToken();
+        //     console.log(lexico);
+        // }
+
+        // Teste analisador léxico e sintático
+        getToken();
+        if (Programa()){
+            textareaElement.value += 'Compilação OK' + '\n';
+            instrucoes.forEach(inst => {
+                if (inst.salto || inst.label) {
+                    console.log(`${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
+                    dic_control['c3e'] = `${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                } else if (inst.escrita || inst.leitura){
+                    console.log(`${inst.result}`);
+                    dic_control['c3e'] = `${inst.result}\n`
+                } else {
+                    console.log(`${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
+                    dic_control['c3e'] = `${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                }
+
+            });
+            executaC3E(instrucoes, signal);
+            // if (dic_control["printf"] !== ''){
+            //     textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
+            // }
+        } else {
+            textareaElement.value += 'erro: ' + dic_control['msg_erro']
+        }
+        esconde_tela_aguarde();
+    }, 1500);
 }

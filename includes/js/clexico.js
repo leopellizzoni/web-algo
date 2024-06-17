@@ -237,13 +237,17 @@ function getToken(){
 					    return;
 					}
 				}
-				if (caracter === '&'){ // verifica '&&'
+				if (caracter === '&'){ // verifica '&&' e '&'
 	             	proxC();
 	             	if (caracter === '&'){ // '&&'
 	             		lexico += '&';
 	     			    lexico += '\0';
 				 		proxC();
 				 		tk = TKs['TKLogicalAnd'];
+				 		return;
+					} else { // '&'
+						lexico += '\0';
+				 		tk = TKs['TKEnderecoVariavel'];
 				 		return;
 					}
 				}

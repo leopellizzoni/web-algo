@@ -11,9 +11,35 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/addon/hint/show-hint.min.css">
     <!-- Boostratp 5.3.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="includes/css/main.css">
+  <script>
+      function mostra_tela_aguarde(msg){
+            "use strict";
+            if(msg == undefined){
+                msg = '';
+            }
+            $('#aguarde_msg').html(msg);
+            $('#tela_aguarde').css('display', 'block');
+        }
+
+        function esconde_tela_aguarde(){
+            "use strict";
+            $('#tela_aguarde').css('display', 'none');
+        }
+  </script>
 </head>
 <body>
+    <div id="tela_aguarde" class="mostra_tela">
+        <div class="cont_anima">
+            <div class="spinner-border" role="status">
+<!--              <img src="includes/media/loading-fb.gif"/>-->
+            </div>
+
+            <p id="aguarde_msg"></p>
+        </div>
+    </div>
+
     <div class="row execution">
         <div class="col-8">
             <p id="question">1 - Faça uma programa que leia dois valores, realize a soma dos valores lidos e escreva o resultado.</p>
@@ -23,6 +49,7 @@
         </div>
         <div class="col-2 button">
             <button type="button" class="btn btn-light" id="button2" onclick="compiler()">Executar</button>
+            <button type="button" class="btn btn-light" id="button3" onclick="cancelarExecucao = true" title="Cancelar execução" hidden>Cancelar</button>
         </div>
     </div>
 
@@ -33,9 +60,9 @@
 
     <div class="row console">
         <div class="col-6 text-console">
-            <textarea id="displayText" rows="8" readonly></textarea>
+            <textarea tabindex="-1" id="displayText" rows="8" readonly></textarea>
             <br>
-            <input type="text" id="inputText" placeholder="Digite algo e pressione Enter">
+            <input tabindex="0" type="text" id="inputText" placeholder="Digite algo e pressione Enter">
         </div>
     </div>
 
@@ -62,6 +89,7 @@
 
 
     <script>
+
         // Inicialize o CodeMirror no textarea com o ID "code"
         var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
             lineNumbers: true, // Mostrar números de linha
@@ -89,7 +117,7 @@
                 // Limpa o input
                 inputElement.value = '';
                 // Rola o textarea para o final
-                textareaElement.scrollTop = textareaElement.scrollHeight;
+                textareaElement.scrollTop = 100000000;
             }
         });
 
