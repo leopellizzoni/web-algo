@@ -1,6 +1,6 @@
 // Executa código intermediário de três endereços gerado pelo compilador
 
-var historico_variaveis = [];
+var historico_variaveis = {};
 var variaveis = {};
 var flag_saida_escrita = true;
 let cancelarExecucao = false;
@@ -387,8 +387,20 @@ async function executaC3E(codigo_c3e, signal) {
                     }
 
                     variaveis[values[i].split('[')[0]] = {'valor': var_vetor};
+                    //historico de variavel
+                    if (values[i].split('[')[0] in historico_variaveis){
+                        historico_variaveis[values[i].split('[')[0]].push(variaveis[values[i].split('[')[0]].valor);
+                    } else {
+                        historico_variaveis[values[i].split('[')[0]] = [variaveis[values[i].split('[')[0]].valor];
+                    }
                 } else {
                     variaveis[values[i]] = {'valor': userInput};
+                    //historico de variavel
+                    if (values[i] in historico_variaveis){
+                        historico_variaveis[values[i]].push(variaveis[values[i]].valor);
+                    } else {
+                        historico_variaveis[values[i]] = [variaveis[values[i]].valor];
+                    }
                 }
             }
         } else {
@@ -399,6 +411,12 @@ async function executaC3E(codigo_c3e, signal) {
             } else {
                 if (c3e.arg2) {
                     variaveis[c3e.result] = {'valor': calcula_argumentos(c3e)};
+                    //historico de variavel
+                    if (c3e.result in historico_variaveis){
+                        historico_variaveis[c3e.result].push(variaveis[c3e.result].valor);
+                    } else {
+                        historico_variaveis[c3e.result] = [variaveis[c3e.result].valor];
+                    }
                 } else {
                     if (regexNumero.test(c3e.arg1[0])) {
                         arg1 = c3e.arg1;
@@ -478,9 +496,21 @@ async function executaC3E(codigo_c3e, signal) {
                             }
                         } else {
                             variaveis[c3e.result] = {'valor': arg1};
+                            //historico de variavel
+                            if (c3e.result in historico_variaveis){
+                                historico_variaveis[c3e.result].push(variaveis[c3e.result].valor);
+                            } else {
+                                historico_variaveis[c3e.result] = [variaveis[c3e.result].valor];
+                            }
                         }
                     } else {
                         variaveis[c3e.result] = {'valor': arg1};
+                        //historico de variavel
+                        if (c3e.result in historico_variaveis){
+                            historico_variaveis[c3e.result].push(variaveis[c3e.result].valor);
+                        } else {
+                            historico_variaveis[c3e.result] = [variaveis[c3e.result].valor];
+                        }
                     }
                 }
             }

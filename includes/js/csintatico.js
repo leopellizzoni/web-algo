@@ -1091,7 +1091,7 @@ function InstrSalto(esta_no_laco){
                 return true;
             } else {
                 if (dic_control['msg_erro'] === '') {
-                     dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                     dic_control['msg_erro'] += "não encontrou o caracter ';' no comando break " + ' (' + count_line + ', ' + count_column + ')' + '\n';
                  }
                 return false;
             }
@@ -1109,8 +1109,9 @@ function InstrSalto(esta_no_laco){
                  getToken();
                  return true;
              } else {
+                 debugger;
                  if (dic_control['msg_erro'] === '') {
-                     dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                     dic_control['msg_erro'] += "não encontrou o caracter ';' no return " + ' (' + count_line + ', ' + count_column + ')' + '\n';
                  }
                  return false;
              }
@@ -1221,6 +1222,8 @@ function InstrEscrita(){
                     if (tk === TKs["TKFechaParenteses"]){
                         getToken();
                         if (tk === TKs["TKPontoEVirgula"]) {
+                            debugger;
+                            getToken();
                             let qtd_args = 0;
                             if (typeof result === 'string') {
                                 qtd_args = result.split(',').length;
@@ -1230,7 +1233,7 @@ function InstrEscrita(){
                                     geraInstrucao('', '', '', "printf(" + printf + "," + result + ")", false, true);
                                     return true;
                                 } else {
-                                    dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                                    dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros no comando printf" + ' (' + count_line + ', ' + count_column + ')' + '\n';
                                     return false;
                                 }
                             } else {
@@ -1239,18 +1242,29 @@ function InstrEscrita(){
                             }
                         } else {
                             if (dic_control['msg_erro'] === '') {
-                                dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                                dic_control['msg_erro'] += "não encontrou o caracter ';' no comando printf " + ' (' + count_line + ', ' + count_column + ')' + '\n';
                             }
                             return false;
                         }
                     } else {
+                        if (dic_control['msg_erro'] === '') {
+                            dic_control['msg_erro'] += "não encontrou o caracter ')' no comando printf " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                        }
                         return false;
                     }
                 } else {
                     return false;
                 }
+            } else {
+                if (dic_control['msg_erro'] === '') {
+                    dic_control['msg_erro'] += 'não encontrou o caracter " no printf ' + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
+                return false;
             }
         } else {
+            if (dic_control['msg_erro'] === '') {
+                dic_control['msg_erro'] += "não encontrou o caracter '(' no printf " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else {

@@ -167,7 +167,7 @@ function inicializa_compilacao(){
     identificador = '';
     lista_param_printf = [];
     variaveis = {};
-    historico_variaveis = [];
+    historico_variaveis = {};
     index_goto = {};
     flag_saida_escrita = true;
     cancelarExecucao = false;

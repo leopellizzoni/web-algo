@@ -10,6 +10,7 @@ var regexNumero = /\d+/;
 function getToken(){
     var fim = false;
     var estado = 0;
+	var loopInfinito = false;
 	lexico = '';
     while (!fim){
 		lexico += caracter;
@@ -292,7 +293,7 @@ function getToken(){
 				return;
 			// Token
             case 1:
-                if (regexIdentificador.test(caracter)){
+                if (regexIdentificadorNumero.test(caracter)){
                     proxC();
 					break;
                 }
@@ -345,6 +346,12 @@ function getToken(){
 					tk = TKs['TKString'];
 					proxC();
 					return;
+				}
+				if (loopInfinito){
+					return;
+				}
+				if (code.length === code_position){
+					loopInfinito = true;
 				}
 				proxC();
 				break;
