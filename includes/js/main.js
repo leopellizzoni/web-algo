@@ -159,6 +159,7 @@ function inicializa_compilacao(){
     count_line = 1;
     dic_control['msg_erro'] = '';
     dic_control['printf'] = '';
+    dic_control['encontrou_expressao'] = false;
     tabela_de_simbolos = new Object();
     instrucoes = [];
     tempCount = 0;

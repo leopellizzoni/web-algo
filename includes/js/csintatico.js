@@ -123,6 +123,10 @@ function ListaParam(){
 
 function ExpressaoPosRestante(lado_atribuicao, arg1){
     if (tk === TKs['TKAbreColchete']) {
+        if (arg1 && tabela_de_simbolos[arg1].matriz_vetor === ''){
+            dic_control['msg_erro'] = " variável '" + arg1 + "' não é vetor " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            return false;
+        }
         getToken();
         let result = Expressao();
         if (result) {
@@ -790,7 +794,7 @@ function ExpressAtrib(lado_atribuicao){
                             geraInstrucao('', result, '', id);
                         }
                     }
-                    return true;
+                    return id;
                 }
             }
         } else {
@@ -867,7 +871,6 @@ function Expressao(lado_atribuicao){
 
 
 function InstrExpress(lado_atribuicao){
-    dic_control['encontrou_expressao'] = false;
     if (tk === TKs['TKPontoEVirgula']){
         getToken();
         return true;
@@ -875,13 +878,12 @@ function InstrExpress(lado_atribuicao){
         if (tk !== TKs['TKFechaChaves']){
             let result = Expressao(lado_atribuicao);
             if (result){
-                dic_control['encontrou_expressao'] = true;
                 if (tk === TKs['TKPontoEVirgula']){
                     getToken();
                     return result;
                 } else {
                     if (dic_control['msg_erro'] === '') {
-                        dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                        dic_control['msg_erro'] = "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
                     }
                     return false;
                 }
@@ -940,7 +942,8 @@ function InstrIteracao(){
         getToken();
         if (tk === TKs['TKAbreParenteses']){
             getToken();
-            let result = Expressao();
+            dimensao = 0;
+            let result = Expressao('esquerdo');
             if (result){
                 let labelFim = newLabel();
                 geraInstrucao('goto', result, labelFim, 'ifFalse', true);
@@ -1022,7 +1025,7 @@ function InstrIteracao(){
                     geraInstrucao('', labelInstr, '', 'goto', true);
                     let labelIncremento = newLabel();
                     geraInstrucao('', '', '', labelIncremento, false, false, true);
-                    if(Expressao()){
+                    if(Expressao('esquerdo')){
                         geraInstrucao('', labelInicio, '', 'goto', true);
                         if (tk === TKs['TKFechaParenteses']){
                             getToken();
@@ -1087,6 +1090,9 @@ function InstrSalto(esta_no_laco){
                 getToken();
                 return true;
             } else {
+                if (dic_control['msg_erro'] === '') {
+                     dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                 }
                 return false;
             }
         } else {
@@ -1166,21 +1172,29 @@ function InstrLeitura(){
                 if(result){
                     if (tk === TKs["TKFechaParenteses"]){
                         getToken();
-                        let qtd_args = 0;
-                        if (typeof result === 'string'){
-                            qtd_args = result.split(',').length;
-                        }
-                        if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
-                            if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
-                                geraInstrucao('', '', '', "scanf(" + scanf + "," + result + ")", false, false, false, true);
-                                return true;
+                        if (tk === TKs["TKPontoEVirgula"]){
+                            getToken();
+                            let qtd_args = 0;
+                            if (typeof result === 'string'){
+                                qtd_args = result.split(',').length;
+                            }
+                            if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
+                                if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
+                                    geraInstrucao('', '', '', "scanf(" + scanf + "," + result + ")", false, false, false, true);
+                                    return true;
+                                } else {
+                                    dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                                    return false;
+                                }
                             } else {
-                                dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + '\n';
-                                return false;
+                                geraInstrucao('', '', '', "scanf(" + printf + ")", false, false, false, true);
+                                return true;
                             }
                         } else {
-                            geraInstrucao('', '', '', "scanf(" + printf + ")", false, false, false, true);
-                            return true;
+                            if (dic_control['msg_erro'] === '') {
+                                dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                            }
+                            return false;
                         }
                     } else {
                         return false;
@@ -1206,21 +1220,28 @@ function InstrEscrita(){
                 if(result){
                     if (tk === TKs["TKFechaParenteses"]){
                         getToken();
-                        let qtd_args = 0;
-                        if (typeof result === 'string'){
-                            qtd_args = result.split(',').length;
-                        }
-                        if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
-                            if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
-                                geraInstrucao('', '', '', "printf(" + printf + "," + result + ")", false, true);
-                                return true;
+                        if (tk === TKs["TKPontoEVirgula"]) {
+                            let qtd_args = 0;
+                            if (typeof result === 'string') {
+                                qtd_args = result.split(',').length;
+                            }
+                            if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
+                                if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
+                                    geraInstrucao('', '', '', "printf(" + printf + "," + result + ")", false, true);
+                                    return true;
+                                } else {
+                                    dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                                    return false;
+                                }
                             } else {
-                                dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + '\n';
-                                return false;
+                                geraInstrucao('', '', '', "printf(" + printf + ")", false, true);
+                                return true;
                             }
                         } else {
-                            geraInstrucao('', '', '', "printf(" + printf + ")", false, true);
-                            return true;
+                            if (dic_control['msg_erro'] === '') {
+                                dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                            }
+                            return false;
                         }
                     } else {
                         return false;
@@ -1241,19 +1262,26 @@ function InstrEscrita(){
 function Instr(esta_em_laco) {
     if (InstrCondicional(esta_em_laco)) {
         return true;
+    } else if (InstrExpress('esquerdo')) {
+        dic_control['encontrou_expressao'] = true;
+        return true;
     } else if (InstrIteracao()) {
+        dic_control['encontrou_expressao'] = true;
         return true;
     } else if (InstrSalto(esta_em_laco)){
+        dic_control['encontrou_expressao'] = true;
         return true;
     } else if (ListaDec()){
-        return true;
-    } else if (InstrExpress('esquerdo')) {
+        dic_control['encontrou_expressao'] = true;
         return true;
     } else if (InstrEscrita()){
+        dic_control['encontrou_expressao'] = true;
         return true;}
     else if (InstrLeitura()){
+        dic_control['encontrou_expressao'] = true;
         return true;
     } else if (CorpoFunc(esta_em_laco)){
+        dic_control['encontrou_expressao'] = true;
         return true;
     } else {
         return false;
@@ -1262,17 +1290,19 @@ function Instr(esta_em_laco) {
 
 
 function ListaInstrRestante(esta_no_laco) {
-    if (Instr(esta_no_laco)){
-        if (ListaInstrRestante(esta_no_laco)){
+    let result = Instr(esta_no_laco);
+    if (result) {
+        if (ListaInstrRestante(esta_no_laco)) {
             return true;
         } else {
             return false;
         }
     } else {
-        if (dic_control['encontrou_expressao']){
+        if (dic_control['msg_erro'] === ''){
+            return true;
+        } else {
             return false;
         }
-        return true;
     }
 }
 
@@ -1348,10 +1378,10 @@ function DecInicial(tipo){
 
 
 function ListaDecInicialRestante(tipo){
-    if (tk === TKs['TKVirgula']){
+    if (tk === TKs['TKVirgula']) {
         getToken();
-        if (DecInicial(tipo)){
-            if (ListaDecInicialRestante(tipo)){
+        if (DecInicial(tipo)) {
+            if (ListaDecInicialRestante(tipo)) {
                 return true;
             } else {
                 return false;
@@ -1383,17 +1413,13 @@ function Declaracao(){
     var tipo = {'tk': tk,
                                    'tipo': lexico.toString().replace(/\x00/g, '')};
     if (Tipo()){
-        if (tk === TKs['TKPontoEVirgula']){
-            getToken();
-            return true;
-        } else if (ListaDecInicial(tipo)){
+        if (ListaDecInicial(tipo)){
             if (tk === TKs['TKPontoEVirgula']){
                 getToken();
                 return true;
             } else {
-                if (dic_control['msg_erro'] === '') {
-                    dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
-                }
+                dic_control['encontrou_expressao'] = true;
+                dic_control['msg_erro'] = "não encontrou o caracter ';' na declaração da variável " + ' (' + count_line + ', ' + count_column + ')' + '\n';
                 return false;
             }
         } else {
@@ -1473,9 +1499,6 @@ function CorpoFunc(esta_no_laco){
             return false;
         }
     } else {
-        if (dic_control['msg_erro'] === ''){
-            dic_control['msg_erro'] += "não encontrou o caracter '{' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
-        }
         return false;
     }
 }

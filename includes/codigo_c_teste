@@ -85,3 +85,26 @@ int main(){
         printf("%d ", arr[i]);
     }
 }
+
+
+// Soma da Diagonal
+int main() {
+    int N, i, j;
+
+    printf("Digite o tamanho da matriz NxN ");
+    scanf("%d", &N);
+
+    int matriz[N][N];
+
+    printf("Digite os elementos da matriz\n");
+    for (i = 0; i < N; i++)
+        for (j = 0; j < N; j++)
+            scanf("%d", &matriz[i][j]);
+
+
+    int soma_diagonal = 0;
+    for (i = 0; i < N; i++)
+        soma_diagonal += matriz[i][i];
+
+    printf("A soma da diagonal principal eh %d\n", soma_diagonal);
+}
