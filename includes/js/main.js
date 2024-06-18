@@ -248,3 +248,24 @@ function compiler(){
         esconde_tela_aguarde();
     }, 500);
 }
+
+function atualiza_tabela_variaveis(data){
+    let $table = $('#tabela_variaveis');
+    let $tbody = $('<tbody></tbody>');
+    let contador = 0;
+    $.each(data, function(key, value) {
+        let $row = $('<tr></tr>');
+        let $contador = $('<td></td>').text(contador).css({'text-align':'center',  'font-weight': 'bold'});
+        let $cellKey = $('<td></td>').text(key);
+        let $cellValue = $('<td></td>').text(value.join(', ')).css({'text-align':'right', 'padding-right': '15px'});
+
+        $row.append($contador);
+        $row.append($cellKey);
+        $row.append($cellValue);
+        $tbody.append($row);
+        contador += 1;
+    });
+
+    $table.find('tbody').remove();
+    $table.append($tbody);
+}

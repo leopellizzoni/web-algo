@@ -108,3 +108,15 @@ int main() {
 
     printf("A soma da diagonal principal eh %d\n", soma_diagonal);
 }
+
+
+// Soma 4 notas e faça a média aritmética
+int main(){
+    // Desenvolva seu código C aqui!
+    float n1, n2, n3, n4;
+    float media;
+	scanf("%f%f%f%d", &n1, &n2, &n3, &n4);
+    media = (n1+n2+n3+n4)/4;
+	printf("%f", media);
+    return 0;
+}
