@@ -160,6 +160,7 @@ function inicializa_compilacao(){
     dic_control['msg_erro'] = '';
     dic_control['printf'] = '';
     dic_control['encontrou_expressao'] = false;
+    dic_control["encontrou_main"] = false;
     tabela_de_simbolos = new Object();
     instrucoes = [];
     tempCount = 0;
@@ -183,6 +184,7 @@ function backtracking(funcao){
         dic["count_column"] = count_column;
         dic["count_line"] = count_line;
         dic["instrucoes_c3e"] = instrucoes.slice();
+        dic["msg_erro"] = dic_control['msg_erro'];
         lista_backtracking.push(dic);
     } else {
         ultima_posicao = lista_backtracking.pop();
@@ -193,6 +195,7 @@ function backtracking(funcao){
         count_column = ultima_posicao["count_column"];
         count_line = ultima_posicao["count_line"];
         instrucoes = ultima_posicao['instrucoes_c3e'];
+        dic_control['msg_erro'] = ultima_posicao['msg_erro'];
     }
 }
 
@@ -246,7 +249,7 @@ function compiler(){
             textareaElement.value += 'erro: ' + dic_control['msg_erro']
         }
         esconde_tela_aguarde();
-    }, 500);
+    }, 0);
 }
 
 function atualiza_tabela_variaveis(data){
@@ -257,7 +260,7 @@ function atualiza_tabela_variaveis(data){
         let $row = $('<tr></tr>');
         let $contador = $('<td></td>').text(contador).css({'text-align':'center',  'font-weight': 'bold'});
         let $cellKey = $('<td></td>').text(key);
-        let $cellValue = $('<td></td>').text(value.join(', ')).css({'text-align':'right', 'padding-right': '15px'});
+        let $cellValue = $('<td></td>').text(value[value.length - 1]).css({'text-align':'right', 'padding-right': '15px'});
 
         $row.append($contador);
         $row.append($cellKey);

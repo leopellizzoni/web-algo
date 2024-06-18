@@ -910,13 +910,17 @@ function InstrCondicional(esta_em_laco){
                     let labelElse = newLabel();
                     geraInstrucao('goto', result, labelElse, 'ifFalse', true);
                     if (Instr(esta_em_laco)) {
-                        geraInstrucao('', '', '', labelElse, false, false, true);
                         if (tk === TKs['TKElse']){
+                            let labelSaidaElse = newLabel();
+                            geraInstrucao('', labelSaidaElse, '', 'goto', true);
+                            geraInstrucao('', '', '', labelElse, false, false, true);
                             getToken();
                             if (Instr()){
+                                geraInstrucao('', '', '', labelSaidaElse, false, false, true);
                                 return true;
                             }
                         } else {
+                            geraInstrucao('', '', '', labelElse, false, false, true);
                             return true;
                         }
                     } else {
@@ -1109,7 +1113,6 @@ function InstrSalto(esta_no_laco){
                  getToken();
                  return true;
              } else {
-                 debugger;
                  if (dic_control['msg_erro'] === '') {
                      dic_control['msg_erro'] += "não encontrou o caracter ';' no return " + ' (' + count_line + ', ' + count_column + ')' + '\n';
                  }
@@ -1222,7 +1225,6 @@ function InstrEscrita(){
                     if (tk === TKs["TKFechaParenteses"]){
                         getToken();
                         if (tk === TKs["TKPontoEVirgula"]) {
-                            debugger;
                             getToken();
                             let qtd_args = 0;
                             if (typeof result === 'string') {
@@ -1566,7 +1568,7 @@ function DecVariavel(){
 
 function Dec2(){
     backtracking('push');
-    if (DecVariavel()){
+    if (Declaracao()){
         return true;
     }
     backtracking('pop');

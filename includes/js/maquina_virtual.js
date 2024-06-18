@@ -327,10 +327,10 @@ async function executaC3E(codigo_c3e, signal) {
                 }
             }
         } else if (c3e.escrita) {
-            let quebra_printf = c3e.result.split(',');
-            let string = quebra_printf[0].split('"')[1];
+            let quebra_printf = c3e.result.split('"')
+            let string = quebra_printf[1];
             // Passo 1: Pegar todas as posições após a primeira posição
-            let novoArrayQuebra_printf = quebra_printf.slice(1);
+            let novoArrayQuebra_printf = quebra_printf[2].split(',').slice(1);
 
             // Passo 2: Remover o último caractere da última string do novo array
             if (novoArrayQuebra_printf.length > 0) {
@@ -340,10 +340,10 @@ async function executaC3E(codigo_c3e, signal) {
             let formatarString = formataStringInt(string, novoArrayQuebra_printf);
             formatarString = formataStringFloat(formatarString, novoArrayQuebra_printf);
             formatarString = formataStringQuebraLinha(formatarString);
-            if (flag_saida_escrita) {
-                textareaElement.value += 'Saída de escrita:' + '\n';
-                flag_saida_escrita = false;
-            }
+            // if (flag_saida_escrita) {
+            //     textareaElement.value += 'Saída de escrita:' + '\n';
+            //     flag_saida_escrita = false;
+            // }
             dic_control["printf"] += formatarString.replace(/"/g, '');
             textareaElement.value += formatarString.replace(/"/g, '');
             textareaElement.scrollTop = inputElement.scrollHeight;
@@ -359,7 +359,6 @@ async function executaC3E(codigo_c3e, signal) {
             let values = novoArrayQuebra_scanf;
             for (let i = 0; i < values.length; i++) {
                 $("#inputText").focus();
-                textareaElement.value += 'Digite um valor para variável ' + values[i] + ': ';
                 // Espera pela entrada do usuário
                 userInput = await getUserInput(signal);
                 let var_tabela_simbolos = tabela_de_simbolos[values[i].split('[')[0]];

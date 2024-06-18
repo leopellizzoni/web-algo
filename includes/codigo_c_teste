@@ -120,3 +120,96 @@ int main(){
 	printf("%f", media);
     return 0;
 }
+
+// Programa que reajusta 5% do valor lido
+int main() {
+    float valor, valorReajustado;
+
+    // Solicita ao usuário que insira um valor
+    printf("Digite um valor: ");
+    scanf("%f", &valor);
+
+    // Calcula o valor reajustado com 5% de aumento
+    valorReajustado = valor * 1.05;
+
+    // Imprime o valor reajustado
+    printf("Valor com reajuste de 5: %f\n", valorReajustado);
+
+    return 0;
+}
+
+//Calculo do IMC
+int main() {
+    float peso, altura, imc;
+
+    // Solicita ao usuário que insira o peso e a altura
+    printf("Digite seu peso (kg): ");
+    scanf("%f", &peso);
+    printf("Digite sua altura (m): ");
+    scanf("%f", &altura);
+
+    // Calcula o IMC
+    imc = peso / (altura * altura);
+
+    // Imprime o IMC e a condição
+    printf("Seu IMC é: %f\n", imc);
+
+    if (imc < 18.5) {
+        printf("Condição: Abaixo do peso\n");
+    } else if (imc >= 18.5 && imc < 25) {
+        printf("Condição: Peso ideal\n");
+    } else if (imc >= 25.0 && imc < 30) {
+        printf("Condição: Levemente acima do peso\n");
+    } else if (imc >= 30.0 && imc < 35) {
+        printf("Condição: Obesidade grau I\n");
+    } else if (imc >= 35.0 && imc < 40) {
+        printf("Condição: Obesidade grau II (severa)\n");
+    } else if (imc >= 40.0) {
+        printf("Condição: Obesidade grau III (mórbida)\n");
+    }
+
+    return 0;
+}
+
+// Anos, meses e dias vividos
+int main() {
+    int diaNascimento, mesNascimento, anoNascimento;
+    int diaAtual, mesAtual, anoAtual;
+    int anos, meses, dias;
+
+    // Solicita ao usuário que insira a data de nascimento
+    printf("Digite o dia do seu nascimento: ");
+    scanf("%d", &diaNascimento);
+    printf("Digite o mês do seu nascimento: ");
+    scanf("%d", &mesNascimento);
+    printf("Digite o ano do seu nascimento: ");
+    scanf("%d", &anoNascimento);
+
+    // Solicita ao usuário que insira a data atual
+    printf("Digite o dia atual: ");
+    scanf("%d", &diaAtual);
+    printf("Digite o mês atual: ");
+    scanf("%d", &mesAtual);
+    printf("Digite o ano atual: ");
+    scanf("%d", &anoAtual);
+
+    // Calcula a diferença de anos, meses e dias
+    anos = anoAtual - anoNascimento;
+    meses = mesAtual - mesNascimento;
+    dias = diaAtual - diaNascimento;
+
+    // Ajusta os valores se necessário
+    if (dias < 0) {
+        dias += 30;
+        meses--;
+    }
+    if (meses < 0) {
+        meses += 12;
+        anos--;
+    }
+
+    // Imprime a idade em anos, meses e dias
+    printf("Você viveu %d anos, %d meses e %d dias.\n", anos, meses, dias);
+
+    return 0;
+}
