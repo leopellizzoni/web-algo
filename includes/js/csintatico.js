@@ -807,7 +807,9 @@ function ExpressAtrib(lado_atribuicao){
     if (result){
         if (lado_atribuicao === 'esquerdo'){
             if (typeof result !== 'string'){
-                geraInstrucao('', arg1, '', identificador);
+                if (identificador){
+                    geraInstrucao('', arg1, '', identificador);
+                }
                 return arg1;
             } else {
                 geraInstrucao('', result, '', identificador);
@@ -899,11 +901,12 @@ function InstrExpress(lado_atribuicao){
 
 function InstrCondicional(esta_em_laco){
     if (tk === TKs['TKIf']){
+        debugger;
         getToken();
         if (tk === TKs['TKAbreParenteses']){
             getToken();
             dimensao = 0;
-            let result = Expressao();
+            let result = Expressao('esquerdo');
             if (result){
                 if (tk === TKs['TKFechaParenteses']) {
                     getToken();

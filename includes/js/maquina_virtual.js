@@ -46,7 +46,7 @@ function calcula_argumentos(c3e) {
     //     debugger;
     // }
     // TESTA ARGUMENTO 1
-    if (regexNumero.test(String(c3e.arg1)[0])) {
+    if (regexNumeroInteiro.test(String(c3e.arg1))) {
         arg1 = c3e.arg1;
     } else {
         if (c3e.arg1.split('[')[0][0] !== '@') {
@@ -92,7 +92,7 @@ function calcula_argumentos(c3e) {
         }
     }
     // TESTA ARGUMENTO 2
-    if (regexNumero.test(String(c3e.arg2)[0])) {
+    if (regexNumeroInteiro.test(String(c3e.arg2))) {
         arg2 = c3e.arg2;
     } else {
         if (c3e.arg2.split('[')[0][0] !== '@') {
@@ -211,7 +211,7 @@ function formataStringFloat(template, values) {
             } else {
                 return Number(variaveis[values[index++].replace(')', '')].valor).toFixed(5);;
             }
-        } else if (regexNumero.test(String(values[index][0]))) {
+        } else if (regexNumeroInteiro.test(String(values[index]))) {
             return Number(values[index]).toFixed(5);
         } else {
             return '&falha';
@@ -257,7 +257,7 @@ function formataStringInt(template, values) {
             } else {
                 return Math.floor(variaveis[values[index++].replace(')', '')].valor);
             }
-        } else if (regexNumero.test(String(values[index][0]))) {
+        } else if (regexNumeroInteiro.test(String(values[index]))) {
             return Math.floor(Number(values[index]));
         } else {
             return '&falha';
@@ -321,7 +321,13 @@ async function executaC3E(codigo_c3e, signal) {
                 i = index_goto[c3e.arg1] - 1;
                 continue;
             } else {
-                if (!variaveis[c3e.arg1].valor) {
+                let expressao;
+                if (regexNumeroInteiro.test(String(c3e.arg1))) {
+                    expressao = c3e.arg1;
+                } else {
+                    expressao = variaveis[c3e.arg1].valor;
+                }
+                if (!expressao) {
                     i = index_goto[c3e.arg2] - 1;
                     continue;
                 }
@@ -414,7 +420,7 @@ async function executaC3E(codigo_c3e, signal) {
                     //historico de variavel
                     modifica_historico_variavel(c3e.result, variaveis[c3e.result].valor);
                 } else {
-                    if (regexNumero.test(c3e.arg1[0])) {
+                    if (regexNumeroInteiro.test(String(c3e.arg1))) {
                         arg1 = c3e.arg1;
                     } else {
 

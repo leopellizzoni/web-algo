@@ -213,3 +213,25 @@ int main() {
 
     return 0;
 }
+
+
+// Compilador WebAlgo Web
+int main(){
+    int numero, i;
+
+    while (1) {
+        // Solicita ao usuário que insira um número
+        printf("Digite um número (digite -1 para sair): ");
+        scanf("%d", &numero);
+
+        // Verifica se o usuário digitou -1 para sair do loop
+        if (numero == -1) break;
+
+        if (numero <= 1) printf("%d não é primo\n", numero);  // Números menores ou iguais a 1 não são primos
+            for (i = 2; i * i <= numero; i++) {
+                if (numero % i == 0) printf("%d não é primo\n", numero);
+            }
+            printf("%d é primo\n", numero);
+    }
+    return 0;
+}

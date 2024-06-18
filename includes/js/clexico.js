@@ -6,6 +6,7 @@ var regexIdentificadorNumero = /[a-zA-Z_]\w*|\d+/;
 var regexPrintf = /%([+-]?(?:\d+|\*)?(?:\.\d+|\.\*)?(?:hh|h|l|ll|L|z|j|t)?[diuoxXfFeEgGaAcspn%])/g;
 // Números inteiros
 var regexNumero = /\d+/;
+var regexNumeroInteiro = /^-?\d+$/;
 
 function getToken(){
     var fim = false;
@@ -131,12 +132,34 @@ function getToken(){
 						proxC();
 						tk = TKs['TKDuploMenos'];
 						return;
-					} else if (caracter === '='){ // '-='
+					} else if (caracter === '=') { // '-='
 						lexico += '=';
 						lexico += '\0';
 						proxC();
 						tk = TKs['TKMenosIgual'];
 						return;
+					} else if (regexNumero.test(caracter)){
+						lexico += caracter;
+						proxC();
+						while (regexNumero.test(caracter)){
+							lexico += caracter;
+							proxC();
+						}
+						if (caracter === '.'){ // double / float
+							lexico += caracter;
+							proxC();
+							while (regexNumero.test(caracter)){
+								lexico += caracter;
+								proxC();
+							}
+							lexico += '\0';
+							tk = TKs['TKCteDouble'];
+							return;
+						} else { // inteiro
+							lexico += '\0';
+							tk = TKs['TKCteInt'];
+							return;
+						}
 					} else { // '-'
 						lexico += '\0';
 						tk = TKs['TKMenos'];
