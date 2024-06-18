@@ -2,6 +2,8 @@
 var regexIdentificador = /[a-zA-Z_]\w*/;
 // Expressão regular para identificar identificadores e números inteiros
 var regexIdentificadorNumero = /[a-zA-Z_]\w*|\d+/;
+// REGEX PRINTF
+var regexPrintf = /%([+-]?(?:\d+|\*)?(?:\.\d+|\.\*)?(?:hh|h|l|ll|L|z|j|t)?[diuoxXfFeEgGaAcspn%])/g;
 // Números inteiros
 var regexNumero = /\d+/;
 
@@ -164,9 +166,14 @@ function getToken(){
 						return;
 					} else if (caracter === '*') {
 						lexico += '*';
-					 	proxC();
+						proxC();
 						estado = 3;
 						break;
+					} else if (caracter === '/'){
+						 lexico += '/';
+						 proxC();
+						 estado = 3;
+						 break;
 					} else { // '/'
 						lexico += '\0';
 				 		tk = TKs['TKDiv'];
@@ -321,10 +328,6 @@ function getToken(){
 						break;
 					}
 				}
-				if (regexIdentificadorNumero.test(caracter)){
-                    proxC();
-					break;
-                }
 				if (caracter === ' '){
 					proxC();
 					break;
@@ -343,16 +346,22 @@ function getToken(){
 					proxC();
 					return;
 				}
+				proxC();
+				break;
 			// Comentário
 			case 3:
-				if (caracter === '*'){
+				if (caracter === '*') {
 					proxC();
-					if (caracter === '/'){
+					if (caracter === '/') {
 						proxC();
 						return getToken();
 					}
+				} else if (caracter == '\n'){
+					proxC();
+					return getToken();
+				} else if (caracter === ''){
+					return getToken();
 				} else {
-					lexico += caracter;
 					proxC();
 					break;
 				}
