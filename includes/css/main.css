@@ -85,3 +85,7 @@ th, td {
 .input-insere-dados{
     background-color: #ebf3d6;
 }
+
+.line-decoration {
+  background-color: rgba(213, 213, 179, 0.25); /* Example decoration: change background color */
+}

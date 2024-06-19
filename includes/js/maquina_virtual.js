@@ -30,6 +30,20 @@ function getUserInput() {
     });
 }
 
+function getUserDebug() {
+    return new Promise((resolve) => {
+        // Adiciona um event listener para o botão "Próximo passo"
+        const buttonProximoPasso = document.getElementById('button5');
+
+        // Adiciona um event listener ao botão
+        buttonProximoPasso.addEventListener('click', function onProximoPasso() {
+            // Emite um console log quando o botão é pressionado
+            resolve(inputElement.value);
+            buttonProximoPasso.removeEventListener('click', onProximoPasso);
+        });
+    });
+}
+
 function modifica_historico_variavel(variavel, valor){
     if (variavel in historico_variaveis){
         historico_variaveis[variavel].push(valor);
@@ -330,10 +344,20 @@ async function executaC3E(codigo_c3e) {
     let arg1;
     indexa_linhas(codigo_c3e);
     for (let i = 0; i < codigo_c3e.length; i++) {
+        c3e = codigo_c3e[i];
+        if (debug_compiler){
+            if (linha_anterior !== c3e.linha && (!c3e.label && !c3e.salto)){
+                vai_ler = true;
+                await getUserDebug();
+                vai_ler = false;
+                addLineDecoration(c3e.linha-1, 'line-decoration');
+                editor.removeLineClass(linha_anterior-1, 'wrap', 'line-decoration');
+                linha_anterior = c3e.linha;
+            }
+        }
         if (cancelarExecucao) {
             break;
         }
-        c3e = codigo_c3e[i];
         if (c3e.label) {
             continue;
         } else if (c3e.salto) {
@@ -555,4 +579,6 @@ async function executaC3E(codigo_c3e) {
     }
     textareaElement.value += '\n\nPrograma compilado e executado com sucesso.';
     textareaElement.scrollTop = textareaElement.scrollHeight;
+    $("#button4")[0].hidden = false;
+    $("#button5")[0].hidden = true;
 }

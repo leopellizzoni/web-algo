@@ -10,6 +10,7 @@ var code_position = -1;
 var lexico = '';
 // Indica Erro léxico
 var erro_lexico = false;
+var linha_anterior = 0;
 // Dicionário de controle
 var dic_control = {
     encontrou_main: false,
@@ -19,9 +20,9 @@ var dic_control = {
     c3e: '',
     bibliotecas: {}
 };
-var vai_ler = false
+var debug_compiler = false;
+var vai_ler = false;
 var tabela_de_simbolos;
-let currentController = null;
 
 TKs = {
     "TKId": 1,
@@ -191,6 +192,7 @@ function inicializa_compilacao(){
     index_goto = {};
     flag_saida_escrita = true;
     cancelarExecucao = false;
+    linha_anterior = 0;
 }
 
 function backtracking(funcao){
@@ -221,10 +223,18 @@ function backtracking(funcao){
 }
 
 
-function compiler(){
+function compiler(debug=false){
+    if (debug){
+        $("#button4")[0].hidden = true;
+        $("#button5")[0].hidden = false;
+        debug_compiler = true;
+    } else {
+        $("#button4")[0].hidden = false;
+        $("#button5")[0].hidden = true;
+        debug_compiler = false;
+    }
     $("#inputText")[0].disabled = false;
     $("#inputText").addClass('input-insere-dados');
-    debugger;
     if (vai_ler) {
         saveDataAndReload();
     } else {
@@ -254,17 +264,17 @@ function compiler(){
             textareaElement.value += 'Compilação OK' + '\n';
             instrucoes.forEach(inst => {
                 if (inst.salto || inst.label) {
-                    console.log(`${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
-                    dic_control['c3e'] = `${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                    console.log(`[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
+                    dic_control['c3e'] = `[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
                 } else if (inst.escrita || inst.leitura){
-                    console.log(`${inst.result}`);
-                    dic_control['c3e'] = `${inst.result}\n`;
+                    console.log(`[${inst.linha}] ${inst.result}`);
+                    dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
                 } else if (inst.result && inst.arg1) {
-                    console.log(`${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
-                    dic_control['c3e'] = `${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                    console.log(`[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
+                    dic_control['c3e'] = `[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
                 } else {
-                    console.log(`${inst.result}`);
-                    dic_control['c3e'] = `${inst.result}\n`;
+                    console.log(`[${inst.linha}] ${inst.result}`);
+                    dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
                 }
 
             });

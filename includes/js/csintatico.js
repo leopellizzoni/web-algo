@@ -16,8 +16,8 @@ function newLabel() {
     return "L" + labelCount++;
 }
 
-function geraInstrucao(op, arg1, arg2, result, salto=false, escrita=false, label=false, leitura=false) {
-    instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura });
+function geraInstrucao(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false) {
+    instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura, linha });
 }
 
 
@@ -155,7 +155,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
         }
     } else if (tk === TKs['TKDuploMais']){
         getToken();
-        geraInstrucao('+', identificador, 1, identificador);
+        geraInstrucao('+', identificador, 1, identificador, count_line);
         if (ExpressaoPosRestante(lado_atribuicao)) {
             return true;
         } else {
@@ -163,7 +163,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
         }
     } else if (tk === TKs['TKDuploMenos']){
         getToken();
-        geraInstrucao('-', identificador, 1, identificador);
+        geraInstrucao('-', identificador, 1, identificador, count_line);
         if (ExpressaoPosRestante(lado_atribuicao)) {
             return true;
         } else {
@@ -255,7 +255,7 @@ function ExpressUnaria(lado_atribuicao){
     } else if (tk === TKs['TKDuploMais']){
         getToken();
         if (ExpressUnaria()){
-            geraInstrucao('+', identificador, '1', identificador);
+            geraInstrucao('+', identificador, '1', identificador, count_line);
             return true;
         } else {
             return false;
@@ -263,7 +263,7 @@ function ExpressUnaria(lado_atribuicao){
     } else if (tk === TKs['TKDuploMenos']){
         getToken();
         if (ExpressUnaria()){
-            geraInstrucao('-', identificador, '1', identificador);
+            geraInstrucao('-', identificador, '1', identificador, count_line);
             return true;
         } else {
             return false;
@@ -287,9 +287,9 @@ function ExpressMultiplRestante(temp, arg1){
         let result = ExpressUnaria();
         if (result) {
             if (typeof result !== 'string') {
-                geraInstrucao('/', arg1, arg2, temp);
+                geraInstrucao('/', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('/', arg1, result, temp);
+                geraInstrucao('/', arg1, result, temp, count_line);
             }
             let temp2 = ExpressMultiplRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -307,9 +307,9 @@ function ExpressMultiplRestante(temp, arg1){
         let result = ExpressUnaria();
         if (result) {
             if (typeof result !== 'string') {
-                geraInstrucao('*', arg1, arg2, temp);
+                geraInstrucao('*', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('*', arg1, result, temp);
+                geraInstrucao('*', arg1, result, temp, count_line);
             }
             let temp2 = ExpressMultiplRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -327,9 +327,9 @@ function ExpressMultiplRestante(temp, arg1){
         let result = ExpressUnaria();
         if (result) {
             if (typeof result !== 'string') {
-                geraInstrucao('%', arg1, arg2, temp);
+                geraInstrucao('%', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('%', arg1, result, temp);
+                geraInstrucao('%', arg1, result, temp, count_line);
             }
             let temp2 = ExpressMultiplRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -382,9 +382,9 @@ function ExpressAddRestante(temp, arg1) {
         let result = ExpressMultipl();
         if (result) {
             if (typeof result !== 'string'){
-                geraInstrucao('+', arg1, arg2, temp);
+                geraInstrucao('+', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('+', arg1, result, temp);
+                geraInstrucao('+', arg1, result, temp, count_line);
             }
             let temp2 = ExpressAddRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -402,9 +402,9 @@ function ExpressAddRestante(temp, arg1) {
         let result = ExpressMultipl();
         if (result) {
             if (typeof result !== 'string'){
-                geraInstrucao('-', arg1, arg2, temp);
+                geraInstrucao('-', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('-', arg1, result, temp);
+                geraInstrucao('-', arg1, result, temp, count_line);
             }
             let temp2 = ExpressAddRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -456,9 +456,9 @@ function ExpressRelacionalRestante(temp, arg1){
         let result = ExpressAdd();
         if (result){
             if (typeof result !== 'string'){
-                geraInstrucao('<', arg1, arg2, temp);
+                geraInstrucao('<', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('<', arg1, result, temp);
+                geraInstrucao('<', arg1, result, temp, count_line);
             }
             let temp2 = ExpressRelacionalRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -476,9 +476,9 @@ function ExpressRelacionalRestante(temp, arg1){
         let result = ExpressAdd();
         if (result){
             if (typeof result !== 'string'){
-                geraInstrucao('>', arg1, arg2, temp);
+                geraInstrucao('>', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('>', arg1, result, temp);
+                geraInstrucao('>', arg1, result, temp, count_line);
             }
             let temp2 = ExpressRelacionalRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -496,9 +496,9 @@ function ExpressRelacionalRestante(temp, arg1){
         let result = ExpressAdd();
         if (result){
             if (typeof result !== 'string'){
-                geraInstrucao('<=', arg1, arg2, temp);
+                geraInstrucao('<=', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('<=', arg1, result, temp);
+                geraInstrucao('<=', arg1, result, temp, count_line);
             }
             let temp2 = ExpressRelacionalRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -516,9 +516,9 @@ function ExpressRelacionalRestante(temp, arg1){
         let result = ExpressAdd();
         if (result){
             if (typeof result !== 'string'){
-                geraInstrucao('>=', arg1, arg2, temp);
+                geraInstrucao('>=', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('>=', arg1, result, temp);
+                geraInstrucao('>=', arg1, result, temp, count_line);
             }
             let temp2 = ExpressRelacionalRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -570,9 +570,9 @@ function ExpressIgualRestante(temp, arg1){
         let result = ExpressRelacional();
         if (result){
             if (typeof result !== 'string'){
-                geraInstrucao('==', arg1, arg2, temp);
+                geraInstrucao('==', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('==', arg1, result, temp);
+                geraInstrucao('==', arg1, result, temp, count_line);
             }
             let temp2 = ExpressIgualRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -590,9 +590,9 @@ function ExpressIgualRestante(temp, arg1){
         let result = ExpressRelacional();
         if (result){
             if (typeof result !== 'string'){
-                geraInstrucao('!=', arg1, arg2, temp);
+                geraInstrucao('!=', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('!=', arg1, result, temp);
+                geraInstrucao('!=', arg1, result, temp, count_line);
             }
             let temp2 = ExpressIgualRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -644,9 +644,9 @@ function ExpressLogicAndRestante(temp, arg1){
         let result = ExpressIgual();
         if (result){
             if (typeof result !== 'string'){
-                geraInstrucao('&&', arg1, arg2, temp);
+                geraInstrucao('&&', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('&&', arg1, result, temp);
+                geraInstrucao('&&', arg1, result, temp, count_line);
             }
             let temp2 = ExpressLogicAndRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -698,9 +698,9 @@ function ExpressLogicOrRestante(temp, arg1){
         let result = ExpressLogicAnd();
         if (result){
             if (typeof result !== 'string'){
-                geraInstrucao('||', arg1, arg2, temp);
+                geraInstrucao('||', arg1, arg2, temp, count_line);
             } else {
-                geraInstrucao('||', arg1, result, temp);
+                geraInstrucao('||', arg1, result, temp, count_line);
             }
             let temp2 = ExpressLogicOrRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -770,15 +770,15 @@ function ExpressAtrib(lado_atribuicao){
                 if (result){
                     if (typeof result !== 'string'){
                         if (operador !== '='){
-                            geraInstrucao(operador[0], id, arg1, id);
+                            geraInstrucao(operador[0], id, arg1, id, count_line);
                         } else {
-                            geraInstrucao('', arg1, '', id);
+                            geraInstrucao('', arg1, '', id, count_line);
                         }
                     } else {
                         if (operador !== '='){
-                            geraInstrucao(operador[0], id, result, id);
+                            geraInstrucao(operador[0], id, result, id, count_line);
                         } else {
-                            geraInstrucao('', result, '', id);
+                            geraInstrucao('', result, '', id, count_line);
                         }
                     }
                     return id;
@@ -795,11 +795,11 @@ function ExpressAtrib(lado_atribuicao){
         if (lado_atribuicao === 'esquerdo'){
             if (typeof result !== 'string'){
                 if (identificador){
-                    geraInstrucao('', arg1, '', identificador);
+                    geraInstrucao('', arg1, '', identificador, count_line);
                 }
                 return arg1;
             } else {
-                geraInstrucao('', result, '', identificador);
+                geraInstrucao('', result, '', identificador, count_line);
                 return result;
             }
         } else {
@@ -898,19 +898,19 @@ function InstrCondicional(esta_em_laco){
                 if (tk === TKs['TKFechaParenteses']) {
                     getToken();
                     let labelElse = newLabel();
-                    geraInstrucao('goto', result, labelElse, 'ifFalse', true);
+                    geraInstrucao('goto', result, labelElse, 'ifFalse', count_line, true);
                     if (Instr(esta_em_laco)) {
                         if (tk === TKs['TKElse']){
                             let labelSaidaElse = newLabel();
-                            geraInstrucao('', labelSaidaElse, '', 'goto', true);
-                            geraInstrucao('', '', '', labelElse, false, false, true);
+                            geraInstrucao('', labelSaidaElse, '', 'goto', count_line, true);
+                            geraInstrucao('', '', '', labelElse, count_line, false, false, true);
                             getToken();
                             if (Instr()){
-                                geraInstrucao('', '', '', labelSaidaElse, false, false, true);
+                                geraInstrucao('', '', '', labelSaidaElse, count_line, false, false, true);
                                 return true;
                             }
                         } else {
-                            geraInstrucao('', '', '', labelElse, false, false, true);
+                            geraInstrucao('', '', '', labelElse, count_line, false, false, true);
                             return true;
                         }
                     } else {
@@ -932,7 +932,7 @@ function InstrCondicional(esta_em_laco){
 function InstrIteracao(){
     if (tk === TKs['TKWhile']){
         let labelInicio = newLabel();
-        geraInstrucao('', '', '', labelInicio, false, false, true);
+        geraInstrucao('', '', '', labelInicio, count_line, false, false, true);
         getToken();
         if (tk === TKs['TKAbreParenteses']){
             getToken();
@@ -940,12 +940,12 @@ function InstrIteracao(){
             let result = Expressao('esquerdo');
             if (result){
                 let labelFim = newLabel();
-                geraInstrucao('goto', result, labelFim, 'ifFalse', true);
+                geraInstrucao('goto', result, labelFim, 'ifFalse', count_line, true);
                 if (tk === TKs['TKFechaParenteses']){
                     getToken();
                     if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
-                        geraInstrucao('', labelInicio, '', 'goto', true);
-                        geraInstrucao('', '', '', labelFim, false, false, true);
+                        geraInstrucao('', labelInicio, '', 'goto', count_line, true);
+                        geraInstrucao('', '', '', labelFim, count_line, false, false, true);
                         return true;
                     }
                 } else {
@@ -960,7 +960,7 @@ function InstrIteracao(){
     } else if (tk === TKs['TKDo']){
         let labelInicio = newLabel();
         let labelFim = newLabel();
-        geraInstrucao('', '', '', labelInicio, false, false, true);
+        geraInstrucao('', '', '', labelInicio, count_line, false, false, true);
         getToken();
         if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
             if (tk === TKs['TKWhile']){
@@ -969,9 +969,9 @@ function InstrIteracao(){
                     getToken();
                     let result = Expressao();
                     if (result){
-                        geraInstrucao('goto', result, labelFim, 'ifFalse', true);
-                        geraInstrucao('', labelInicio, '', 'goto', true);
-                        geraInstrucao('', '', '', labelFim, false, false, true);
+                        geraInstrucao('goto', result, labelFim, 'ifFalse', count_line, true);
+                        geraInstrucao('', labelInicio, '', 'goto', count_line, true);
+                        geraInstrucao('', '', '', labelFim, count_line, false, false, true);
                         if (tk === TKs['TKFechaParenteses']){
                             getToken();
                             if (tk === TKs['TKPontoEVirgula']){
@@ -1010,23 +1010,23 @@ function InstrIteracao(){
         if (tk === TKs['TKAbreParenteses']){
             getToken();
             if (InstrExpress('esquerdo')){
-                geraInstrucao('', '', '', labelInicio, false, false, true);
+                geraInstrucao('', '', '', labelInicio, count_line, false, false, true);
                 let result = InstrExpress();
                 if (result){
                     let labelFim = newLabel();
-                    geraInstrucao('goto', result, labelFim, 'ifFalse', true);
+                    geraInstrucao('goto', result, labelFim, 'ifFalse', count_line, true);
                     let labelInstr = newLabel();
-                    geraInstrucao('', labelInstr, '', 'goto', true);
+                    geraInstrucao('', labelInstr, '', 'goto', count_line, true);
                     let labelIncremento = newLabel();
-                    geraInstrucao('', '', '', labelIncremento, false, false, true);
+                    geraInstrucao('', '', '', labelIncremento, count_line, false, false, true);
                     if(Expressao('esquerdo')){
-                        geraInstrucao('', labelInicio, '', 'goto', true);
+                        geraInstrucao('', labelInicio, '', 'goto', count_line, true);
                         if (tk === TKs['TKFechaParenteses']){
                             getToken();
-                            geraInstrucao('', '', '', labelInstr, false, false, true);
+                            geraInstrucao('', '', '', labelInstr, count_line, false, false, true);
                             if (Instr({'labelInicio': labelIncremento, 'labelFim': labelFim})){
-                                geraInstrucao('', labelIncremento, '', 'goto', true);
-                                geraInstrucao('', '', '', labelFim, false, false, true);
+                                geraInstrucao('', labelIncremento, '', 'goto', count_line, true);
+                                geraInstrucao('', '', '', labelFim, count_line, false, false, true);
                                 return true;
                             } else {
                                 return false;
@@ -1061,7 +1061,7 @@ function InstrIteracao(){
 function InstrSalto(esta_no_laco){
     if (tk === TKs['TKContinue']){
         if (esta_no_laco){
-            geraInstrucao('', esta_no_laco['labelInicio'], '', 'goto', true);
+            geraInstrucao('', esta_no_laco['labelInicio'], '', 'goto', count_line, true);
             getToken();
             if (tk === TKs['TKPontoEVirgula']){
                 getToken();
@@ -1078,7 +1078,7 @@ function InstrSalto(esta_no_laco){
         }
     } else if (tk === TKs['TKBreak']){
         if (esta_no_laco) {
-            geraInstrucao('', esta_no_laco['labelFim'], '', 'goto', true);
+            geraInstrucao('', esta_no_laco['labelFim'], '', 'goto', count_line, true);
             getToken();
             if (tk === TKs['TKPontoEVirgula']) {
                 getToken();
@@ -1174,14 +1174,14 @@ function InstrLeitura(){
                             }
                             if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
                                 if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
-                                    geraInstrucao('', '', '', "scanf(" + scanf + "," + result + ")", false, false, false, true);
+                                    geraInstrucao('', '', '', "scanf(" + scanf + "," + result + ")", count_line-1, false, false, false, true);
                                     return true;
                                 } else {
                                     dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + ' (' + count_line + ', ' + count_column + ')' + '\n';
                                     return false;
                                 }
                             } else {
-                                geraInstrucao('', '', '', "scanf(" + printf + ")", false, false, false, true);
+                                geraInstrucao('', '', '', "scanf(" + printf + ")", count_line, false, false, false, true);
                                 return true;
                             }
                         } else {
@@ -1226,14 +1226,14 @@ function InstrEscrita(){
                             }
                             if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
                                 if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
-                                    geraInstrucao('', '', '', "printf(" + printf + "," + result + ")", false, true);
+                                    geraInstrucao('', '', '', "printf(" + printf + "," + result + ")", count_line-1, false, true);
                                     return true;
                                 } else {
                                     dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros no comando printf" + ' (' + count_line + ', ' + count_column + ')' + '\n';
                                     return false;
                                 }
                             } else {
-                                geraInstrucao('', '', '', "printf(" + printf + ")", false, true);
+                                geraInstrucao('', '', '', "printf(" + printf + ")", count_line, false, true);
                                 return true;
                             }
                         } else {
@@ -1367,7 +1367,7 @@ function Dec(tipo, variavel) {
             let result = DecRestante(tipo, variavel, 1);
             if (result) {
                 if (typeof result === 'string') {
-                    geraInstrucao('', '', '', variavel+result);
+                    geraInstrucao('', '', '', variavel+result, count_line);
                 }
                 return true;
             }
@@ -1389,7 +1389,7 @@ function DecInicial(tipo){
             getToken();
             let result = ExpressAtrib();
             if (result){
-                geraInstrucao('', result, '', variavel);
+                geraInstrucao('', result, '', variavel, count_line);
                 return true;
             } else {
                 return false;
@@ -1585,12 +1585,12 @@ function DecLibDefine(){
             let arg1 = lexico.toString().replace(/\x00/g, '');
             if (tk === TKs['TKCteInt']){
                 tabela_simbolos('grava', 'int', variavel, 0, 0, true);
-                geraInstrucao('', arg1, '', variavel);
+                geraInstrucao('', arg1, '', variavel, count_line);
                 getToken();
                 return true
             } else if (tk === TKs['TKCteDouble']){
                 tabela_simbolos('grava', 'float', variavel, 0, 0, true);
-                geraInstrucao('', arg1, '', variavel);
+                geraInstrucao('', arg1, '', variavel, count_line);
                 getToken();
                 return true;
             } else {

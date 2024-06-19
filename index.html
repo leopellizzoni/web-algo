@@ -50,7 +50,8 @@
             <button type="button" class="btn btn-light" id="button1" hidden></button>
         </div>
         <div class="col-2 button">
-            <button type="button" class="btn" id="button4" onclick="compiler()"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M480-200q66 0 113-47t47-113v-160q0-66-47-113t-113-47q-66 0-113 47t-47 113v160q0 66 47 113t113 47Zm-80-120h160v-80H400v80Zm0-160h160v-80H400v80Zm80 40Zm0 320q-65 0-120.5-32T272-240H160v-80h84q-3-20-3.5-40t-.5-40h-80v-80h80q0-20 .5-40t3.5-40h-84v-80h112q14-23 31.5-43t40.5-35l-64-66 56-56 86 86q28-9 57-9t57 9l88-86 56 56-66 66q23 15 41.5 34.5T688-640h112v80h-84q3 20 3.5 40t.5 40h80v80h-80q0 20-.5 40t-3.5 40h84v80H688q-32 56-87.5 88T480-120Z"/></svg></button>
+            <button type="button" class="btn" id="button5" hidden>Próximo passo</button>
+            <button type="button" class="btn" id="button4" onclick="compiler(true)"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M480-200q66 0 113-47t47-113v-160q0-66-47-113t-113-47q-66 0-113 47t-47 113v160q0 66 47 113t113 47Zm-80-120h160v-80H400v80Zm0-160h160v-80H400v80Zm80 40Zm0 320q-65 0-120.5-32T272-240H160v-80h84q-3-20-3.5-40t-.5-40h-80v-80h80q0-20 .5-40t3.5-40h-84v-80h112q14-23 31.5-43t40.5-35l-64-66 56-56 86 86q28-9 57-9t57 9l88-86 56 56-66 66q23 15 41.5 34.5T688-640h112v80h-84q3 20 3.5 40t.5 40h80v80h-80q0 20-.5 40t-3.5 40h84v80H688q-32 56-87.5 88T480-120Z"/></svg></button>
             <button type="button" class="btn btn-success" id="button2" onclick="compiler()">Executar</button>
             <button type="button" class="btn btn-light" id="button3" onclick="cancelarExecucao = true" title="Cancelar execução" hidden>Cancelar</button>
         </div>
@@ -224,7 +225,6 @@ int main(){
             const codigo_fonte = localStorage.getItem('codigo_fonte');
             const compilar = localStorage.getItem('compilar');
             editor.setValue(codigo_fonte);
-            debugger;
             if (compilar === 'true'){
                 compiler();
             }
@@ -253,18 +253,17 @@ int main(){
         var textareaElement = document.getElementById('displayText');
 
         // Adiciona um listener para o evento keypress
-        inputElement.addEventListener('keypress', function(event) {
-            // Verifica se a tecla pressionada é Enter (código 13)
-            if (event.keyCode === 13 && inputElement.value !== '') {
-                debugger;
-                // Adiciona o valor digitado ao textarea
-                textareaElement.value += inputElement.value + '\n';
-                // Limpa o input
-                inputElement.value = '';
-                // Rola o textarea para o final
-                textareaElement.scrollTop = 100000000;
-            }
-        });
+        // inputElement.addEventListener('keypress', function(event) {
+        //     // Verifica se a tecla pressionada é Enter (código 13)
+        //     if (event.keyCode === 13 && inputElement.value !== '') {
+        //         // Adiciona o valor digitado ao textarea
+        //         textareaElement.value += inputElement.value + '\n';
+        //         // Limpa o input
+        //         inputElement.value = '';
+        //         // Rola o textarea para o final
+        //         textareaElement.scrollTop = 100000000;
+        //     }
+        // });
 
         // Provide hinting for C
         CodeMirror.registerHelper("hint", "c", function(editor) {
@@ -286,10 +285,12 @@ int main(){
         // Função para alternar breakpoint em uma linha
         function toggleBreakpoint(line) {
             var info = editor.lineInfo(line);
-            if (!info.gutterMarkers) {
-                editor.setGutterMarker(line, "CodeMirror-linenumbers", makeMarker());
-            } else {
-                editor.setGutterMarker(line, "CodeMirror-linenumbers", null);
+            if (info.text.replace(' ', '') !== '') {
+                if (!info.gutterMarkers) {
+                    editor.setGutterMarker(line, "CodeMirror-linenumbers", makeMarker());
+                } else {
+                    editor.setGutterMarker(line, "CodeMirror-linenumbers", null);
+                }
             }
         }
 
@@ -304,7 +305,6 @@ int main(){
         // Ouvinte de evento para clicar na gutter (área do número de linha)
         editor.on("gutterClick", function(cm, line, gutter) {
             console.log(gutter);
-            debugger;
             if (gutter === "CodeMirror-linenumbers") {
                 toggleBreakpoint(line);
             }
@@ -326,6 +326,10 @@ int main(){
             this.value = this.value.slice(0, -1);
           }
         });
+
+        function addLineDecoration(line, className) {
+            editor.addLineClass(line, 'wrap', className);
+          }
     </script>
 </body>
 </html>
