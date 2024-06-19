@@ -3,7 +3,6 @@
 var historico_variaveis = {};
 var variaveis = {};
 var flag_saida_escrita = true;
-let cancelarExecucao = false;
 
 function getUserInput() {
     return new Promise((resolve) => {
@@ -40,6 +39,14 @@ function getUserDebug() {
             // Emite um console log quando o botão é pressionado
             resolve(inputElement.value);
             buttonProximoPasso.removeEventListener('click', onProximoPasso);
+        });
+
+        const buttonExecutar = document.getElementById('button6');
+        // Adiciona um event listener ao botão
+        buttonExecutar.addEventListener('click', function onExecutar() {
+            // Emite um console log quando o botão é pressionado
+            resolve(inputElement.value);
+            buttonExecutar.removeEventListener('click', onExecutar);
         });
     });
 }
@@ -348,15 +355,12 @@ async function executaC3E(codigo_c3e) {
         if (debug_compiler){
             if (linha_anterior !== c3e.linha && (!c3e.label && !c3e.salto)){
                 vai_ler = true;
-                await getUserDebug();
-                vai_ler = false;
                 addLineDecoration(c3e.linha-1, 'line-decoration');
                 editor.removeLineClass(linha_anterior-1, 'wrap', 'line-decoration');
+                await getUserDebug();
+                vai_ler = false;
                 linha_anterior = c3e.linha;
             }
-        }
-        if (cancelarExecucao) {
-            break;
         }
         if (c3e.label) {
             continue;
@@ -581,4 +585,6 @@ async function executaC3E(codigo_c3e) {
     textareaElement.scrollTop = textareaElement.scrollHeight;
     $("#button4")[0].hidden = false;
     $("#button5")[0].hidden = true;
+    $("#button2")[0].hidden = false;
+    $("#button3")[0].hidden = true;
 }

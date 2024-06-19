@@ -191,7 +191,6 @@ function inicializa_compilacao(){
     historico_variaveis = {};
     index_goto = {};
     flag_saida_escrita = true;
-    cancelarExecucao = false;
     linha_anterior = 0;
 }
 
@@ -224,13 +223,16 @@ function backtracking(funcao){
 
 
 function compiler(debug=false){
+    $("#button2")[0].hidden = true;
+    $("#button3")[0].hidden = false;
+    $("#button4")[0].hidden = true;
     if (debug){
-        $("#button4")[0].hidden = true;
         $("#button5")[0].hidden = false;
+        $("#button6")[0].hidden = false;
         debug_compiler = true;
     } else {
-        $("#button4")[0].hidden = false;
         $("#button5")[0].hidden = true;
+        $("#button6")[0].hidden = true;
         debug_compiler = false;
     }
     $("#inputText")[0].disabled = false;
@@ -244,7 +246,6 @@ function compiler(debug=false){
     // $("#button2")[0].hidden = true;
     // $("#button3")[0].hidden = false;
     setTimeout(function (){
-        cancelarExecucao = false;
         // Pega código digitado pelo usuário
         inicializa_compilacao();
         code = editor.getValue();
