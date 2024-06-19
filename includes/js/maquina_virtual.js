@@ -373,7 +373,15 @@ async function executaC3E(codigo_c3e) {
                 if (regexNumeroInteiro.test(String(c3e.arg1))) {
                     expressao = c3e.arg1;
                 } else {
-                    expressao = Number(variaveis[c3e.arg1].valor);
+                    if (String(c3e.arg1)[0] === '!'){
+                        if (String(c3e.arg1[1]) === '@' || !(regexNumeroInteiro.test(String(c3e.arg1[1])))){
+                            expressao = Number(variaveis[c3e.arg1.substring(1)].valor);
+                        } else if (regexNumeroInteiro.test(String(c3e.arg1[1]))){
+                            expressao = Number(c3e.arg1.substring(1)) > 0 ? 0 : 1;
+                        }
+                    } else {
+                        expressao = Number(variaveis[c3e.arg1].valor);
+                    }
                 }
                 if (!expressao) {
                     i = index_goto[c3e.arg2] - 1;
@@ -424,9 +432,6 @@ async function executaC3E(codigo_c3e) {
                 $("#inputText")[0].disabled = true;
                 $("#inputText").removeClass('input-insere-dados');
                 textareaElement.scrollTop = textareaElement.scrollHeight;
-                if (!Number(userInput)){
-                    return;
-                }
                 vai_ler = false;
                 let var_tabela_simbolos = tabela_de_simbolos[values[i].split('[')[0]];
                 if (['vetor', 'matriz'].includes(var_tabela_simbolos['matriz_vetor'])) {

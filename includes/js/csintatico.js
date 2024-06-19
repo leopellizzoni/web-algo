@@ -20,6 +20,20 @@ function geraInstrucao(op, arg1, arg2, result, linha, salto=false, escrita=false
     instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura, linha });
 }
 
+function OperadorUnario(){
+    if (tk === TKs['TKMais']){
+        getToken();
+        return true;
+    } else if (tk === TKs['TKMenos']){
+        getToken();
+        return true;
+    } else if (tk === TKs['TKLogicalNot']){
+        getToken();
+        return true;
+    } else {
+        return false;
+    }
+}
 
 function OperadorAtrib(){
     if (tk === TKs['TKIgual']){
@@ -249,6 +263,7 @@ function ExpressPos(lado_atribuicao){
 
 
 function ExpressUnaria(lado_atribuicao){
+    let arg1 = lexico.toString().replace(/\x00/g, '');
     let result = ExpressPos(lado_atribuicao);
     if (result){
         return result;
@@ -268,12 +283,13 @@ function ExpressUnaria(lado_atribuicao){
         } else {
             return false;
         }
-    // } else if (OperadorUnario()){
-    //     if (ExpressUnaria()){
-    //         return true;
-    //     } else {
-    //         return false;
-    //     }
+    } else if (OperadorUnario()){
+        let arg2 = ExpressUnaria();
+        if (arg2){
+            return arg1 + arg2;
+        } else {
+            return false;
+        }
     } else {
         return false;
     }
@@ -405,6 +421,26 @@ function ExpressAddRestante(temp, arg1) {
                 geraInstrucao('-', arg1, arg2, temp, count_line);
             } else {
                 geraInstrucao('-', arg1, result, temp, count_line);
+            }
+            let temp2 = ExpressAddRestante(newTemp(), temp);
+            if (typeof temp2 === 'string'){
+                return temp2;
+            } else {
+                tempCount--;
+                return temp;
+            }
+        } else {
+            return false;
+        }
+    } else if (tk === TKs['TKLogicalNot']) {
+        getToken();
+        let arg2 = lexico.toString().replace(/\x00/g, '');
+        let result = ExpressMultipl();
+        if (result) {
+            if (typeof result !== 'string'){
+                geraInstrucao('!', arg1, arg2, temp, count_line);
+            } else {
+                geraInstrucao('!', arg1, result, temp, count_line);
             }
             let temp2 = ExpressAddRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -1009,7 +1045,7 @@ function InstrIteracao(){
         getToken();
         if (tk === TKs['TKAbreParenteses']){
             getToken();
-            if (InstrExpress('esquerdo') || Declaracao()){
+            if (InstrExpress('esquerdo')){
                 geraInstrucao('', '', '', labelInicio, count_line, false, false, true);
                 let result = InstrExpress();
                 if (result){

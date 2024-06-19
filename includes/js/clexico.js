@@ -253,7 +253,7 @@ function getToken(){
 						proxC();
 						tk = TKs['TKMenorIgual'];
 						return;
-					} else if (regexIdentificador.test(caracter)){
+					} else if (regexIdentificador.test(caracter) && caracter === 's'){
 						while (regexIdentificador.test(caracter)){
 							lexico += caracter;
 							proxC();
