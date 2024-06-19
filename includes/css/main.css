@@ -62,6 +62,7 @@ div#tela_aguarde p#aguarde_msg {
 .table-container {
     max-height: 235px; /* Altura máxima da tabela */
     overflow-y: auto; /* Habilita o scroll vertical */
+    overflow-x: auto; /* Habilita o scroll horizontal */
     border: 1px solid #ddd;
 }
 
@@ -79,4 +80,8 @@ th, td {
     padding: 8px 12px;
     border: 1px solid #ddd;
     text-align: left;
+}
+
+.input-insere-dados{
+    background-color: #ebf3d6;
 }

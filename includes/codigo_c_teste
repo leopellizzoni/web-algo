@@ -88,6 +88,7 @@ int main(){
 
 
 // Soma da Diagonal
+#include <stdio.h>
 int main() {
     int N, i, j;
 
@@ -172,6 +173,7 @@ int main() {
 }
 
 // Anos, meses e dias vividos
+#include <stdio.h>
 int main() {
     int diaNascimento, mesNascimento, anoNascimento;
     int diaAtual, mesAtual, anoAtual;
@@ -216,6 +218,7 @@ int main() {
 
 
 // Identificador de número primo
+#include <stdio.h>
 int main(){
     int numero, i, flag;
 
@@ -228,17 +231,20 @@ int main(){
         // Verifica se o usuário digitou -1 para sair do loop
         if (numero == -1) break;
 
-        if (numero <= 1) printf("%d não é primo\n", numero);  // Números menores ou iguais a 1 não são primos
-        for (i = 2; i * i <= numero; i++) {
-            if (numero % i == 0){
-                flag = 0;
-                break;
-            }
-        }
-        if (flag){
-            printf("%d é primo\n", numero);
+        if (numero <= 1){
+        	printf("%d não é primo\n", numero);  // Números menores ou iguais a 1 não são primos
         } else {
-			printf("%d não é primo\n", numero);
+            for (i = 2; i * i <= numero; i++) {
+                if (numero % i == 0){
+                    flag = 0;
+                    break;
+                }
+            }
+            if (flag){
+                printf("%d é primo\n", numero);
+            } else {
+                printf("%d não é primo\n", numero);
+            }
         }
     }
     return 0;

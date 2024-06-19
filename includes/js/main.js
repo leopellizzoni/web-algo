@@ -19,6 +19,7 @@ var dic_control = {
     c3e: '',
     bibliotecas: {}
 };
+var vai_ler = false
 var tabela_de_simbolos;
 let currentController = null;
 
@@ -221,11 +222,14 @@ function backtracking(funcao){
 
 
 function compiler(){
-    if (currentController) {
-        currentController.abort();
+    $("#inputText")[0].disabled = false;
+    $("#inputText").addClass('input-insere-dados');
+    debugger;
+    if (vai_ler) {
+        saveDataAndReload();
+    } else {
+        localStorage.setItem('compilar', false);
     }
-    currentController = new AbortController();
-    const { signal } = currentController;
     mostra_tela_aguarde('Compilando...');
     // $("#button2")[0].hidden = true;
     // $("#button3")[0].hidden = false;
@@ -236,7 +240,7 @@ function compiler(){
         code = editor.getValue();
         console.log(code);
         proxC();
-        let c3e = []
+        let c3e = [];
         // Teste analisador léxico somente
         // while(code.length > code_position && !erro_lexico){
         //     lexico = '';
@@ -264,7 +268,7 @@ function compiler(){
                 }
 
             });
-            executaC3E(instrucoes, signal);
+            executaC3E(instrucoes);
             // if (dic_control["printf"] !== ''){
             //     textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
             // }
@@ -294,4 +298,54 @@ function atualiza_tabela_variaveis(data){
 
     $table.find('tbody').remove();
     $table.append($tbody);
+}
+
+function carrega_historico_variaveis(){
+    $("#modal_historico_variaveis").modal('show');
+
+    let primeira_vez = true;
+    let maior_colspan = 0;
+    // verifica quantidade de colspans necessários
+    $.each(historico_variaveis, function(key, value) {
+        if (primeira_vez){
+            maior_colspan = value.length;
+            primeira_vez = false;
+        }
+        if (value.length > maior_colspan){
+            maior_colspan = value.length;
+        }
+    });
+
+    let $table = $('#tabela_historico_variaveis_modal');
+    let $tbody = $('<tbody></tbody>');
+    let contador = 0;
+    $.each(historico_variaveis, function(key, value) {
+        let conta_celulas_criadas = maior_colspan;
+        let $row = $('<tr></tr>');
+        let $contador = $('<td></td>').text(contador).css({'text-align':'center',  'font-weight': 'bold'});
+        let $cellKey = $('<td></td>').text(key);
+        $row.append($contador);
+        $row.append($cellKey);
+        for (let i=0;i<value.length;i++){
+            let $cellValue = $('<td></td>').text(value[i]).css({'text-align':'right', 'padding-right': '15px'});
+            $row.append($cellValue);
+            conta_celulas_criadas--;
+        }
+
+        while (conta_celulas_criadas>0){
+            let $cellValue = $('<td></td>');
+            $row.append($cellValue);
+            conta_celulas_criadas--;
+        }
+
+        $tbody.append($row);
+        contador += 1;
+    });
+
+    $table.find('tbody').remove();
+    $table.append($tbody);
+
+    console.log(maior_colspan);
+    // Retorna false pois é um hyperlink
+    return false;
 }

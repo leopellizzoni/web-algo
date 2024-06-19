@@ -5,12 +5,12 @@ var variaveis = {};
 var flag_saida_escrita = true;
 let cancelarExecucao = false;
 
-function getUserInput(signal) {
-    return new Promise((resolve, reject) => {
+function getUserInput() {
+    return new Promise((resolve) => {
         const inputElement = document.getElementById('inputText');
-        signal.addEventListener('abort', () => {
-            reject(new Error('Task was aborted'));
-        });
+        // signal.addEventListener('abort', () => {
+        //     reject(new Error('Task was aborted'));
+        // });
 
         // Adiciona um event listener para a tecla "Enter"
         inputElement.addEventListener('keydown', function onEnter(event) {
@@ -302,10 +302,30 @@ function inicializa_vetor(tam_vetor) {
     return vetor;
 }
 
-async function executaC3E(codigo_c3e, signal) {
-    if (signal.aborted) {
-        throw new Error('Task was aborted before it started');
+function inicializa_vetores_e_matrizes(key){
+    let tam_vetor;
+    let var_vetor;
+    if (regexNumero.test(tabela_de_simbolos[key].dimensao[1])) {
+        tam_vetor = Number(tabela_de_simbolos[key].dimensao[1]);
+    } else {
+        tam_vetor = Number(variaveis[tabela_de_simbolos[key].dimensao[1]]['valor']);
     }
+    if (tabela_de_simbolos[key].matriz_vetor === 'vetor') {
+        var_vetor = inicializa_vetor(tam_vetor);
+        variaveis[key] = {'valor': var_vetor};
+    } else {
+        let tam_matriz;
+        if (regexNumero.test(tabela_de_simbolos[key].dimensao[2])) {
+            tam_matriz = Number(tabela_de_simbolos[key].dimensao[2]);
+        } else {
+            tam_matriz = Number(variaveis[tabela_de_simbolos[key].dimensao[2]]['valor']);
+        }
+        var_vetor = inicializa_matriz(tam_vetor, tam_matriz);
+        variaveis[key] = {'valor': var_vetor};
+    }
+}
+
+async function executaC3E(codigo_c3e) {
     let c3e;
     let arg1;
     indexa_linhas(codigo_c3e);
@@ -325,7 +345,7 @@ async function executaC3E(codigo_c3e, signal) {
                 if (regexNumeroInteiro.test(String(c3e.arg1))) {
                     expressao = c3e.arg1;
                 } else {
-                    expressao = variaveis[c3e.arg1].valor;
+                    expressao = Number(variaveis[c3e.arg1].valor);
                 }
                 if (!expressao) {
                     i = index_goto[c3e.arg2] - 1;
@@ -364,9 +384,22 @@ async function executaC3E(codigo_c3e, signal) {
             }
             let values = novoArrayQuebra_scanf;
             for (let i = 0; i < values.length; i++) {
-                $("#inputText").focus();
                 // Espera pela entrada do usuário
-                userInput = await getUserInput(signal);
+                vai_ler = true;
+                $("#inputText")[0].disabled = false;
+                $("#inputText").addClass('input-insere-dados');
+                $("#inputText")[0].placeholder = 'Digite um valor de entrada para variável ';
+                $("#inputText").focus();
+                textareaElement.scrollTop = textareaElement.scrollHeight;
+                userInput = await getUserInput();
+                $("#inputText")[0].placeholder = '';
+                $("#inputText")[0].disabled = true;
+                $("#inputText").removeClass('input-insere-dados');
+                textareaElement.scrollTop = textareaElement.scrollHeight;
+                if (!Number(userInput)){
+                    return;
+                }
+                vai_ler = false;
                 let var_tabela_simbolos = tabela_de_simbolos[values[i].split('[')[0]];
                 if (['vetor', 'matriz'].includes(var_tabela_simbolos['matriz_vetor'])) {
                     let var_vetor;
@@ -410,24 +443,70 @@ async function executaC3E(codigo_c3e, signal) {
                 }
             }
         } else {
-            // Verifica Identifcador
-            if (c3e.result[0] == '@') {
-                // Variável temporária
-                variaveis[c3e.result] = {'valor': calcula_argumentos(c3e)};
+            if (!c3e.arg1){
+                inicializa_vetores_e_matrizes(c3e.result.split('[')[0]);
+                //historico de variavel
+                modifica_historico_variavel(c3e.result.split('[')[0], variaveis[c3e.result.split('[')[0]].valor);
             } else {
-                if (c3e.arg2) {
+                // Verifica Identifcador
+                if (c3e.result[0] == '@') {
+                    // Variável temporária
                     variaveis[c3e.result] = {'valor': calcula_argumentos(c3e)};
-                    //historico de variavel
-                    modifica_historico_variavel(c3e.result, variaveis[c3e.result].valor);
                 } else {
-                    if (regexNumeroInteiro.test(String(c3e.arg1))) {
-                        arg1 = c3e.arg1;
+                    if (c3e.arg2) {
+                        variaveis[c3e.result] = {'valor': calcula_argumentos(c3e)};
+                        //historico de variavel
+                        modifica_historico_variavel(c3e.result, variaveis[c3e.result].valor);
                     } else {
+                        if (regexNumeroInteiro.test(String(c3e.arg1))) {
+                            arg1 = c3e.arg1;
+                        } else {
 
-                        if (c3e.arg1.split('[')[0][0] !== '@') {
-                            let var_tabela_simbolos = tabela_de_simbolos[c3e.arg1.split('[')[0]];
+                            if (c3e.arg1.split('[')[0][0] !== '@') {
+                                let var_tabela_simbolos = tabela_de_simbolos[c3e.arg1.split('[')[0]];
+                                if (['vetor', 'matriz'].includes(var_tabela_simbolos['matriz_vetor'])) {
+                                    let primeira_dimensao = c3e.arg1.split('[')[1].replace(']', '');
+                                    let posicao_vetor;
+                                    if (regexNumero.test(String(primeira_dimensao)[0])) {
+                                        posicao_vetor = primeira_dimensao;
+                                    } else {
+                                        if (!(primeira_dimensao in variaveis)) {
+                                            variaveis[primeira_dimensao] = {'valor': 0};
+                                            console.log('não tem variavel no array');
+                                        }
+                                        posicao_vetor = variaveis[primeira_dimensao]['valor'];
+                                    }
+                                    let vetor = c3e.arg1.split('[')[0];
+                                    if (var_tabela_simbolos['matriz_vetor'] === 'matriz') {
+                                        let segunda_dimensao = c3e.arg1.split('[')[2].replace(']', '');
+                                        let posicao_matriz;
+                                        if (regexNumero.test(String(segunda_dimensao)[0])) {
+                                            posicao_matriz = segunda_dimensao;
+                                        } else {
+                                            if (!(segunda_dimensao in variaveis)) {
+                                                variaveis[segunda_dimensao] = {'valor': 0};
+                                                console.log('não tem variavel no array');
+                                            }
+                                            posicao_matriz = variaveis[segunda_dimensao]['valor'];
+                                        }
+                                        arg1 = variaveis[vetor]['valor'][posicao_vetor][posicao_matriz];
+                                    } else {
+                                        arg1 = variaveis[vetor]['valor'][posicao_vetor];
+                                    }
+                                } else {
+                                    if (!(c3e.arg1 in variaveis)) {
+                                        variaveis[c3e.arg1] = {'valor': 0};
+                                    }
+                                    arg1 = variaveis[c3e.arg1]['valor'];
+                                }
+                            } else {
+                                arg1 = variaveis[c3e.arg1]['valor'];
+                            }
+                        }
+                        if (c3e.result.split('[')[0][0] !== '@') {
+                            let var_tabela_simbolos = tabela_de_simbolos[c3e.result.split('[')[0]];
                             if (['vetor', 'matriz'].includes(var_tabela_simbolos['matriz_vetor'])) {
-                                let primeira_dimensao = c3e.arg1.split('[')[1].replace(']', '');
+                                let primeira_dimensao = c3e.result.split('[')[1].replace(']', '');
                                 let posicao_vetor;
                                 if (regexNumero.test(String(primeira_dimensao)[0])) {
                                     posicao_vetor = primeira_dimensao;
@@ -438,9 +517,9 @@ async function executaC3E(codigo_c3e, signal) {
                                     }
                                     posicao_vetor = variaveis[primeira_dimensao]['valor'];
                                 }
-                                let vetor = c3e.arg1.split('[')[0];
+                                let vetor = c3e.result.split('[')[0];
                                 if (var_tabela_simbolos['matriz_vetor'] === 'matriz') {
-                                    let segunda_dimensao = c3e.arg1.split('[')[2].replace(']', '');
+                                    let segunda_dimensao = c3e.result.split('[')[2].replace(']', '');
                                     let posicao_matriz;
                                     if (regexNumero.test(String(segunda_dimensao)[0])) {
                                         posicao_matriz = segunda_dimensao;
@@ -451,67 +530,29 @@ async function executaC3E(codigo_c3e, signal) {
                                         }
                                         posicao_matriz = variaveis[segunda_dimensao]['valor'];
                                     }
-                                    arg1 = variaveis[vetor]['valor'][posicao_vetor][posicao_matriz];
+                                    variaveis[vetor]['valor'][posicao_vetor][posicao_matriz] = arg1;
+                                    //historico de variavel
+                                    modifica_historico_variavel(vetor, variaveis[vetor].valor);
                                 } else {
-                                    arg1 = variaveis[vetor]['valor'][posicao_vetor];
+                                    variaveis[vetor]['valor'][posicao_vetor] = arg1;
+                                    //historico de variavel
+                                    modifica_historico_variavel(vetor, variaveis[vetor].valor);
                                 }
                             } else {
-                                if (!(c3e.arg1 in variaveis)) {
-                                    variaveis[c3e.arg1] = {'valor': 0};
-                                }
-                                arg1 = variaveis[c3e.arg1]['valor'];
-                            }
-                        } else {
-                            arg1 = variaveis[c3e.arg1]['valor'];
-                        }
-                    }
-                    if (c3e.result.split('[')[0][0] !== '@') {
-                        let var_tabela_simbolos = tabela_de_simbolos[c3e.result.split('[')[0]];
-                        if (['vetor', 'matriz'].includes(var_tabela_simbolos['matriz_vetor'])) {
-                            let primeira_dimensao = c3e.result.split('[')[1].replace(']', '');
-                            let posicao_vetor;
-                            if (regexNumero.test(String(primeira_dimensao)[0])) {
-                                posicao_vetor = primeira_dimensao;
-                            } else {
-                                if (!(primeira_dimensao in variaveis)) {
-                                    variaveis[primeira_dimensao] = {'valor': 0};
-                                    console.log('não tem variavel no array');
-                                }
-                                posicao_vetor = variaveis[primeira_dimensao]['valor'];
-                            }
-                            let vetor = c3e.result.split('[')[0];
-                            if (var_tabela_simbolos['matriz_vetor'] === 'matriz') {
-                                let segunda_dimensao = c3e.result.split('[')[2].replace(']', '');
-                                let posicao_matriz;
-                                if (regexNumero.test(String(segunda_dimensao)[0])) {
-                                    posicao_matriz = segunda_dimensao;
-                                } else {
-                                    if (!(segunda_dimensao in variaveis)) {
-                                        variaveis[segunda_dimensao] = {'valor': 0};
-                                        console.log('não tem variavel no array');
-                                    }
-                                    posicao_matriz = variaveis[segunda_dimensao]['valor'];
-                                }
-                                variaveis[vetor]['valor'][posicao_vetor][posicao_matriz] = arg1;
+                                variaveis[c3e.result] = {'valor': arg1};
                                 //historico de variavel
-                                modifica_historico_variavel(vetor, variaveis[vetor].valor);
-                            } else {
-                                variaveis[vetor]['valor'][posicao_vetor] = arg1;
-                                //historico de variavel
-                                modifica_historico_variavel(vetor, variaveis[vetor].valor);
+                                modifica_historico_variavel(c3e.result, variaveis[c3e.result].valor);
                             }
                         } else {
                             variaveis[c3e.result] = {'valor': arg1};
                             //historico de variavel
                             modifica_historico_variavel(c3e.result, variaveis[c3e.result].valor);
                         }
-                    } else {
-                        variaveis[c3e.result] = {'valor': arg1};
-                        //historico de variavel
-                        modifica_historico_variavel(c3e.result, variaveis[c3e.result].valor);
                     }
                 }
             }
         }
     }
+    textareaElement.value += '\n\nPrograma compilado e executado com sucesso.';
+    textareaElement.scrollTop = textareaElement.scrollHeight;
 }
