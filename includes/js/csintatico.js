@@ -1009,7 +1009,7 @@ function InstrIteracao(){
         getToken();
         if (tk === TKs['TKAbreParenteses']){
             getToken();
-            if (InstrExpress('esquerdo')){
+            if (InstrExpress('esquerdo') || Declaracao()){
                 geraInstrucao('', '', '', labelInicio, count_line, false, false, true);
                 let result = InstrExpress();
                 if (result){

@@ -192,6 +192,7 @@ function inicializa_compilacao(){
     index_goto = {};
     flag_saida_escrita = true;
     linha_anterior = 0;
+    erro_lexico = false;
 }
 
 function backtracking(funcao){
@@ -245,7 +246,7 @@ function compiler(debug=false){
     mostra_tela_aguarde('Compilando...');
     // $("#button2")[0].hidden = true;
     // $("#button3")[0].hidden = false;
-    setTimeout(function (){
+    setTimeout(function () {
         // Pega código digitado pelo usuário
         inicializa_compilacao();
         code = editor.getValue();
@@ -261,30 +262,44 @@ function compiler(debug=false){
 
         // Teste analisador léxico e sintático
         getToken();
-        if (Programa()){
-            textareaElement.value += 'Compilação OK' + '\n';
-            instrucoes.forEach(inst => {
-                if (inst.salto || inst.label) {
-                    console.log(`[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
-                    dic_control['c3e'] = `[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
-                } else if (inst.escrita || inst.leitura){
-                    console.log(`[${inst.linha}] ${inst.result}`);
-                    dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
-                } else if (inst.result && inst.arg1) {
-                    console.log(`[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
-                    dic_control['c3e'] = `[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
-                } else {
-                    console.log(`[${inst.linha}] ${inst.result}`);
-                    dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
-                }
+        try{
+            if (Programa()) {
+                textareaElement.value += 'Compilação OK' + '\n';
+                instrucoes.forEach(inst => {
+                    if (inst.salto || inst.label) {
+                        console.log(`[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
+                        dic_control['c3e'] = `[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                    } else if (inst.escrita || inst.leitura) {
+                        console.log(`[${inst.linha}] ${inst.result}`);
+                        dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
+                    } else if (inst.result && inst.arg1) {
+                        console.log(`[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
+                        dic_control['c3e'] = `[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                    } else {
+                        console.log(`[${inst.linha}] ${inst.result}`);
+                        dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
+                    }
 
-            });
-            executaC3E(instrucoes);
-            // if (dic_control["printf"] !== ''){
-            //     textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
-            // }
-        } else {
-            textareaElement.value += 'erro: ' + dic_control['msg_erro']
+                });
+                executaC3E(instrucoes);
+                // if (dic_control["printf"] !== ''){
+                //     textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
+                // }
+            } else {
+                textareaElement.value += dic_control['msg_erro'];
+                $("#button4")[0].hidden = false;
+                $("#button5")[0].hidden = true;
+                $("#button2")[0].hidden = false;
+                $("#button3")[0].hidden = true;
+            }
+        } catch (e){
+            if (erro_lexico){
+                textareaElement.value += dic_control['msg_erro'];
+            }
+            $("#button4")[0].hidden = false;
+            $("#button5")[0].hidden = true;
+            $("#button2")[0].hidden = false;
+            $("#button3")[0].hidden = true;
         }
         esconde_tela_aguarde();
     }, 0);

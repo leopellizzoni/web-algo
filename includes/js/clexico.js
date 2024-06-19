@@ -348,9 +348,9 @@ function getToken(){
 					tk = -1;
 					return true;
 				}
-				textareaElement.value += 'Erro léxico encontrado no caractere ' + lexico + ' (' + count_line + ', ' + count_column + ')' + '\n';
+				dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + lexico + ' (' + count_line + ', ' + count_column + ')' + '\n';
 				erro_lexico = true;
-				return;
+				throw 'Erro léxico';
 			// Token
             case 1:
                 if (regexIdentificadorNumero.test(caracter)){

@@ -35,26 +35,27 @@ int main(){
 
 
 // fibonacci
+#include <stdio.h>
 int main(){
     int a, b , next, n, i;
     a = 0;
     b = 1;
-    n = 10;
+    scanf("%d", &n);
 
     for (i = 1; i <= n; ++i) {
         if (i == 1) {
-            printf("%d", a);
+            printf("%d\n", a);
             continue;
         }
         if (i == 2) {
-            printf("%d", b);
+            printf("%d\n", b);
             continue;
         }
         next = a + b;
         a = b;
         b = next;
 
-        printf("%d", next);
+        printf("%d\n", next);
     }
 }
 
@@ -296,6 +297,78 @@ int main() {
     printf("\nSoma dos elementos de cada coluna e se é par ou ímpar:\n");
     for (int j = 0; j < COLS; j++) {
         printf("Coluna %d: Soma = %d (%s)\n", j + 1, colSums[j], isEvenOrOdd(colSums[j]));
+    }
+
+    return 0;
+}
+
+
+// Ler um vetor de 10 elementos inteiros e positivos. Criar um segundo vetor da seguinte forma: os
+// elementos de índice par receberão os respectivos elementos divididos por 2; os elementos de índice
+// ímpar receberão os respectivos elementos multiplicados por 3. Imprima os dois vetores.
+#include <stdio.h>
+
+int main() {
+    int vetor1[10];
+    int vetor2[10];
+
+    // Ler os elementos do vetor1
+    printf("Digite 10 elementos inteiros e positivos:\n");
+    for(int i = 1; i <= 10 && i > -1; i++) {
+        scanf("%d", &vetor1[i]);
+        // Verifica se o número é positivo
+        if(vetor1[i] <= 0) {
+            printf("Por favor, insira apenas números inteiros positivos.\n");
+            i--; // Solicita novamente o mesmo índice
+        }
+    }
+
+    // Criar o vetor2 com base nas regras especificadas
+    for(i = 0; i < 10; i++) {
+        if(i % 2 == 0) {
+            vetor2[i] = vetor1[i] / 2;
+        } else {
+            vetor2[i] = vetor1[i] * 3;
+        }
+    }
+
+    // Imprimir os vetores
+    printf("\nVetor1: ");
+    for(i = 0; i < 10; i++) {
+        printf("%d ", vetor1[i]);
+    }
+
+    printf("\nVetor2: ");
+    for(i = 0; i < 10; i++) {
+        printf("%d ", vetor2[i]);
+    }
+
+    return 0;
+}
+
+// Faça um programa que lê 10 números inteiros do teclado e armazene em um vetor.
+// Ao final imprima o vetor armazenado nos dois sentidos.
+#include <stdio.h>
+
+int main() {
+    int vetor[10];
+
+    // Ler os 10 números inteiros e armazenar no vetor
+    printf("Digite 10 números inteiros:\n");
+    for(int i = 0; i < 10; i++) {
+        scanf("%d", &vetor[i]);
+    }
+
+    // Imprimir o vetor do início para o fim
+    printf("\nVetor do início para o fim: ");
+    for(int i = 0; i < 10; i++) {
+        printf("%d ", vetor[i]);
+    }
+
+    // Imprimir o vetor do fim para o início
+    printf("\nVetor do fim para o início: ");
+    for(int i = 9; i >= 0; i--) {
+        printf("%d ", vetor[i]);
     }
 
     return 0;

@@ -581,10 +581,10 @@ async function executaC3E(codigo_c3e) {
             }
         }
     }
-    textareaElement.value += '\n\nPrograma compilado e executado com sucesso.';
-    textareaElement.scrollTop = textareaElement.scrollHeight;
     $("#button4")[0].hidden = false;
     $("#button5")[0].hidden = true;
     $("#button2")[0].hidden = false;
     $("#button3")[0].hidden = true;
+    textareaElement.value += '\n\nPrograma compilado e executado com sucesso.';
+    textareaElement.scrollTop = textareaElement.scrollHeight;
 }
