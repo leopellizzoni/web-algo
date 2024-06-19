@@ -247,12 +247,33 @@ function getToken(){
 				}
 				if (caracter === '<'){ // verifica '<' '<='
 				 	proxC();
-					if (caracter === '='){ // '<='
+					if (caracter === '=') { // '<='
 						lexico += '=';
-	     			    lexico += '\0';
-					    proxC();
-					    tk = TKs['TKMenorIgual'];
-					    return;
+						lexico += '\0';
+						proxC();
+						tk = TKs['TKMenorIgual'];
+						return;
+					} else if (regexIdentificador.test(caracter)){
+						while (regexIdentificador.test(caracter)){
+							lexico += caracter;
+							proxC();
+						}
+						if (lexico === '<stdio'){
+							if (caracter === '.'){
+								lexico += caracter;
+								proxC();
+								if (caracter === 'h'){
+									lexico += caracter;
+									proxC();
+									if (caracter === '>'){
+										lexico += caracter;
+										proxC();
+										tk = TKs['TKStdioh'];
+										return;
+									}
+								}
+							}
+						}
 					} else { // '<'
 						lexico += '\0';
 						tk = TKs['TKMenor'];
@@ -295,6 +316,22 @@ function getToken(){
 				 		proxC();
 				 		tk = TKs['TKLogicalOr'];
 				 		return;
+					}
+				}
+				if (caracter === '#'){ // verifica '#'
+					proxC();
+					while (regexIdentificador.test(caracter)){
+                        lexico += caracter;
+	                	proxC();
+                    }
+					if (lexico === '#define'){
+						proxC();
+						tk = TKs['TKDefine'];
+						return;
+					} else if (lexico === '#include'){
+						proxC();
+						tk = TKs['TKInclude'];
+						return;
 					}
 				}
 				if (caracter === '"'){ // verifica '"'

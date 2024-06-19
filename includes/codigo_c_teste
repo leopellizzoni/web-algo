@@ -215,11 +215,12 @@ int main() {
 }
 
 
-// Compilador WebAlgo Web
+// Identificador de número primo
 int main(){
-    int numero, i;
+    int numero, i, flag;
 
     while (1) {
+        flag = 1;
         // Solicita ao usuário que insira um número
         printf("Digite um número (digite -1 para sair): ");
         scanf("%d", &numero);
@@ -228,10 +229,67 @@ int main(){
         if (numero == -1) break;
 
         if (numero <= 1) printf("%d não é primo\n", numero);  // Números menores ou iguais a 1 não são primos
-            for (i = 2; i * i <= numero; i++) {
-                if (numero % i == 0) printf("%d não é primo\n", numero);
+        for (i = 2; i * i <= numero; i++) {
+            if (numero % i == 0){
+                flag = 0;
+                break;
             }
+        }
+        if (flag){
             printf("%d é primo\n", numero);
+        } else {
+			printf("%d não é primo\n", numero);
+        }
     }
+    return 0;
+}
+
+// SOMA LINHAS E COLUNA E DIZ SE É PAR OU IMPAR
+#include <stdio.h>
+#define ROWS 10
+#define COLS 15
+
+// Função para verificar se um número é par ou ímpar
+const char* isEvenOrOdd(int num) {
+    return (num % 2 == 0) ? "Par" : "Ímpar";
+}
+
+int main() {
+    int MAT[ROWS][COLS];
+    int rowSums[ROWS] = {0};
+    int colSums[COLS] = {0};
+
+    // Solicita ao usuário para fornecer os elementos da matriz
+    printf("Digite os elementos da matriz (%d x %d):\n", ROWS, COLS);
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            printf("Elemento [%d][%d]: ", i + 1, j + 1);
+            scanf("%d", &MAT[i][j]);
+            rowSums[i] += MAT[i][j];
+            colSums[j] += MAT[i][j];
+        }
+    }
+
+    // Exibe a matriz
+    printf("\nMatriz MAT:\n");
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            printf("%3d ", MAT[i][j]);
+        }
+        printf("\n");
+    }
+
+    // Exibe a soma dos elementos de cada linha e se é par ou ímpar
+    printf("\nSoma dos elementos de cada linha e se é par ou ímpar:\n");
+    for (int i = 0; i < ROWS; i++) {
+        printf("Linha %d: Soma = %d (%s)\n", i + 1, rowSums[i], isEvenOrOdd(rowSums[i]));
+    }
+
+    // Exibe a soma dos elementos de cada coluna e se é par ou ímpar
+    printf("\nSoma dos elementos de cada coluna e se é par ou ímpar:\n");
+    for (int j = 0; j < COLS; j++) {
+        printf("Coluna %d: Soma = %d (%s)\n", j + 1, colSums[j], isEvenOrOdd(colSums[j]));
+    }
+
     return 0;
 }

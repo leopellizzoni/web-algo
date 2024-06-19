@@ -20,21 +20,6 @@ function geraInstrucao(op, arg1, arg2, result, salto=false, escrita=false, label
     instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura });
 }
 
-function OperadorUnario(){
-    if (tk === TKs['TKMais']){
-        getToken();
-        return true;
-    } else if (tk === TKs['TKMenos']){
-        getToken();
-        return true;
-    } else if (tk === TKs['TKLogicalNot']){
-        getToken();
-        return true;
-    } else {
-        return false;
-    }
-}
-
 
 function OperadorAtrib(){
     if (tk === TKs['TKIgual']){
@@ -70,8 +55,10 @@ function Tipo(){
     }
 }
 
-function NomeFunc(){
+function NomeFunc(tipo){
+    let variavel = lexico.toString().replace(/\x00/g, '');
     if (tk === TKs['TKId']){
+        tabela_simbolos('grava', tipo, variavel);
         getToken();
         return true;
     } else {
@@ -878,6 +865,7 @@ function InstrExpress(lado_atribuicao){
         return true;
     } else {
         if (tk !== TKs['TKFechaChaves']){
+            dimensao = 0;
             let result = Expressao(lado_atribuicao);
             if (result){
                 if (tk === TKs['TKPontoEVirgula']){
@@ -885,7 +873,7 @@ function InstrExpress(lado_atribuicao){
                     return result;
                 } else {
                     if (dic_control['msg_erro'] === '') {
-                        dic_control['msg_erro'] = "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                        dic_control['msg_erro'] = "não encontrou o caracter ';' ao final da expressão " + ' (' + count_line + ', ' + count_column + ')' + '\n';
                     }
                     return false;
                 }
@@ -901,7 +889,6 @@ function InstrExpress(lado_atribuicao){
 
 function InstrCondicional(esta_em_laco){
     if (tk === TKs['TKIf']){
-        debugger;
         getToken();
         if (tk === TKs['TKAbreParenteses']){
             getToken();
@@ -1217,6 +1204,10 @@ function InstrLeitura(){
 
 function InstrEscrita(){
     if (tk === TKs["TKPrintf"]){
+        if (!dic_control['bibliotecas'].stdio){
+            dic_control['msg_erro'] = "Biblioteca <stdio.h> deve ser declarada para utilização do printf" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            return false;
+        }
         getToken();
         if (tk === TKs["TKAbreParenteses"]){
             getToken();
@@ -1346,7 +1337,13 @@ function DecRestante(tipo, variavel, vetor_matriz){
             if (tk === TKs['TKFechaColchete']){
                 getToken();
                 tabela_simbolos('tamanho', tipo, variavel, tam_vetor, vetor_matriz);
-                if (DecRestante(tipo, variavel, vetor_matriz + 1)){
+                let tam_vetor2 = DecRestante(tipo, variavel, vetor_matriz + 1);
+                if (tam_vetor2){
+                    if (typeof tam_vetor2 === 'string') {
+                        return "[" + tam_vetor + "]" + tam_vetor2;
+                    } else {
+                        return "[" + tam_vetor + "]";
+                    }
                     return true;
                 } else {
                     return false;
@@ -1364,12 +1361,21 @@ function DecRestante(tipo, variavel, vetor_matriz){
 
 function Dec(tipo, variavel) {
     if (tk === TKs['TKId']) {
-        tabela_simbolos('grava', tipo, variavel);
-        getToken();
-        if (DecRestante(tipo, variavel, 1)){
+        if (tabela_simbolos('verifica_define', tipo, variavel)) {
+            tabela_simbolos('grava', tipo, variavel);
+            getToken();
+            let result = DecRestante(tipo, variavel, 1);
+            if (result) {
+                if (typeof result === 'string') {
+                    geraInstrucao('', '', '', variavel+result);
+                }
+                return true;
+            }
             return true;
+        } else {
+            dic_control['msg_erro'] = "variável " + variavel + ' não pode ser declarada devido a macro com o mesmo nome declarada (' + count_line + ', ' + count_column + ')' + '\n';
+            return false;
         }
-        return true;
     } else {
         return false;
     }
@@ -1524,8 +1530,10 @@ function CorpoFunc(esta_no_laco){
 
 
 function DecFunc(){
+    var tipo = {'tk': tk,
+                                   'tipo': lexico.toString().replace(/\x00/g, '')};
     if (Tipo()){
-        if (NomeFunc()){
+        if (NomeFunc(tipo)){
             if (tk === TKs['TKAbreParenteses']){
                 getToken();
                 if (ListaParam()){
@@ -1568,6 +1576,42 @@ function DecVariavel(){
     }
 }
 
+function DecLibDefine(){
+    if (tk === TKs['TKDefine']){
+        getToken();
+        let variavel = lexico.toString().replace(/\x00/g, '');
+        if (tk === TKs['TKId']){
+            getToken();
+            let arg1 = lexico.toString().replace(/\x00/g, '');
+            if (tk === TKs['TKCteInt']){
+                tabela_simbolos('grava', 'int', variavel, 0, 0, true);
+                geraInstrucao('', arg1, '', variavel);
+                getToken();
+                return true
+            } else if (tk === TKs['TKCteDouble']){
+                tabela_simbolos('grava', 'float', variavel, 0, 0, true);
+                geraInstrucao('', arg1, '', variavel);
+                getToken();
+                return true;
+            } else {
+                dic_control['msg_erro'] += "não encontrou valor atribuído a #define " + variavel + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                return false
+            }
+        } else {
+            dic_control['msg_erro'] += "não encontrou um macro declarado a #define " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            return false
+        }
+    } else if (tk === TKs['TKInclude']){
+        getToken();
+        if (tk === TKs['TKStdioh']){
+            getToken();
+            dic_control["bibliotecas"]["stdio"] = true;
+            return true;
+        }
+    } else {
+        return false;
+    }
+}
 
 function Dec2(){
     backtracking('push');
@@ -1577,6 +1621,8 @@ function Dec2(){
     backtracking('pop');
     if (DecFunc()){
         dic_control["encontrou_main"] = true;
+        return true;
+    } else if (DecLibDefine()){
         return true;
     } else {
         return false;

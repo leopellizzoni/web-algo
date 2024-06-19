@@ -16,8 +16,9 @@ var dic_control = {
     encontrou_expressao: false,
     msg_erro: '',
     printf: '',
-    c3e: ''
-}
+    c3e: '',
+    bibliotecas: {}
+};
 var tabela_de_simbolos;
 let currentController = null;
 
@@ -72,7 +73,10 @@ TKs = {
     "TKPrintf": 48,
     "TKScanf": 49,
     "TKString": 50,
-    "TKEnderecoVariavel": 51
+    "TKEnderecoVariavel": 51,
+    "TKDefine": 52,
+    "TKStdioh": 53,
+    "TKInclude": 54
 }
 
 // Palavras reservadas da linguagem
@@ -116,23 +120,36 @@ function verifica_variavel_declarada(identificador, dimensao=0){
 }
 
 
-function tabela_simbolos(acao, tipo, variavel, tamanho, dimensao_vetor){
+function tabela_simbolos(acao, tipo, variavel, tamanho, dimensao_vetor, define=false){
     if (acao === 'grava'){
         tabela_de_simbolos[variavel.toString()] = {
             'tipo': tipo,
             'valor': null,
             'dimensao': {},
-            'matriz_vetor': ''};
+            'matriz_vetor': '',
+            'define': define};
     }
     if (acao === 'tamanho'){
         if (dimensao_vetor === 1){
             tabela_de_simbolos[variavel.toString()]['matriz_vetor'] = 'vetor';
-            tabela_de_simbolos[variavel.toString()]['dimensao'][dimensao_vetor] = tamanho
+            tabela_de_simbolos[variavel.toString()]['dimensao'][dimensao_vetor] = tamanho;
         } else {
             tabela_de_simbolos[variavel.toString()]['matriz_vetor'] = 'matriz';
-            tabela_de_simbolos[variavel.toString()]['dimensao'][dimensao_vetor] = tamanho
+            tabela_de_simbolos[variavel.toString()]['dimensao'][dimensao_vetor] = tamanho;
         }
-
+    }
+    if (acao === 'verifica_define'){
+        if (variavel.toString() in tabela_de_simbolos){
+            if (tabela_de_simbolos[variavel.toString()]['define']){
+                // tem macro no define declarado
+                return false;
+            } else {
+                // não tem macro no define declarado
+                return true;
+            }
+        } else {
+            return true;
+        }
     }
 }
 
@@ -161,6 +178,7 @@ function inicializa_compilacao(){
     dic_control['printf'] = '';
     dic_control['encontrou_expressao'] = false;
     dic_control["encontrou_main"] = false;
+    dic_control["bibliotecas"] = {};
     tabela_de_simbolos = new Object();
     instrucoes = [];
     tempCount = 0;
@@ -185,6 +203,7 @@ function backtracking(funcao){
         dic["count_line"] = count_line;
         dic["instrucoes_c3e"] = instrucoes.slice();
         dic["msg_erro"] = dic_control['msg_erro'];
+        dic["tabela_de_simbolos"] = tabela_de_simbolos;
         lista_backtracking.push(dic);
     } else {
         ultima_posicao = lista_backtracking.pop();
@@ -196,6 +215,7 @@ function backtracking(funcao){
         count_line = ultima_posicao["count_line"];
         instrucoes = ultima_posicao['instrucoes_c3e'];
         dic_control['msg_erro'] = ultima_posicao['msg_erro'];
+        tabela_de_simbolos = ultima_posicao['tabela_de_simbolos'];
     }
 }
 
@@ -234,10 +254,13 @@ function compiler(){
                     dic_control['c3e'] = `${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
                 } else if (inst.escrita || inst.leitura){
                     console.log(`${inst.result}`);
-                    dic_control['c3e'] = `${inst.result}\n`
-                } else {
+                    dic_control['c3e'] = `${inst.result}\n`;
+                } else if (inst.result && inst.arg1) {
                     console.log(`${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
                     dic_control['c3e'] = `${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                } else {
+                    console.log(`${inst.result}`);
+                    dic_control['c3e'] = `${inst.result}\n`;
                 }
 
             });
