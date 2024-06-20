@@ -124,6 +124,10 @@ function verifica_variavel_declarada(identificador, dimensao=0){
 
 function tabela_simbolos(acao, tipo, variavel, tamanho, dimensao_vetor, define=false){
     if (acao === 'grava'){
+        if (variavel in tabela_de_simbolos){
+            dic_control['msg_erro'] = "variável '" + variavel + "' já declarada no mesmo escopo" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            return false;
+        }
         tabela_de_simbolos[variavel.toString()] = {
             'tipo': tipo,
             'valor': null,
@@ -181,7 +185,7 @@ function inicializa_compilacao(){
     dic_control['encontrou_expressao'] = false;
     dic_control["encontrou_main"] = false;
     dic_control["bibliotecas"] = {};
-    tabela_de_simbolos = new Object();
+    tabela_de_simbolos = {};
     instrucoes = [];
     tempCount = 0;
     labelCount = 0;
@@ -206,7 +210,7 @@ function backtracking(funcao){
         dic["count_line"] = count_line;
         dic["instrucoes_c3e"] = instrucoes.slice();
         dic["msg_erro"] = dic_control['msg_erro'];
-        dic["tabela_de_simbolos"] = tabela_de_simbolos;
+        dic["tabela_de_simbolos"] = Object.assign({}, tabela_de_simbolos);
         lista_backtracking.push(dic);
     } else {
         ultima_posicao = lista_backtracking.pop();
@@ -281,7 +285,7 @@ function compiler(debug=false){
                     }
 
                 });
-                executaC3E(instrucoes);
+                executaC3E2(instrucoes);
                 // if (dic_control["printf"] !== ''){
                 //     textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
                 // }
@@ -291,6 +295,7 @@ function compiler(debug=false){
                 $("#button5")[0].hidden = true;
                 $("#button2")[0].hidden = false;
                 $("#button3")[0].hidden = true;
+                $("#button6")[0].hidden = true;
             }
         } catch (e){
             if (erro_lexico){
@@ -300,6 +305,7 @@ function compiler(debug=false){
             $("#button5")[0].hidden = true;
             $("#button2")[0].hidden = false;
             $("#button3")[0].hidden = true;
+            $("#button6")[0].hidden = true;
         }
         esconde_tela_aguarde();
     }, 0);

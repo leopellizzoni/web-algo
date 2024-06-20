@@ -191,9 +191,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
 
 function ExpressaoPrima(lado_atribuicao) {
     if (tk === TKs['TKId']) {
-        if (lado_atribuicao === 'esquerdo'){
-            identificador = lexico.toString().replace(/\x00/g, '');
-        }
+        identificador = lexico.toString().replace(/\x00/g, '');
         // if (!identificador || identificador !== lexico.toString().replace(/\x00/g, '')){
         //     if (!verifica_variavel_declarada(lexico.toString().replace(/\x00/g, ''))){
         //         return false;
@@ -201,14 +199,15 @@ function ExpressaoPrima(lado_atribuicao) {
         // }
         if (verifica_variavel_declarada(lexico.toString().replace(/\x00/g, ''))){
             getToken();
-            return true;
+            return identificador;
         } else {
             return false;
         }
     } else if (tk === TKs['TKCteInt'] || tk === TKs['TKCteDouble']) {
         if (lado_atribuicao !== 'esquerdo') {
+            let arg1 = lexico.toString().replace(/\x00/g, '');
             getToken();
-            return true;
+            return arg1;
         } else {
             if (dic_control['msg_erro'] === '') {
                 dic_control['msg_erro'] += "operador do lado esquerdo de uma atribuição requere um identificador válido " + ' (' + count_line + ', ' + count_column + ')' + '\n';
@@ -800,7 +799,7 @@ function ExpressAtrib(lado_atribuicao){
         }
         let operador = lexico.toString().replace(/\x00/g, '');
         if (OperadorAtrib()){
-            if (lado_atribuicao === 'esquerdo' && verifica_variavel_declarada(identificador, dimensao)){
+            // if (verifica_variavel_declarada(identificador, dimensao)){
                 var arg1 = lexico.toString().replace(/\x00/g, '');
                 let result = ExpressAtrib();
                 if (result){
@@ -819,7 +818,7 @@ function ExpressAtrib(lado_atribuicao){
                     }
                     return id;
                 }
-            }
+            // }
         } else {
             lado_atribuicao = undefined;
         }
@@ -953,6 +952,9 @@ function InstrCondicional(esta_em_laco){
                         return false;
                     }
                 } else {
+                    if (dic_control['msg_erro'] === '') {
+                        dic_control['msg_erro'] = "não encontrou o caracter ')' ao final da expressão " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                    }
                     return false;
                 }
             } else {
@@ -1682,5 +1684,6 @@ function ListaDec2(){
 
 
 function Programa(){
+    debugger;
     return ListaDec2();
 }

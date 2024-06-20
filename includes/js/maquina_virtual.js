@@ -4,52 +4,7 @@ var historico_variaveis = {};
 var variaveis = {};
 var flag_saida_escrita = true;
 
-function getUserInput() {
-    return new Promise((resolve) => {
-        const inputElement = document.getElementById('inputText');
-        // signal.addEventListener('abort', () => {
-        //     reject(new Error('Task was aborted'));
-        // });
 
-        // Adiciona um event listener para a tecla "Enter"
-        inputElement.addEventListener('keydown', function onEnter(event) {
-            if (event.key === 'Enter') {
-                // Resolve a Promise com o valor do input
-                resolve(inputElement.value);
-                textareaElement.value += inputElement.value + '\n';
-                textareaElement.scrollTop = textareaElement.scrollHeight;
-
-                // Remove o event listener após a resolução
-                inputElement.removeEventListener('keydown', onEnter);
-
-                // Limpa o campo de input para a próxima entrada
-                inputElement.value = '';
-            }
-        });
-    });
-}
-
-function getUserDebug() {
-    return new Promise((resolve) => {
-        // Adiciona um event listener para o botão "Próximo passo"
-        const buttonProximoPasso = document.getElementById('button5');
-
-        // Adiciona um event listener ao botão
-        buttonProximoPasso.addEventListener('click', function onProximoPasso() {
-            // Emite um console log quando o botão é pressionado
-            resolve(inputElement.value);
-            buttonProximoPasso.removeEventListener('click', onProximoPasso);
-        });
-
-        const buttonExecutar = document.getElementById('button6');
-        // Adiciona um event listener ao botão
-        buttonExecutar.addEventListener('click', function onExecutar() {
-            // Emite um console log quando o botão é pressionado
-            resolve(inputElement.value);
-            buttonExecutar.removeEventListener('click', onExecutar);
-        });
-    });
-}
 
 function modifica_historico_variavel(variavel, valor){
     if (variavel in historico_variaveis){
@@ -289,8 +244,6 @@ function formataStringInt(template, values) {
 function formataStringQuebraLinha(template) {
     return template.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
 }
-
-let index_goto = {};
 
 function indexa_linhas(codigo_c3e) {
     let c3e;
