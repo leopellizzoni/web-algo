@@ -22,7 +22,9 @@ var dic_control = {
 };
 var debug_compiler = false;
 var vai_ler = false;
-var tabela_de_simbolos;
+var tabela_de_simbolos = [];
+var obriga_return = false;
+var achou_return = false;
 
 TKs = {
     "TKId": 1,
@@ -100,53 +102,91 @@ reserved_words = {
     "end_reserved_words": TKs['TKId']
 }
 
-
-function verifica_variavel_declarada(identificador, dimensao=0){
-    if (identificador in tabela_de_simbolos){
-        if (dimensao > 0){
-            // verifica dimensao do vetor da atribuição e compara com o que foi declarado
-            if (dimensao === Object.keys(tabela_de_simbolos[identificador]['dimensao']).length){
-                return true;
-            } else {
-                if (dic_control['msg_erro'] === '') {
-                    dic_control['msg_erro'] += "dimensão do vetor '" + identificador + "' diferente do especificado" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+function verifica_variavel_declarada_em_escopos(escopo, variavel){
+    for (let index=escopo; index>=0;index = tabela_de_simbolos[escopo]['escopo_pai']){
+        if (variavel in tabela_de_simbolos[index]['variaveis']){
+            if (index !== escopo){
+                if (index === 0){
+                    dic_control['msg_erro'] = 'Variável "' + variavel + '" já está declarada globalmente (' + count_line + ', ' + count_column + ')' + '\n';
+                } else {
+                    dic_control['msg_erro'] = 'Variável "' + variavel + '" já declarada fora do escopo (' + count_line + ', ' + count_column + ')' + '\n';
                 }
-                return false;
+            } else {
+                dic_control['msg_erro'] = 'Variável "' + variavel + '" já declarada no mesmo escopo (' + count_line + ', ' + count_column + ')' + '\n';
             }
+            return false;
         }
-        return true;
-    } else {
-        dic_control['msg_erro'] = "variável '" + identificador + "' não declarada" + ' (' + count_line + ', ' + count_column + ')' + '\n';
-        return false;
+        if (index === 0){
+            break;
+        }
     }
+    return true;
 }
 
 
-function tabela_simbolos(acao, tipo, variavel, tamanho, dimensao_vetor, define=false){
+function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica_funcao=false){
+    if (!tabela_de_simbolos[escopo]){
+        tabela_de_simbolos.push({});
+    }
+    // if (verifica_variavel_declarada_em_escopos(escopo, identificador)) {
+    if (dimensao > 0) {
+        // verifica dimensao do vetor da atribuição e compara com o que foi declarado
+        if (dimensao === Object.keys(tabela_de_simbolos[escopo]['variaveis'][identificador]['dimensao']).length) {
+            return true;
+        } else {
+            if (dic_control['msg_erro'] === '') {
+                dic_control['msg_erro'] += "Dimensão do vetor '" + identificador + "' diferente do especificado" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
+            return false;
+        }
+    }
+    if (verifica_funcao) {
+        if (tabela_de_simbolos[escopo][identificador].eh_funcao) {
+            return true;
+        } else {
+            if (dic_control['msg_erro'] === '') {
+                dic_control['msg_erro'] += "Variável encontrada '" + identificador + "' não está especificada com função" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
+            return false;
+        }
+    }
+    return true;
+    // } else {
+    //     dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+    //     return false;
+    // }
+}
+
+
+function tabela_simbolos(escopo, acao, tipo, variavel, tamanho, dimensao_vetor, define=false, funcao=false){
+    if (!tabela_de_simbolos[escopo]){
+        tabela_de_simbolos.push({'escopo_pai': index_escopo_pai, 'variaveis': {}});
+    }
     if (acao === 'grava'){
-        if (variavel in tabela_de_simbolos){
+        if (variavel in tabela_de_simbolos[escopo]['variaveis']){
             dic_control['msg_erro'] = "variável '" + variavel + "' já declarada no mesmo escopo" + ' (' + count_line + ', ' + count_column + ')' + '\n';
             return false;
         }
-        tabela_de_simbolos[variavel.toString()] = {
+        tabela_de_simbolos[escopo]['variaveis'][variavel.toString()] = {
             'tipo': tipo,
             'valor': null,
             'dimensao': {},
             'matriz_vetor': '',
-            'define': define};
+            'define': define,
+            'eh_funcao': funcao};
     }
     if (acao === 'tamanho'){
         if (dimensao_vetor === 1){
-            tabela_de_simbolos[variavel.toString()]['matriz_vetor'] = 'vetor';
-            tabela_de_simbolos[variavel.toString()]['dimensao'][dimensao_vetor] = tamanho;
+            tabela_de_simbolos[escopo]['variaveis'][variavel.toString()]['matriz_vetor'] = 'vetor';
+            tabela_de_simbolos[escopo]['variaveis'][variavel.toString()]['dimensao'][dimensao_vetor] = tamanho;
         } else {
-            tabela_de_simbolos[variavel.toString()]['matriz_vetor'] = 'matriz';
-            tabela_de_simbolos[variavel.toString()]['dimensao'][dimensao_vetor] = tamanho;
+            tabela_de_simbolos[escopo]['variaveis'][variavel.toString()]['matriz_vetor'] = 'matriz';
+            tabela_de_simbolos[escopo]['variaveis'][variavel.toString()]['dimensao'][dimensao_vetor] = tamanho;
         }
     }
     if (acao === 'verifica_define'){
-        if (variavel.toString() in tabela_de_simbolos){
-            if (tabela_de_simbolos[variavel.toString()]['define']){
+        if (variavel.toString() in tabela_de_simbolos[0]['variaveis']){
+            if (tabela_de_simbolos[0]['variaveis'][variavel.toString()]['define']){
                 // tem macro no define declarado
                 return false;
             } else {
@@ -185,7 +225,7 @@ function inicializa_compilacao(){
     dic_control['encontrou_expressao'] = false;
     dic_control["encontrou_main"] = false;
     dic_control["bibliotecas"] = {};
-    tabela_de_simbolos = {};
+    tabela_de_simbolos = [];
     instrucoes = [];
     tempCount = 0;
     labelCount = 0;
@@ -197,6 +237,8 @@ function inicializa_compilacao(){
     flag_saida_escrita = true;
     linha_anterior = 0;
     erro_lexico = false;
+    obriga_return = false;
+    achou_return = false;
 }
 
 function backtracking(funcao){
@@ -210,7 +252,7 @@ function backtracking(funcao){
         dic["count_line"] = count_line;
         dic["instrucoes_c3e"] = instrucoes.slice();
         dic["msg_erro"] = dic_control['msg_erro'];
-        dic["tabela_de_simbolos"] = Object.assign({}, tabela_de_simbolos);
+        dic["tabela_de_simbolos"] = JSON.parse(JSON.stringify(tabela_de_simbolos));
         lista_backtracking.push(dic);
     } else {
         ultima_posicao = lista_backtracking.pop();
@@ -231,6 +273,7 @@ function compiler(debug=false){
     $("#button2")[0].hidden = true;
     $("#button3")[0].hidden = false;
     $("#button4")[0].hidden = true;
+    editor.setOption("readOnly", true);
     if (debug){
         $("#button5")[0].hidden = false;
         $("#button6")[0].hidden = false;
@@ -240,8 +283,6 @@ function compiler(debug=false){
         $("#button6")[0].hidden = true;
         debug_compiler = false;
     }
-    $("#inputText")[0].disabled = false;
-    $("#inputText").addClass('input-insere-dados');
     if (vai_ler) {
         saveDataAndReload();
     } else {
@@ -290,12 +331,22 @@ function compiler(debug=false){
                 //     textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
                 // }
             } else {
-                textareaElement.value += dic_control['msg_erro'];
+                if (dic_control['msg_erro']){
+                    textareaElement.value += dic_control['msg_erro'];
+                } else {
+                    if (dic_control['encontrou_main']){
+                        console.log('oi');
+                    } else {
+                        textareaElement.value += 'Não encontrou a função de entrada main';
+                    }
+                }
                 $("#button4")[0].hidden = false;
                 $("#button5")[0].hidden = true;
                 $("#button2")[0].hidden = false;
                 $("#button3")[0].hidden = true;
                 $("#button6")[0].hidden = true;
+                $("#inputText")[0].disabled = true;
+                editor.setOption("readOnly", false);
             }
         } catch (e){
             if (erro_lexico){
@@ -306,6 +357,8 @@ function compiler(debug=false){
             $("#button2")[0].hidden = false;
             $("#button3")[0].hidden = true;
             $("#button6")[0].hidden = true;
+            $("#inputText")[0].disabled = true;
+            editor.setOption("readOnly", false);
         }
         esconde_tela_aguarde();
     }, 0);

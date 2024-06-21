@@ -8,12 +8,19 @@ var labelCount = 0;
 
 var instrucoes = [];
 
+var index_escopo = 0;
+var index_escopo_pai = 0;
+
 function newTemp() {
     return "@t" + tempCount++;
 }
 
 function newLabel() {
     return "L" + labelCount++;
+}
+
+function geraInstrucaoInicial(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false){
+    instrucoes.unshift({ op, arg1, arg2, result, salto, escrita, label, leitura, linha });
 }
 
 function geraInstrucao(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false) {
@@ -72,7 +79,9 @@ function Tipo(){
 function NomeFunc(tipo){
     let variavel = lexico.toString().replace(/\x00/g, '');
     if (tk === TKs['TKId']){
-        tabela_simbolos('grava', tipo, variavel);
+        let labelFunc = '$' + variavel;
+        geraInstrucao('', '', '', labelFunc, count_line, false, false, true);
+        tabela_simbolos(index_escopo, 'grava', tipo, variavel, false, false, false, true);
         getToken();
         return true;
     } else {
@@ -157,11 +166,24 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
         }
     } else if (tk === TKs['TKAbreParenteses']){
         getToken();
-        if (tk === TKs['TKFechaParenteses']){
+        if (tk === TKs['TKFechaParenteses']) {
+            let label = '$' + arg1;
+            geraInstrucao('', label, '', 'goto', count_line, true);
             getToken();
-            if (ExpressaoPosRestante()){
+            return true;
+            // if (ExpressaoPosRestante()){
+            //     return true;
+            // } else {
+            //     return false;
+            // }
+        } else if (ExpressaoRestante()){
+            if (tk === TKs['TKFechaParenteses']) {
+                getToken();
                 return true;
             } else {
+                if (dic_control['msg_erro'] === ''){
+                    dic_control['msg_erro'] = "não encontrou o caracter ')' na chamada da função " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
                 return false;
             }
         } else {
@@ -188,7 +210,6 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
     }
 }
 
-
 function ExpressaoPrima(lado_atribuicao) {
     if (tk === TKs['TKId']) {
         identificador = lexico.toString().replace(/\x00/g, '');
@@ -197,7 +218,7 @@ function ExpressaoPrima(lado_atribuicao) {
         //         return false;
         //     }
         // }
-        if (verifica_variavel_declarada(lexico.toString().replace(/\x00/g, ''))){
+        if (verifica_variavel_declarada(index_escopo, lexico.toString().replace(/\x00/g, ''))){
             getToken();
             return identificador;
         } else {
@@ -908,7 +929,7 @@ function InstrExpress(lado_atribuicao){
                     return result;
                 } else {
                     if (dic_control['msg_erro'] === '') {
-                        dic_control['msg_erro'] = "não encontrou o caracter ';' ao final da expressão " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                        dic_control['msg_erro'] = "não encontrou o caracter ';' ao final do comando " + ' (' + count_line + ', ' + count_column + ')' + '\n';
                     }
                     return false;
                 }
@@ -934,17 +955,21 @@ function InstrCondicional(esta_em_laco){
                     getToken();
                     let labelElse = newLabel();
                     geraInstrucao('goto', result, labelElse, 'ifFalse', count_line, true);
+                    index_escopo += 1;
                     if (Instr(esta_em_laco)) {
                         if (tk === TKs['TKElse']){
                             let labelSaidaElse = newLabel();
                             geraInstrucao('', labelSaidaElse, '', 'goto', count_line, true);
                             geraInstrucao('', '', '', labelElse, count_line, false, false, true);
                             getToken();
+                            index_escopo += 1;
                             if (Instr()){
                                 geraInstrucao('', '', '', labelSaidaElse, count_line, false, false, true);
+                                index_escopo -= 2;
                                 return true;
                             }
                         } else {
+                            index_escopo -= 1;
                             geraInstrucao('', '', '', labelElse, count_line, false, false, true);
                             return true;
                         }
@@ -981,9 +1006,11 @@ function InstrIteracao(){
                 geraInstrucao('goto', result, labelFim, 'ifFalse', count_line, true);
                 if (tk === TKs['TKFechaParenteses']){
                     getToken();
+                    index_escopo += 1;
                     if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
                         geraInstrucao('', labelInicio, '', 'goto', count_line, true);
                         geraInstrucao('', '', '', labelFim, count_line, false, false, true);
+                        index_escopo += 1;
                         return true;
                     }
                 } else {
@@ -1000,7 +1027,9 @@ function InstrIteracao(){
         let labelFim = newLabel();
         geraInstrucao('', '', '', labelInicio, count_line, false, false, true);
         getToken();
+        index_escopo += 1;
         if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
+            index_escopo -= 1;
             if (tk === TKs['TKWhile']){
                 getToken();
                 if (tk === TKs['TKAbreParenteses']){
@@ -1062,9 +1091,11 @@ function InstrIteracao(){
                         if (tk === TKs['TKFechaParenteses']){
                             getToken();
                             geraInstrucao('', '', '', labelInstr, count_line, false, false, true);
+                            index_escopo += 1;
                             if (Instr({'labelInicio': labelIncremento, 'labelFim': labelFim})){
                                 geraInstrucao('', labelIncremento, '', 'goto', count_line, true);
                                 geraInstrucao('', '', '', labelFim, count_line, false, false, true);
+                                index_escopo += 1;
                                 return true;
                             } else {
                                 return false;
@@ -1132,25 +1163,30 @@ function InstrSalto(esta_no_laco){
             return false;
         }
     } else if (tk === TKs['TKReturn']){
+        achou_return = true;
         getToken();
-         if (tk === TKs['TKPontoEVirgula']){
+        if (tk === TKs['TKPontoEVirgula']){
             getToken();
             return true;
-        } else if (Expressao()) {
-             if (tk === TKs['TKPontoEVirgula']) {
-                 getToken();
-                 return true;
-             } else {
-                 if (dic_control['msg_erro'] === '') {
-                     dic_control['msg_erro'] += "não encontrou o caracter ';' no return " + ' (' + count_line + ', ' + count_column + ')' + '\n';
-                 }
-                 return false;
-             }
         } else {
-             if (dic_control['msg_erro'] === '') {
-                 dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
-             }
-             return false;
+            let  result = Expressao();
+            if (result) {
+                if (tk === TKs['TKPontoEVirgula']) {
+                    geraInstrucao('', result, '', 'return', count_line, true);
+                    getToken();
+                    return true;
+                } else {
+                    if (dic_control['msg_erro'] === '') {
+                        dic_control['msg_erro'] += "não encontrou o caracter ';' no return " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                    }
+                    return false;
+                }
+            } else {
+                if (dic_control['msg_erro'] === '') {
+                    dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
+                return false;
+            }
         }
     } else {
         return false;
@@ -1374,7 +1410,7 @@ function DecRestante(tipo, variavel, vetor_matriz){
         if (ExpressCondic()){
             if (tk === TKs['TKFechaColchete']){
                 getToken();
-                tabela_simbolos('tamanho', tipo, variavel, tam_vetor, vetor_matriz);
+                tabela_simbolos(index_escopo, 'tamanho', tipo, variavel, tam_vetor, vetor_matriz);
                 let tam_vetor2 = DecRestante(tipo, variavel, vetor_matriz + 1);
                 if (tam_vetor2){
                     if (typeof tam_vetor2 === 'string') {
@@ -1399,8 +1435,8 @@ function DecRestante(tipo, variavel, vetor_matriz){
 
 function Dec(tipo, variavel) {
     if (tk === TKs['TKId']) {
-        if (tabela_simbolos('verifica_define', tipo, variavel)) {
-            tabela_simbolos('grava', tipo, variavel);
+        if (tabela_simbolos(index_escopo, 'verifica_define', tipo, variavel) && verifica_variavel_declarada_em_escopos(index_escopo, variavel)) {
+            tabela_simbolos(index_escopo, 'grava', tipo, variavel);
             getToken();
             let result = DecRestante(tipo, variavel, 1);
             if (result) {
@@ -1411,7 +1447,9 @@ function Dec(tipo, variavel) {
             }
             return true;
         } else {
-            dic_control['msg_erro'] = "variável " + variavel + ' não pode ser declarada devido a macro com o mesmo nome declarada (' + count_line + ', ' + count_column + ')' + '\n';
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "variável " + variavel + ' não pode ser declarada devido a macro com o mesmo nome declarada (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else {
@@ -1569,22 +1607,50 @@ function CorpoFunc(esta_no_laco){
 
 function DecFunc(){
     var tipo = {'tk': tk,
-                                   'tipo': lexico.toString().replace(/\x00/g, '')};
+                                           'tipo': lexico.toString().replace(/\x00/g, '')};
     if (Tipo()){
+        let nome_func = lexico.toString().replace(/\x00/g, '');
         if (NomeFunc(tipo)){
             if (tk === TKs['TKAbreParenteses']){
                 getToken();
                 if (ListaParam()){
                     if (tk === TKs['TKFechaParenteses']){
                         getToken();
-                        return !!CorpoFunc();
+                        achou_return = false;
+                        obriga_return = false;
+                        if (tipo['tipo'] !== 'void'){
+                            obriga_return = true;
+                        }
+                        index_escopo_pai = index_escopo;
+                        index_escopo = tabela_de_simbolos.length;
+                        if (CorpoFunc()){
+                            index_escopo = index_escopo_pai;
+                            if (obriga_return){
+                                if (achou_return){
+                                    return true;
+                                } else {
+                                    if (dic_control['msg_erro'] === ''){
+                                        dic_control['msg_erro'] += "não encontrou o return na função " + nome_func + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                                    }
+                                    return false;
+                                }
+                            } else {
+                                return true;
+                            }
+                        }
                     } else {
-                        return false
+                        if (dic_control['msg_erro'] === ''){
+                            dic_control['msg_erro'] += "não encontrou o caracter ')' na declaracao da função" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                        }
+                        return false;
                     }
                 } else {
                     return false;
                 }
             } else {
+                if (dic_control['msg_erro'] === ''){
+                    dic_control['msg_erro'] += "não encontrou o caracter '(' na declaracao da função" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
                 return false;
             }
         } else {
@@ -1622,12 +1688,12 @@ function DecLibDefine(){
             getToken();
             let arg1 = lexico.toString().replace(/\x00/g, '');
             if (tk === TKs['TKCteInt']){
-                tabela_simbolos('grava', 'int', variavel, 0, 0, true);
+                tabela_simbolos(index_escopo, 'grava', 'int', variavel, 0, 0, true);
                 geraInstrucao('', arg1, '', variavel, count_line);
                 getToken();
                 return true
             } else if (tk === TKs['TKCteDouble']){
-                tabela_simbolos('grava', 'float', variavel, 0, 0, true);
+                tabela_simbolos(index_escopo, 'grava', 'float', variavel, 0, 0, true);
                 geraInstrucao('', arg1, '', variavel, count_line);
                 getToken();
                 return true;
@@ -1658,7 +1724,13 @@ function Dec2(){
     }
     backtracking('pop');
     if (DecFunc()){
-        dic_control["encontrou_main"] = true;
+        if ('main' in tabela_de_simbolos[0]['variaveis']) {
+            dic_control["encontrou_main"] = true;
+        } else {
+            if (!achou_return){
+                geraInstrucao('', '', '', 'return', count_line, true);
+            }
+        }
         return true;
     } else if (DecLibDefine()){
         return true;
@@ -1672,6 +1744,7 @@ function Dec2(){
 function ListaDec2(){
     if (Dec2()){
         if (dic_control['encontrou_main']){
+            geraInstrucaoInicial('', '$main', '', 'goto', count_line, true);
             return true;
         }
         if (ListaDec2()){
@@ -1684,6 +1757,7 @@ function ListaDec2(){
 
 
 function Programa(){
-    debugger;
+    index_escopo = 0;
+    index_escopo_pai = 0;
     return ListaDec2();
 }

@@ -1,3 +1,22 @@
+function criaDicVariaveis(){
+    variaveis_vm.push({'variaveis': {}, 'escopo_pai': vm_escopo_pai});
+}
+
+function verifica_existencia_variavel_escopo(variavel){
+    if (!variaveis_vm[vm_escopo]){
+        criaDicVariaveis();
+    }
+
+    for (let index=vm_escopo; index>=0;index = variaveis_vm[vm_escopo]['escopo_pai']){
+        if (variavel in variaveis_vm[index]['variaveis']){
+            return index;
+        }
+        if (index === 0){
+            return vm_escopo;
+        }
+    }
+}
+
 function inicializa_matriz(tam_vetor, tam_matriz) {
     let vetor = [];
     for (let i = 0; i < tam_vetor; i++) {
@@ -23,20 +42,20 @@ function inicializa_vetores_e_matrizes(key){
     if (regexNumero.test(tabela_de_simbolos[key].dimensao[1])) {
         tam_vetor = Number(tabela_de_simbolos[key].dimensao[1]);
     } else {
-        tam_vetor = Number(variaveis[tabela_de_simbolos[key].dimensao[1]]['valor']);
+        tam_vetor = Number(variaveis_vm[tabela_de_simbolos[key].dimensao[1]]['valor']);
     }
     if (tabela_de_simbolos[key].matriz_vetor === 'vetor') {
         var_vetor = inicializa_vetor(tam_vetor);
-        variaveis[key] = {'valor': var_vetor};
+        variaveis_vm[key] = {'valor': var_vetor};
     } else {
         let tam_matriz;
         if (regexNumero.test(tabela_de_simbolos[key].dimensao[2])) {
             tam_matriz = Number(tabela_de_simbolos[key].dimensao[2]);
         } else {
-            tam_matriz = Number(variaveis[tabela_de_simbolos[key].dimensao[2]]['valor']);
+            tam_matriz = Number(variaveis_vm[tabela_de_simbolos[key].dimensao[2]]['valor']);
         }
         var_vetor = inicializa_matriz(tam_vetor, tam_matriz);
-        variaveis[key] = {'valor': var_vetor};
+        variaveis_vm[key] = {'valor': var_vetor};
     }
 }
 
@@ -46,20 +65,20 @@ function inicializa_vetores_e_matrizes(key) {
     if (regexNumero.test(tabela_de_simbolos[key].dimensao[1])) {
         tam_vetor = Number(tabela_de_simbolos[key].dimensao[1]);
     } else {
-        tam_vetor = Number(variaveis[tabela_de_simbolos[key].dimensao[1]]['valor']);
+        tam_vetor = Number(variaveis_vm[tabela_de_simbolos[key].dimensao[1]]['valor']);
     }
     if (tabela_de_simbolos[key].matriz_vetor === 'vetor') {
         var_vetor = inicializa_vetor(tam_vetor);
-        variaveis[key] = {'valor': var_vetor};
+        variaveis_vm[key] = {'valor': var_vetor};
     } else {
         let tam_matriz;
         if (regexNumero.test(tabela_de_simbolos[key].dimensao[2])) {
             tam_matriz = Number(tabela_de_simbolos[key].dimensao[2]);
         } else {
-            tam_matriz = Number(variaveis[tabela_de_simbolos[key].dimensao[2]]['valor']);
+            tam_matriz = Number(variaveis_vm[tabela_de_simbolos[key].dimensao[2]]['valor']);
         }
         var_vetor = inicializa_matriz(tam_vetor, tam_matriz);
-        variaveis[key] = {'valor': var_vetor};
+        variaveis_vm[key] = {'valor': var_vetor};
     }
 }
 
@@ -147,6 +166,16 @@ function verifica_se_eh_matriz(valor) {
     return matrixNotationRegex.test(valor);
 }
 
+function verifica_se_eh_chamada_de_funcao(valor){
+    // Regex para verificar se a string começa com $ seguido por uma letra e depois qualquer combinação de letras, números ou sublinhados
+    const functionRegex = /^\$[a-zA-Z][a-zA-Z0-9_]*$/;
+    return functionRegex.test(valor);
+}
+
+function verifica_se_eh_return(valor){
+    return valor === 'return';
+}
+
 function extrai_variavel_e_posicao_vetor(valor) {
     // Regex para capturar a variável e a posição
     const regex = /^([a-zA-Z_$][a-zA-Z_$0-9]*)\[(\d+)\]$/;
@@ -208,19 +237,22 @@ function getValue(expressao) {
     if (verifica_constante(expressao)) {
         resultado = expressao;
     } else if (verifica_temporaria(expressao)) {
-        resultado = Number(variaveis[expressao]['valor']);
+        resultado = Number(variaveis_vm[expressao]['valor']);
     } else {
         eh_vetor = verifica_se_eh_vetor(expressao);
         eh_matriz = verifica_se_eh_matriz(expressao);
         let dados;
         if (eh_vetor) {
             dados = extrai_variavel_e_posicao_vetor(expressao);
-            resultado = Number(variaveis[dados.variavel]['valor'][dados.posicao]);
+            resultado = Number(variaveis_vm[dados.variavel]['valor'][dados.posicao]);
         } else if (eh_matriz){
             dados = extrai_variavel_e_posicao_matriz(expressao);
-            resultado = Number(variaveis[dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]]);
+            resultado = Number(variaveis_vm[dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]]);
         } else {
-            resultado = Number(variaveis[expressao]['valor']);
+            if (!(expressao in variaveis_vm)){
+                variaveis_vm[expressao] = {'valor': NaN};
+            }
+            resultado = Number(variaveis_vm[expressao]['valor']);
         }
     }
 
@@ -242,22 +274,19 @@ function setValue(valor, variavel){
     let dados;
     if (eh_vetor) {
         dados = extrai_variavel_e_posicao_vetor(variavel);
-        variaveis[dados.variavel]['valor'][dados.posicao] = Number(valor);
-        modifica_historico_variavel(dados.variavel, variaveis[dados.variavel]['valor']);
+        variaveis_vm[vm_escopo][dados.variavel]['valor'][dados.posicao] = Number(valor);
+        modifica_historico_variavel(dados.variavel, variaveis_vm[vm_escopo][dados.variavel]['valor']);
     } else if (eh_matriz){
         dados = extrai_variavel_e_posicao_matriz(variavel);
-        variaveis[dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]] = Number(valor);
-        modifica_historico_variavel(dados.variavel, variaveis[dados.variavel]['valor']);
+        variaveis_vm[vm_escopo][dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]] = Number(valor);
+        modifica_historico_variavel(dados.variavel, variaveis_vm[vm_escopo][dados.variavel]['valor']);
     } else {
-        if (variavel in variaveis){
-            variaveis[variavel]['valor'] = Number(valor);
-        } else {
-            variaveis[variavel] = {'valor': Number(valor)};
-        }
+        let escopo_real = verifica_existencia_variavel_escopo(variavel);
+        variaveis_vm[escopo_real]['variaveis'][variavel] = {'valor': Number(valor)};
         if (!verifica_temporaria(variavel)){
-            debugger;
             modifica_historico_variavel(variavel, valor);
         }
+
     }
 }
 
@@ -383,5 +412,40 @@ function calcula_argumentos(arg1, arg2, op){
     }
     if (op === '||') {
         return Number(arg1) || Number(arg2) ? 1 : 0;
+    }
+}
+
+function inicializa_variaveis_globais(codigo_c3e){
+    let esta_em_funcao = false;
+    let c3e;
+    vm_escopo = 0;  // variavel global
+    vm_escopo_pai = 0;
+    criaDicVariaveis();
+    for (let i = 0; i < codigo_c3e.length; i++) {
+        c3e = codigo_c3e[i];
+        if (c3e.result === 'goto' && verifica_se_eh_chamada_de_funcao(c3e.arg1)){
+            continue;
+        }
+        if (!c3e.salto && verifica_se_eh_chamada_de_funcao(c3e.result) && esta_em_funcao == false) {
+            esta_em_funcao = true;
+            continue;
+        }
+        if (verifica_se_eh_return(c3e.result)){
+            esta_em_funcao = false;
+            continue;
+        }
+        if (!esta_em_funcao){
+            arg1 = getValue(c3e.arg1);
+            arg2 = '';
+            if (c3e.arg2){
+                arg2 = getValue(c3e.arg2);
+            }
+            if (c3e.op){
+                result = calcula_argumentos(arg1, arg2, c3e.op);
+            } else {
+                result = arg1;
+            }
+            setValue(result, c3e.result);
+        }
     }
 }

@@ -1,14 +1,21 @@
-let index_goto = {};
+var index_goto = {};
+var vm_escopo = '';
+var vm_escopo_pai = '';
+var variaveis_vm = {};
+var vm_escopos = {}
 
 async function executaC3E2(codigo_c3e) {
     let c3e;
     let result;
     let arg1;
     let arg2;
+    let ultimo_escopo = [];
+    variaveis_vm = [];
     indexa_linhas(codigo_c3e);
+    inicializa_variaveis_globais(codigo_c3e);
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
-
+        debugger;
         // DEPURADOR
         if (debug_compiler){
             if (linha_anterior !== c3e.linha && (!c3e.label && !c3e.salto)){
@@ -26,15 +33,38 @@ async function executaC3E2(codigo_c3e) {
         } else if (c3e.salto){
             // SALTO INCODICIONAL
             if (c3e.result == 'goto') {
+                if (verifica_se_eh_chamada_de_funcao(c3e.arg1)) {
+                    vm_escopo_pai = vm_escopo;
+                    vm_escopo = variaveis_vm.length;
+                    ultimo_escopo.push({'identificador': c3e.arg1.substring(1), 'index': i, 'escopo': vm_escopo, 'escopo_pai': variaveis_vm[vm_escopo_pai]['escopo_pai']});
+                }
                 i = index_goto[c3e.arg1] - 1;
                 continue;
+            } else if (verifica_se_eh_return(c3e.result)){
+                // RETURN
+                if (ultimo_escopo.length > 1){
+                    let dados = ultimo_escopo.pop();
+                    vm_escopo_pai = variaveis_vm['escopo_pai'];
+                    vm_escopo = dados['escopo'];
+                    if (c3e.arg1){
+                        arg1 = getValue(c3e.arg1);
+                        result = arg1;
+                        setValue(result, dados['identificador']);
+                    }
+                    i = dados['index'];
+                    continue;
+                }
             } else {
                 // SALTO CONDICIONAL
                 let condicional = getValue(c3e.arg1);
                 if (!condicional) {
+                    vm_escopo_pai = variaveis_vm[vm_escopo_pai]['escopo_pai'];
+                    vm_escopo = vm_escopo_pai;
                     i = index_goto[c3e.arg2] - 1;
                     continue;
                 }
+                vm_escopo_pai = vm_escopo;
+                vm_escopo = vm_escopo+1;
             }
         } else if (c3e.escrita){
             let quebra_printf = parsePrintf(c3e.result);
@@ -77,6 +107,8 @@ async function executaC3E2(codigo_c3e) {
     $("#button5")[0].hidden = true;
     $("#button2")[0].hidden = false;
     $("#button3")[0].hidden = true;
+    $("#inputText")[0].disabled = true;
+    editor.setOption("readOnly", false);
     textareaElement.value += '\n\nPrograma compilado e executado com sucesso.';
     textareaElement.scrollTop = textareaElement.scrollHeight;
 }

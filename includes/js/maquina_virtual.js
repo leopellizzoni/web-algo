@@ -1,7 +1,6 @@
 // Executa código intermediário de três endereços gerado pelo compilador
 
 var historico_variaveis = {};
-var variaveis = {};
 var flag_saida_escrita = true;
 
 
