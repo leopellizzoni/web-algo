@@ -818,6 +818,11 @@ function ExpressAtrib(lado_atribuicao){
         if (typeof id !== 'string'){
             id = identificador;
         }
+        // if (verifica_variavel_declarada(index_escopo, identificador, 0, false, true)){
+        //     if (!verifica_variavel_declarada(index_escopo, identificador, dimensao, false, false, true)){
+        //         return false;
+        //     }
+        // }
         let operador = lexico.toString().replace(/\x00/g, '');
         if (OperadorAtrib()){
             // if (verifica_variavel_declarada(identificador, dimensao)){

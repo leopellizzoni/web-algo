@@ -240,7 +240,8 @@ function getValue(expressao) {
     if (verifica_constante(expressao)) {
         resultado = expressao;
     } else if (verifica_temporaria(expressao)) {
-        resultado = Number(variaveis_vm[expressao]['valor']);
+        let escopo_real = verifica_existencia_variavel_escopo(expressao);
+        resultado = Number(variaveis_vm[escopo_real]['variaveis'][expressao]['valor']);
     } else {
         eh_vetor = verifica_se_eh_vetor(expressao);
         eh_matriz = verifica_se_eh_matriz(expressao);

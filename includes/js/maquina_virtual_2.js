@@ -101,10 +101,10 @@ async function executaC3E2(codigo_c3e) {
                 if (!c3e.arg1) {
                     if (verifica_se_eh_vetor(c3e.result)) {
                         let dados = extrai_variavel_e_posicao_vetor(c3e.result);
-                        setValue(inicializa_vetor(dados["posicao"]), c3e.result, false);
+                        setValue(inicializa_vetor(dados['variavel'], dados["posicao"]), c3e.result, false);
                     } else if (verifica_se_eh_matriz(c3e.result)){
                         let dados = extrai_variavel_e_posicao_matriz(c3e.result);
-                        setValue(inicializa_matriz(dados["posicoes"][0], dados["posicoes"][1]), c3e.result, false);
+                        setValue(inicializa_matriz(dados['variavel'], dados["posicoes"][0], dados["posicoes"][1]), c3e.result, false);
                     } else {
                         setValue(NaN, c3e.result, false);
                     }

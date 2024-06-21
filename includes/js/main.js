@@ -124,7 +124,7 @@ function verifica_variavel_declarada_em_escopos(escopo, variavel){
 }
 
 
-function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica_funcao=false, verifica_matriz_ou_vetor=false){
+function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica_funcao=false, verifica_matriz_ou_vetor=false, verifica_dimensao=false){
     if (!tabela_de_simbolos[escopo]){
         tabela_de_simbolos.push({'escopo_pai': index_escopo_pai, 'variaveis': {}});
     }
@@ -147,9 +147,9 @@ function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica
         }
     }
     // if (verifica_variavel_declarada_em_escopos(escopo, identificador)) {
-    if (dimensao > 0) {
+    if (dimensao > 0 || verifica_dimensao) {
         // verifica dimensao do vetor da atribuição e compara com o que foi declarado
-        if (dimensao === Object.keys(tabela_de_simbolos[escopo]['variaveis'][identificador]['dimensao']).length) {
+        if (dimensao === Object.keys(tabela_de_simbolos[armazena_escopo]['variaveis'][identificador]['dimensao']).length) {
             return true;
         } else {
             if (dic_control['msg_erro'] === '') {
@@ -159,7 +159,7 @@ function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica
         }
     }
     if (verifica_funcao) {
-        if (tabela_de_simbolos[escopo][identificador].eh_funcao) {
+        if (tabela_de_simbolos[armazena_escopo][identificador].eh_funcao) {
             return true;
         } else {
             if (dic_control['msg_erro'] === '') {
