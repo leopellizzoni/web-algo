@@ -133,7 +133,7 @@ function ListaParam(){
 
 function ExpressaoPosRestante(lado_atribuicao, arg1){
     if (tk === TKs['TKAbreColchete']) {
-        if (arg1 && tabela_de_simbolos[arg1].matriz_vetor === ''){
+        if (arg1 && !verifica_variavel_declarada(index_escopo, arg1, 0, false, true)){
             dic_control['msg_erro'] = " variável '" + arg1 + "' não é vetor " + ' (' + count_line + ', ' + count_column + ')' + '\n';
             return false;
         }
@@ -1446,6 +1446,8 @@ function Dec(tipo, variavel) {
             if (result) {
                 if (typeof result === 'string') {
                     geraInstrucao('', '', '', variavel+result, count_line);
+                } else {
+                    geraInstrucao('', '', '', variavel, count_line);
                 }
                 return true;
             }
@@ -1763,6 +1765,5 @@ function ListaDec2(){
 function Programa(){
     index_escopo = 0;
     index_escopo_pai = 0;
-    debugger;
     return ListaDec2();
 }

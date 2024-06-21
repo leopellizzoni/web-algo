@@ -124,17 +124,26 @@ function verifica_variavel_declarada_em_escopos(escopo, variavel){
 }
 
 
-function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica_funcao=false){
+function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica_funcao=false, verifica_matriz_ou_vetor=false){
     if (!tabela_de_simbolos[escopo]){
         tabela_de_simbolos.push({'escopo_pai': index_escopo_pai, 'variaveis': {}});
     }
+    let armazena_escopo = escopo;
     for (let index=escopo; index>=0;index = tabela_de_simbolos[index]['escopo_pai']){
         if (identificador in tabela_de_simbolos[index]['variaveis']){
+            armazena_escopo = index;
             break;
         }
         if (index === 0){
             dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + count_line + ', ' + count_column + ')' + '\n';
             return false;
+        }
+    }
+    if (verifica_matriz_ou_vetor){
+        if (tabela_de_simbolos[armazena_escopo]['matriz_vetor'] === ''){
+            return false;
+        } else {
+            return true;
         }
     }
     // if (verifica_variavel_declarada_em_escopos(escopo, identificador)) {
@@ -321,20 +330,21 @@ function compiler(debug=false){
             if (Programa()) {
                 textareaElement.value += 'Compilação OK' + '\n';
                 instrucoes.forEach(inst => {
-                    if (inst.salto || inst.label) {
-                        console.log(`[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
-                        dic_control['c3e'] = `[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
-                    } else if (inst.escrita || inst.leitura) {
-                        console.log(`[${inst.linha}] ${inst.result}`);
-                        dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
-                    } else if (inst.result && inst.arg1) {
-                        console.log(`[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
-                        dic_control['c3e'] = `[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
-                    } else {
-                        console.log(`[${inst.linha}] ${inst.result}`);
-                        dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
+                    if (inst.result) {
+                        if (inst.salto || inst.label) {
+                            console.log(`[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
+                            dic_control['c3e'] = `[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                        } else if (inst.escrita || inst.leitura) {
+                            console.log(`[${inst.linha}] ${inst.result}`);
+                            dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
+                        } else if (inst.result && inst.arg1) {
+                            console.log(`[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
+                            dic_control['c3e'] = `[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                        } else {
+                            console.log(`[${inst.linha}] ${inst.result}`);
+                            dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
+                        }
                     }
-
                 });
                 executaC3E2(instrucoes);
                 // if (dic_control["printf"] !== ''){

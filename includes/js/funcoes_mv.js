@@ -4,7 +4,7 @@ function criaDicVariaveis(){
     }
 }
 
-function verifica_existencia_variavel_escopo(variavel){
+function verifica_existencia_variavel_escopo(variavel, tipo){
     if (!variaveis_vm[vm_escopo]){
         criaDicVariaveis();
     }
@@ -30,11 +30,12 @@ function inicializa_matriz(tam_vetor, tam_matriz) {
     return vetor;
 }
 
-function inicializa_vetor(tam_vetor) {
+function inicializa_vetor(variavel, tam_vetor) {
     let vetor = [];
     for (let i = 0; i < tam_vetor; i++) {
-        vetor.push('');
+        vetor.push(NaN);
     }
+    variaveis_vm[vm_escopo]['variaveis'][variavel] = {'valor': vetor};
     return vetor;
 }
 
@@ -246,12 +247,13 @@ function getValue(expressao) {
         let dados;
         if (eh_vetor) {
             dados = extrai_variavel_e_posicao_vetor(expressao);
-            resultado = Number(variaveis_vm[dados.variavel]['valor'][dados.posicao]);
+            let escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
+            resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][dados.posicao]);
         } else if (eh_matriz){
             dados = extrai_variavel_e_posicao_matriz(expressao);
-            resultado = Number(variaveis_vm[dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]]);
+            let escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
+            resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]]);
         } else {
-
             let escopo_real = verifica_existencia_variavel_escopo(expressao);
             if (!(expressao in variaveis_vm[escopo_real]['variaveis'])){
                 variaveis_vm[escopo_real]['variaveis'][expressao] = {'valor': Number(NaN)};
@@ -272,20 +274,35 @@ function getValue(expressao) {
     }
 }
 
-function setValue(valor, variavel){
+function setValue(valor, variavel, verifica_existencia_de_variavel=true){
     let eh_vetor = verifica_se_eh_vetor(variavel);
     let eh_matriz = verifica_se_eh_matriz(variavel);
     let dados;
+    let escopo_real;
     if (eh_vetor) {
         dados = extrai_variavel_e_posicao_vetor(variavel);
-        variaveis_vm[vm_escopo][dados.variavel]['valor'][dados.posicao] = Number(valor);
-        modifica_historico_variavel(dados.variavel, variaveis_vm[vm_escopo][dados.variavel]['valor']);
+        if (verifica_existencia_de_variavel){
+            escopo_real = verifica_existencia_variavel_escopo(dados.variavel, 'vetor');
+        } else {
+            escopo_real = vm_escopo;
+        }
+        variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][dados.posicao] = Number(valor);
+        modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor']);
     } else if (eh_matriz){
         dados = extrai_variavel_e_posicao_matriz(variavel);
-        variaveis_vm[vm_escopo][dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]] = Number(valor);
-        modifica_historico_variavel(dados.variavel, variaveis_vm[vm_escopo][dados.variavel]['valor']);
+        if (verifica_existencia_de_variavel){
+            escopo_real = verifica_existencia_variavel_escopo(variavel, 'vetor');
+        } else {
+            escopo_real = vm_escopo;
+        }
+        variaveis_vm[escopo_real][dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]] = Number(valor);
+        modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real][dados.variavel]['valor']);
     } else {
-        let escopo_real = verifica_existencia_variavel_escopo(variavel);
+        if (verifica_existencia_de_variavel){
+            escopo_real = verifica_existencia_variavel_escopo(variavel);
+        } else {
+            escopo_real = vm_escopo;
+        }
         variaveis_vm[escopo_real]['variaveis'][variavel] = {'valor': Number(valor)};
         if (!verifica_temporaria(variavel)){
             modifica_historico_variavel(variavel, valor);
@@ -440,16 +457,31 @@ function inicializa_variaveis_globais(codigo_c3e){
         }
         if (!esta_em_funcao){
             arg1 = getValue(c3e.arg1);
-            arg2 = '';
-            if (c3e.arg2){
-                arg2 = getValue(c3e.arg2);
-            }
-            if (c3e.op){
-                result = calcula_argumentos(arg1, arg2, c3e.op);
+            if (!arg1){
+                if (verifica_se_eh_vetor(c3e.result)) {
+                    let dados = extrai_variavel_e_posicao_vetor(c3e.result);
+                    inicializa_vetor(dados['variavel'], dados["posicao"]);
+                    continue;
+                } else if (verifica_se_eh_matriz(c3e.result)){
+                    let dados = extrai_variavel_e_posicao_matriz(c3e.result);
+                    inicializa_matriz(dados['variavel'], dados["posicoes"][0], dados["posicoes"][1]);
+                } else {
+                    setValue(NaN, c3e.result, false);
+                }
             } else {
-                result = arg1;
+                arg2 = '';
+                if (c3e.arg2){
+                    arg2 = getValue(c3e.arg2);
+                }
+                if (c3e.op){
+                    result = calcula_argumentos(arg1, arg2, c3e.op);
+                } else {
+                    result = arg1;
+                }
+
+                setValue(result, c3e.result, false);
             }
-            setValue(result, c3e.result);
+
         }
     }
 }
