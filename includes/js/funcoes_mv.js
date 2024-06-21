@@ -1,5 +1,7 @@
 function criaDicVariaveis(){
-    variaveis_vm.push({'variaveis': {}, 'escopo_pai': vm_escopo_pai});
+    if (!variaveis_vm[vm_escopo]){
+        variaveis_vm.push({'variaveis': {}, 'escopo_pai': vm_escopo_pai});
+    }
 }
 
 function verifica_existencia_variavel_escopo(variavel){
@@ -7,7 +9,7 @@ function verifica_existencia_variavel_escopo(variavel){
         criaDicVariaveis();
     }
 
-    for (let index=vm_escopo; index>=0;index = variaveis_vm[vm_escopo]['escopo_pai']){
+    for (let index=vm_escopo; index>=0;index = variaveis_vm[index]['escopo_pai']){
         if (variavel in variaveis_vm[index]['variaveis']){
             return index;
         }
@@ -249,10 +251,12 @@ function getValue(expressao) {
             dados = extrai_variavel_e_posicao_matriz(expressao);
             resultado = Number(variaveis_vm[dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]]);
         } else {
-            if (!(expressao in variaveis_vm)){
-                variaveis_vm[expressao] = {'valor': NaN};
+
+            let escopo_real = verifica_existencia_variavel_escopo(expressao);
+            if (!(expressao in variaveis_vm[escopo_real]['variaveis'])){
+                variaveis_vm[escopo_real]['variaveis'][expressao] = {'valor': Number(NaN)};
             }
-            resultado = Number(variaveis_vm[expressao]['valor']);
+            resultado = variaveis_vm[escopo_real]['variaveis'][expressao]['valor'];
         }
     }
 

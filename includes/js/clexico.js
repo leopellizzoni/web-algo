@@ -274,6 +274,10 @@ function getToken(){
 								}
 							}
 						}
+						dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + lexico + ' (' + count_line + ', ' + count_column + ')' + '\n';
+						erro_lexico = true;
+						throw 'Erro léxico';
+
 					} else { // '<'
 						lexico += '\0';
 						tk = TKs['TKMenor'];
@@ -332,6 +336,10 @@ function getToken(){
 						proxC();
 						tk = TKs['TKInclude'];
 						return;
+					} else {
+						dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + lexico + ' (' + count_line + ', ' + count_column + ')' + '\n';
+						erro_lexico = true;
+						throw 'Erro léxico';
 					}
 				}
 				if (caracter === '"'){ // verifica '"'

@@ -15,7 +15,6 @@ async function executaC3E2(codigo_c3e) {
     inicializa_variaveis_globais(codigo_c3e);
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
-        debugger;
         // DEPURADOR
         if (debug_compiler){
             if (linha_anterior !== c3e.linha && (!c3e.label && !c3e.salto)){
@@ -36,6 +35,7 @@ async function executaC3E2(codigo_c3e) {
                 if (verifica_se_eh_chamada_de_funcao(c3e.arg1)) {
                     vm_escopo_pai = vm_escopo;
                     vm_escopo = variaveis_vm.length;
+                    criaDicVariaveis();
                     ultimo_escopo.push({'identificador': c3e.arg1.substring(1), 'index': i, 'escopo': vm_escopo, 'escopo_pai': variaveis_vm[vm_escopo_pai]['escopo_pai']});
                 }
                 i = index_goto[c3e.arg1] - 1;

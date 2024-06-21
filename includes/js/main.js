@@ -103,7 +103,7 @@ reserved_words = {
 }
 
 function verifica_variavel_declarada_em_escopos(escopo, variavel){
-    for (let index=escopo; index>=0;index = tabela_de_simbolos[escopo]['escopo_pai']){
+    for (let index=escopo; index>=0;index = tabela_de_simbolos[index]['escopo_pai']){
         if (variavel in tabela_de_simbolos[index]['variaveis']){
             if (index !== escopo){
                 if (index === 0){
@@ -126,7 +126,16 @@ function verifica_variavel_declarada_em_escopos(escopo, variavel){
 
 function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica_funcao=false){
     if (!tabela_de_simbolos[escopo]){
-        tabela_de_simbolos.push({});
+        tabela_de_simbolos.push({'escopo_pai': index_escopo_pai, 'variaveis': {}});
+    }
+    for (let index=escopo; index>=0;index = tabela_de_simbolos[index]['escopo_pai']){
+        if (identificador in tabela_de_simbolos[index]['variaveis']){
+            break;
+        }
+        if (index === 0){
+            dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            return false;
+        }
     }
     // if (verifica_variavel_declarada_em_escopos(escopo, identificador)) {
     if (dimensao > 0) {
@@ -164,7 +173,7 @@ function tabela_simbolos(escopo, acao, tipo, variavel, tamanho, dimensao_vetor, 
     }
     if (acao === 'grava'){
         if (variavel in tabela_de_simbolos[escopo]['variaveis']){
-            dic_control['msg_erro'] = "variável '" + variavel + "' já declarada no mesmo escopo" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            dic_control['msg_erro'] = "variável '" + variavel + "' já especificada no mesmo escopo" + ' (' + count_line + ', ' + count_column + ')' + '\n';
             return false;
         }
         tabela_de_simbolos[escopo]['variaveis'][variavel.toString()] = {
@@ -270,6 +279,7 @@ function backtracking(funcao){
 
 
 function compiler(debug=false){
+    saveDataAndReload(false);
     $("#button2")[0].hidden = true;
     $("#button3")[0].hidden = false;
     $("#button4")[0].hidden = true;
@@ -349,6 +359,7 @@ function compiler(debug=false){
                 editor.setOption("readOnly", false);
             }
         } catch (e){
+            console.log(e);
             if (erro_lexico){
                 textareaElement.value += dic_control['msg_erro'];
             }

@@ -1230,6 +1230,10 @@ function LeituraRestante(){
 
 function InstrLeitura(){
     if (tk === TKs["TKScanf"]){
+        if (!dic_control['bibliotecas'].stdio){
+            dic_control['msg_erro'] = "Biblioteca <stdio.h> deve ser declarada para utilização do printf" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            return false;
+        }
         getToken();
         if (tk === TKs["TKAbreParenteses"]){
             getToken();
@@ -1759,5 +1763,6 @@ function ListaDec2(){
 function Programa(){
     index_escopo = 0;
     index_escopo_pai = 0;
+    debugger;
     return ListaDec2();
 }

@@ -214,10 +214,12 @@ int main(){
     <script>
 
         // Função para salvar os dados no localStorage
-        function saveDataAndReload() {
+        function saveDataAndReload(reload=true) {
             const codigo_fonte = editor.getValue();
             localStorage.setItem('codigo_fonte', codigo_fonte);
-            location.reload();
+            if (reload){
+                location.reload();
+            }
         }
 
         // Função para restaurar os dados do localStorage
