@@ -12,6 +12,7 @@ async function executaC3E2(codigo_c3e) {
     let qtd_escopos = codigo_c3e.shift();
     let returns = [];
     variaveis_vm = [];
+    vm_escopos = []
     inicializa_escopos(qtd_escopos.result);
     indexa_linhas(codigo_c3e);
     inicializa_variaveis_globais(codigo_c3e);
@@ -29,21 +30,19 @@ async function executaC3E2(codigo_c3e) {
                 }
             }
             if (c3e.escopo){
-                if (c3e.result.length > 1) {
-                    if (Number(c3e.result.substring(1)) === 0) {
-                        vm_escopo_pai = 0;
-                        vm_escopo = 0;
+                if (Number(c3e.result.substring(1)) === 0) {
+                    vm_escopo_pai = 0;
+                    vm_escopo = 0;
+                } else {
+                    let escopo_atual = Number(c3e.result.substring(1));
+                    if (Number(c3e.result.substring(1)) in vm_escopos){
+                        vm_escopo_pai = vm_escopos[escopo_atual]['escopo_pai'];
+                        vm_escopo = escopo_atual
                     } else {
                         vm_escopo_pai = vm_escopo;
                         vm_escopo = Number(c3e.result.substring(1));
+                        vm_escopos[escopo_atual] = {'escopo_pai': vm_escopo_pai}
                         altera_escopo_pai();
-                    }
-                } else {
-                    vm_escopo = variaveis_vm[vm_escopo]['escopo_pai'];
-                    if (vm_escopo > 0) {
-                        vm_escopo_pai = variaveis_vm[vm_escopo]['escopo_pai'];
-                    } else {
-                        vm_escopo_pai = 0;
                     }
                 }
                 continue;
@@ -54,20 +53,31 @@ async function executaC3E2(codigo_c3e) {
                 // SALTO INCODICIONAL
                 if (c3e.result == 'goto') {
                     if (verifica_se_eh_chamada_de_funcao(c3e.arg1)) {
-                        returns.push(i);
+                        debugger;
+                        if (!(Number(codigo_c3e[index_goto[c3e.arg1]+1].result.substring(1)) in vm_escopos)){
+                            vm_escopo_pai = 0;
+                            vm_escopo = Number(codigo_c3e[index_goto[c3e.arg1]+1].result.substring(1));
+                            vm_escopos[vm_escopo] = {'escopo_pai': vm_escopo_pai}
+                            altera_escopo_pai();
+                        }
+                        returns.push({'index': i, 'identificador': c3e.arg1.substring(1)});
                     }
                     i = index_goto[c3e.arg1] - 1;
                     continue;
                 } else if (verifica_se_eh_return(c3e.result)) {
                     // RETURN
+                    debugger;
                     vm_escopo = variaveis_vm[vm_escopo]['escopo_pai'];
                     vm_escopo_pai = variaveis_vm[vm_escopo]['escopo_pai'];
                     if (c3e.arg1) {
+                        let dados = returns.pop();
                         arg1 = getValue(c3e.arg1);
                         result = arg1;
-                        // setValue(result, dados['identificador']);
+                        setValue(result, dados['identificador']);
+                        if (dados['identificador'] != 'main'){
+                            i = dados['index'];
+                        }
                     }
-                    i = returns.pop();
                     continue;
                 } else {
                     // SALTO CONDICIONAL
@@ -79,8 +89,9 @@ async function executaC3E2(codigo_c3e) {
                 }
             } else if (c3e.escrita) {
                 let quebra_printf = parsePrintf(c3e.result);
-                let formatarString = formataStringInt(quebra_printf.formattedString, quebra_printf.params.slice(1));
-                formatarString = formataStringFloat(formatarString, quebra_printf.params.slice(1));
+                let parametros = quebra_printf.params.slice(1)
+                let formatarString = formataStringInt(quebra_printf.formattedString, parametros);
+                formatarString = formataStringFloat(formatarString, parametros);
                 formatarString = formataStringQuebraLinha(formatarString);
                 textareaElement.value += formatarString.replace(/"/g, '');
                 textareaElement.scrollTop = inputElement.scrollHeight;

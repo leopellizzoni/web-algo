@@ -979,6 +979,10 @@ function InstrCondicional(esta_em_laco){
                             }
                         } else {
                             geraInstrucao('', '', '', labelElse, count_line, false, false, true);
+                            debugger;
+                            index_escopo = index_escopo_pai;
+                            index_escopo_pai = tabela_de_simbolos[index_escopo]['escopo_pai'];
+                            geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                             return true;
                         }
                     } else {
@@ -1109,6 +1113,9 @@ function InstrIteracao(){
                             if (Instr({'labelInicio': labelIncremento, 'labelFim': labelFim})){
                                 geraInstrucao('', labelIncremento, '', 'goto', count_line, true);
                                 geraInstrucao('', '', '', labelFim, count_line, false, false, true);
+                                index_escopo = index_escopo_pai;
+                                index_escopo_pai = tabela_de_simbolos[index_escopo]['escopo_pai'];
+                                geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                                 return true;
                             } else {
                                 return false;
@@ -1185,7 +1192,7 @@ function InstrSalto(esta_no_laco){
             let  result = Expressao();
             if (result) {
                 if (tk === TKs['TKPontoEVirgula']) {
-                    geraInstrucao('', '', '', '#', count_line, false, false, true, true, true);
+                    geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, true, true);
                     geraInstrucao('', result, '', 'return', count_line, true);
                     getToken();
                     return true;

@@ -1,6 +1,6 @@
 function inicializa_escopos(qtd_escopos){
     while(qtd_escopos >= 0){
-        variaveis_vm.push({'variaveis': {}, 'escopo_pai': NaN});
+        variaveis_vm.push({'variaveis': {}, 'escopo_pai': 0});
         qtd_escopos--;
     }
 }
