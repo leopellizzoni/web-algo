@@ -138,28 +138,29 @@ function getToken(){
 						proxC();
 						tk = TKs['TKMenosIgual'];
 						return;
-					} else if (regexNumero.test(caracter)){
-						lexico += caracter;
-						proxC();
-						while (regexNumero.test(caracter)){
-							lexico += caracter;
-							proxC();
-						}
-						if (caracter === '.'){ // double / float
-							lexico += caracter;
-							proxC();
-							while (regexNumero.test(caracter)){
-								lexico += caracter;
-								proxC();
-							}
-							lexico += '\0';
-							tk = TKs['TKCteDouble'];
-							return;
-						} else { // inteiro
-							lexico += '\0';
-							tk = TKs['TKCteInt'];
-							return;
-						}
+					// } else if (regexNumero.test(caracter)){
+
+						// lexico += caracter;
+						// proxC();
+						// while (regexNumero.test(caracter)){
+						// 	lexico += caracter;
+						// 	proxC();
+						// }
+						// if (caracter === '.'){ // double / float
+						// 	lexico += caracter;
+						// 	proxC();
+						// 	while (regexNumero.test(caracter)){
+						// 		lexico += caracter;
+						// 		proxC();
+						// 	}
+						// 	lexico += '\0';
+						// 	tk = TKs['TKCteDouble'];
+						// 	return;
+						// } else { // inteiro
+						// 	lexico += '\0';
+						// 	tk = TKs['TKCteInt'];
+						// 	return;
+						// }
 					} else { // '-'
 						lexico += '\0';
 						tk = TKs['TKMenos'];

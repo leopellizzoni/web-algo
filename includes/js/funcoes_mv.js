@@ -9,7 +9,7 @@ function altera_escopo_pai(){
     variaveis_vm[vm_escopo]['escopo_pai'] = vm_escopo_pai;
 }
 
-function verifica_existencia_variavel_escopo(variavel, tipo){
+function verifica_existencia_variavel_escopo(variavel){
 
     for (let index=vm_escopo; index>=0;index = variaveis_vm[index]['escopo_pai']){
         if (variavel in variaveis_vm[index]['variaveis']){
@@ -21,14 +21,15 @@ function verifica_existencia_variavel_escopo(variavel, tipo){
     }
 }
 
-function inicializa_matriz(tam_vetor, tam_matriz) {
+function inicializa_matriz(variavel, tam_vetor, tam_matriz) {
     let vetor = [];
     for (let i = 0; i < tam_vetor; i++) {
         vetor.push([]);
         for (let j = 0; j < tam_matriz; j++) {
-            vetor[i].push('');
+            vetor[i].push(NaN);
         }
     }
+    variaveis_vm[vm_escopo]['variaveis'][variavel] = {'valor': vetor};
     return vetor;
 }
 
@@ -117,13 +118,15 @@ function verifica_temporaria(valor) {
 
 function verifica_se_eh_vetor(valor) {
     // Regex para variável ou constante: [a-zA-Z_]\w*
-    // Regex para expressão: qualquer coisa válida dentro dos colchetes [a-zA-Z0-9_+\-*/() ]
-    let arrayNotationRegex = /^[a-zA-Z_]\w*\[[a-zA-Z0-9_+\-*/() ]+\]$/;
+    // Regex para expressão: qualquer coisa válida dentro dos colchetes [a-zA-Z0-9_+\-*/()@ ]
+    let arrayNotationRegex = /^[a-zA-Z_]\w*\[[a-zA-Z0-9_+\-*/()@ ]+\]$/;
     return arrayNotationRegex.test(valor);
 }
 
 function verifica_se_eh_matriz(valor) {
-    let matrixNotationRegex = /^[a-zA-Z_]\w*(\[\d+\])+$/;
+    // Regex para variável ou constante: [a-zA-Z_]\w*
+    // Regex para expressões dentro dos colchetes: [a-zA-Z0-9_+\-*/()@ ]
+    let matrixNotationRegex = /^[a-zA-Z_]\w*(\[[a-zA-Z0-9_+\-*/()@ ]+\])+$/;
     return matrixNotationRegex.test(valor);
 }
 
@@ -156,33 +159,20 @@ function extrai_variavel_e_posicao_vetor(valor) {
 }
 
 function extrai_variavel_e_posicao_matriz(valor) {
-    // Regex para capturar a variável e as posições
-    const regex = /^([a-zA-Z_$][a-zA-Z_$0-9]*)\[(\d+)\](\[(\d+)\])*$/;
+    // Regex para variável ou constante: [a-zA-Z_]\w*
+    // Regex para posições dentro dos colchetes: [a-zA-Z0-9_+\-*/()@ ]+
+    let regex = /^([a-zA-Z_]\w*)((\[[a-zA-Z0-9_+\-*/()@ ]+\])+)/;
+    let match = valor.match(regex);
 
-    // Executa o regex na expressão fornecida
-    const match = valor.match(regex);
-
-    // Verifica se a expressão corresponde ao padrão esperado
     if (match) {
-        // Captura a variável
-        const variavel = match[1];
-
-        // Captura todas as posições
-        const posicoes = [];
-        const regexPosicoes = /\[(\d+)\]/g;
-        let posicaoMatch;
-        while ((posicaoMatch = regexPosicoes.exec(valor)) !== null) {
-            posicoes.push(parseInt(posicaoMatch[1], 10));
-        }
-
-        return {
-            variavel: variavel,
-            posicoes: posicoes
-        };
+        let variavel = match[1];
+        let posicoes = match[2].match(/\[([a-zA-Z0-9_+\-*/()@ ]+)\]/g).map(pos => pos.slice(1, -1));
+        return { variavel, posicoes };
     } else {
-        return null; // Retorna null se a expressão não corresponder ao padrão esperado
+        return null;
     }
 }
+
 
 function getValue(expressao) {
     let resultado;
@@ -211,8 +201,10 @@ function getValue(expressao) {
             resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao]);
         } else if (eh_matriz){
             dados = extrai_variavel_e_posicao_matriz(expressao);
+            let posicao1 = getValue(dados["posicoes"][0]);
+            let posicao2 = getValue(dados["posicoes"][1]);
             let escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
-            resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]]);
+            resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao1][posicao2]);
         } else {
             let escopo_real = verifica_existencia_variavel_escopo(expressao);
             if (!(expressao in variaveis_vm[escopo_real]['variaveis'])){
@@ -224,7 +216,9 @@ function getValue(expressao) {
 
     switch (operador) {
         case '!':
-            return !Number(resultado);
+            debugger;
+            let operacao = !Number(resultado);
+            return operacao ? 1 : 0;
         case '+':
             return +Number(resultado);
         case '-':
@@ -242,7 +236,7 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true){
     if (eh_vetor) {
         dados = extrai_variavel_e_posicao_vetor(variavel);
         if (verifica_existencia_de_variavel){
-            escopo_real = verifica_existencia_variavel_escopo(dados.variavel, 'vetor');
+            escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
         } else {
             escopo_real = vm_escopo;
         }
@@ -251,13 +245,15 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true){
         modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor']);
     } else if (eh_matriz){
         dados = extrai_variavel_e_posicao_matriz(variavel);
+        let posicao1 = getValue(dados["posicoes"][0]);
+        let posicao2 = getValue(dados["posicoes"][1]);
         if (verifica_existencia_de_variavel){
-            escopo_real = verifica_existencia_variavel_escopo(variavel, 'vetor');
+            escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
         } else {
             escopo_real = vm_escopo;
         }
-        variaveis_vm[escopo_real][dados.variavel]['valor'][dados.posicoes[0]][dados.posicoes[1]] = Number(valor);
-        modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real][dados.variavel]['valor']);
+        variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1][posicao2] = Number(valor);
+        modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor']);
     } else {
         if (verifica_existencia_de_variavel){
             escopo_real = verifica_existencia_variavel_escopo(variavel);
