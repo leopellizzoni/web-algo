@@ -19,12 +19,12 @@ function newLabel() {
     return "L" + labelCount++;
 }
 
-function geraInstrucaoInicial(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false){
-    instrucoes.unshift({ op, arg1, arg2, result, salto, escrita, label, leitura, linha });
+function geraInstrucaoInicial(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false, escopo=false){
+    instrucoes.unshift({ op, arg1, arg2, result, salto, escrita, label, leitura, linha, escopo });
 }
 
-function geraInstrucao(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false) {
-    instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura, linha });
+function geraInstrucao(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false, escopo=false) {
+    instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura, linha, escopo });
 }
 
 function OperadorUnario(){
@@ -272,7 +272,7 @@ function ExpressPos(lado_atribuicao){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return result;
             }
         }
@@ -331,7 +331,7 @@ function ExpressMultiplRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -351,7 +351,7 @@ function ExpressMultiplRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -371,7 +371,7 @@ function ExpressMultiplRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -401,7 +401,7 @@ function ExpressMultipl() {
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return result;
             }
         }
@@ -426,7 +426,7 @@ function ExpressAddRestante(temp, arg1) {
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -446,7 +446,7 @@ function ExpressAddRestante(temp, arg1) {
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -466,7 +466,7 @@ function ExpressAddRestante(temp, arg1) {
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -495,7 +495,7 @@ function ExpressAdd() {
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return result;
             }
         }
@@ -520,7 +520,7 @@ function ExpressRelacionalRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -540,7 +540,7 @@ function ExpressRelacionalRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -560,7 +560,7 @@ function ExpressRelacionalRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -580,7 +580,7 @@ function ExpressRelacionalRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -609,7 +609,7 @@ function ExpressRelacional() {
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return result;
             }
         }
@@ -634,7 +634,7 @@ function ExpressIgualRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -654,7 +654,7 @@ function ExpressIgualRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -683,7 +683,7 @@ function ExpressIgual(){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return result;
             }
         }
@@ -708,7 +708,7 @@ function ExpressLogicAndRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -737,7 +737,7 @@ function ExpressLogicAnd(){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return result;
             }
         }
@@ -762,7 +762,7 @@ function ExpressLogicOrRestante(temp, arg1){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return temp;
             }
         } else {
@@ -791,7 +791,7 @@ function ExpressLogicOr(){
             if (typeof temp2 === 'string'){
                 return temp2;
             } else {
-                tempCount--;
+                // tempCount--;
                 return result;
             }
         }
@@ -960,21 +960,24 @@ function InstrCondicional(esta_em_laco){
                     getToken();
                     let labelElse = newLabel();
                     geraInstrucao('goto', result, labelElse, 'ifFalse', count_line, true);
-                    index_escopo += 1;
+                    index_escopo_pai = index_escopo;
+                    index_escopo = tabela_de_simbolos.length;
+                    geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                     if (Instr(esta_em_laco)) {
                         if (tk === TKs['TKElse']){
                             let labelSaidaElse = newLabel();
+                            index_escopo_pai = index_escopo;
+                            index_escopo = tabela_de_simbolos.length;
                             geraInstrucao('', labelSaidaElse, '', 'goto', count_line, true);
                             geraInstrucao('', '', '', labelElse, count_line, false, false, true);
+                            geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                             getToken();
-                            index_escopo += 1;
                             if (Instr()){
                                 geraInstrucao('', '', '', labelSaidaElse, count_line, false, false, true);
                                 index_escopo -= 2;
                                 return true;
                             }
                         } else {
-                            index_escopo -= 1;
                             geraInstrucao('', '', '', labelElse, count_line, false, false, true);
                             return true;
                         }
@@ -1011,11 +1014,13 @@ function InstrIteracao(){
                 geraInstrucao('goto', result, labelFim, 'ifFalse', count_line, true);
                 if (tk === TKs['TKFechaParenteses']){
                     getToken();
-                    index_escopo += 1;
+                    index_escopo_pai = index_escopo;
+                    index_escopo = tabela_de_simbolos.length;
+                    geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                     if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
                         geraInstrucao('', labelInicio, '', 'goto', count_line, true);
                         geraInstrucao('', '', '', labelFim, count_line, false, false, true);
-                        index_escopo += 1;
+                        index_escopo = tabela_de_simbolos.length;
                         return true;
                     }
                 } else {
@@ -1032,7 +1037,8 @@ function InstrIteracao(){
         let labelFim = newLabel();
         geraInstrucao('', '', '', labelInicio, count_line, false, false, true);
         getToken();
-        index_escopo += 1;
+        index_escopo_pai = index_escopo;
+        index_escopo = tabela_de_simbolos.length;
         if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
             index_escopo -= 1;
             if (tk === TKs['TKWhile']){
@@ -1091,16 +1097,18 @@ function InstrIteracao(){
                     geraInstrucao('', labelInstr, '', 'goto', count_line, true);
                     let labelIncremento = newLabel();
                     geraInstrucao('', '', '', labelIncremento, count_line, false, false, true);
+                    geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                     if(Expressao('esquerdo')){
                         geraInstrucao('', labelInicio, '', 'goto', count_line, true);
                         if (tk === TKs['TKFechaParenteses']){
                             getToken();
                             geraInstrucao('', '', '', labelInstr, count_line, false, false, true);
-                            index_escopo += 1;
+                            index_escopo_pai = index_escopo;
+                            index_escopo = tabela_de_simbolos.length;
+                            geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                             if (Instr({'labelInicio': labelIncremento, 'labelFim': labelFim})){
                                 geraInstrucao('', labelIncremento, '', 'goto', count_line, true);
                                 geraInstrucao('', '', '', labelFim, count_line, false, false, true);
-                                index_escopo += 1;
                                 return true;
                             } else {
                                 return false;
@@ -1177,6 +1185,7 @@ function InstrSalto(esta_no_laco){
             let  result = Expressao();
             if (result) {
                 if (tk === TKs['TKPontoEVirgula']) {
+                    geraInstrucao('', '', '', '#', count_line, false, false, true, true, true);
                     geraInstrucao('', result, '', 'return', count_line, true);
                     getToken();
                     return true;
@@ -1634,6 +1643,7 @@ function DecFunc(){
                         }
                         index_escopo_pai = index_escopo;
                         index_escopo = tabela_de_simbolos.length;
+                        geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                         if (CorpoFunc()){
                             index_escopo = index_escopo_pai;
                             if (obriga_return){
@@ -1770,5 +1780,10 @@ function ListaDec2(){
 function Programa(){
     index_escopo = 0;
     index_escopo_pai = 0;
-    return ListaDec2();
+    if (ListaDec2()){
+        geraInstrucaoInicial('', '', '', '#' + 0, count_line, false, false, true, false, true);
+        geraInstrucaoInicial('', '', '', tabela_de_simbolos.length, count_line, false, false, true, false, true);
+        return true;
+    }
+    return false;
 }

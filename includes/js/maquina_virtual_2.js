@@ -9,8 +9,10 @@ async function executaC3E2(codigo_c3e) {
     let result;
     let arg1;
     let arg2;
-    let ultimo_escopo = [];
+    let qtd_escopos = codigo_c3e.shift();
+    let returns = [];
     variaveis_vm = [];
+    inicializa_escopos(qtd_escopos.result);
     indexa_linhas(codigo_c3e);
     inicializa_variaveis_globais(codigo_c3e);
     for (let i = 0; i < codigo_c3e.length; i++) {
@@ -26,59 +28,54 @@ async function executaC3E2(codigo_c3e) {
                     linha_anterior = c3e.linha;
                 }
             }
-
-            // INICIO EXECUÇÃO C3E
-            if (c3e.label) {
-                if (!verifica_se_eh_chamada_de_funcao(c3e.result)){
-                    if (vm_escopo !== 0) {
-                        let dados = ultimo_escopo.pop();
-                        vm_escopo_pai = dados['escopo_pai'];
-                        vm_escopo = dados['escopo'];
+            if (c3e.escopo){
+                if (c3e.result.length > 1) {
+                    if (Number(c3e.result.substring(1)) === 0) {
+                        vm_escopo_pai = 0;
+                        vm_escopo = 0;
+                    } else {
+                        vm_escopo_pai = vm_escopo;
+                        vm_escopo = Number(c3e.result.substring(1));
+                        altera_escopo_pai();
+                    }
+                } else {
+                    vm_escopo = variaveis_vm[vm_escopo]['escopo_pai'];
+                    if (vm_escopo > 0) {
+                        vm_escopo_pai = variaveis_vm[vm_escopo]['escopo_pai'];
+                    } else {
+                        vm_escopo_pai = 0;
                     }
                 }
+                continue;
+            // INICIO EXECUÇÃO C3E
+            } else if (c3e.label) {
                 continue;
             } else if (c3e.salto) {
                 // SALTO INCODICIONAL
                 if (c3e.result == 'goto') {
                     if (verifica_se_eh_chamada_de_funcao(c3e.arg1)) {
-                        vm_escopo_pai = vm_escopo;
-                        vm_escopo = variaveis_vm.length;
-                        criaDicVariaveis();
-                        ultimo_escopo.push({
-                            'identificador': c3e.arg1.substring(1),
-                            'index': i,
-                            'escopo': vm_escopo,
-                            'escopo_pai': variaveis_vm[vm_escopo_pai]['escopo_pai']
-                        });
+                        returns.push(i);
                     }
                     i = index_goto[c3e.arg1] - 1;
                     continue;
                 } else if (verifica_se_eh_return(c3e.result)) {
                     // RETURN
-                    if (ultimo_escopo.length > 1) {
-                        let dados = ultimo_escopo.pop();
-                        vm_escopo_pai = dados['escopo_pai'];
-                        vm_escopo = dados['escopo'];
-                        if (c3e.arg1) {
-                            arg1 = getValue(c3e.arg1);
-                            result = arg1;
-                            setValue(result, dados['identificador']);
-                        }
-                        i = dados['index'];
-                        continue;
+                    vm_escopo = variaveis_vm[vm_escopo]['escopo_pai'];
+                    vm_escopo_pai = variaveis_vm[vm_escopo]['escopo_pai'];
+                    if (c3e.arg1) {
+                        arg1 = getValue(c3e.arg1);
+                        result = arg1;
+                        // setValue(result, dados['identificador']);
                     }
+                    i = returns.pop();
+                    continue;
                 } else {
                     // SALTO CONDICIONAL
                     let condicional = getValue(c3e.arg1);
                     if (!condicional) {
-                        vm_escopo_pai = variaveis_vm[vm_escopo_pai]['escopo_pai'];
-                        vm_escopo = vm_escopo_pai;
                         i = index_goto[c3e.arg2] - 1;
                         continue;
                     }
-                    vm_escopo_pai = vm_escopo;
-                    vm_escopo = vm_escopo + 1;
-                    criaDicVariaveis();
                 }
             } else if (c3e.escrita) {
                 let quebra_printf = parsePrintf(c3e.result);
@@ -95,16 +92,15 @@ async function executaC3E2(codigo_c3e) {
                     userInput = await getUserInput();
                     configura_leitura(false);
                     setValue(userInput, values[i]);
-                    modifica_historico_variavel(values[i], userInput);
                 }
             } else {
                 if (!c3e.arg1) {
                     if (verifica_se_eh_vetor(c3e.result)) {
                         let dados = extrai_variavel_e_posicao_vetor(c3e.result);
-                        setValue(inicializa_vetor(dados['variavel'], dados["posicao"]), c3e.result, false);
+                        variaveis_vm[vm_escopo]['variaveis'][dados.variavel] = {'valor': inicializa_vetor(dados['variavel'], dados["posicao"])};
                     } else if (verifica_se_eh_matriz(c3e.result)){
                         let dados = extrai_variavel_e_posicao_matriz(c3e.result);
-                        setValue(inicializa_matriz(dados['variavel'], dados["posicoes"][0], dados["posicoes"][1]), c3e.result, false);
+                        variaveis_vm[vm_escopo][dados.variavel] = {'valor': inicializa_matriz(dados['variavel'], dados["posicoes"][0], dados["posicoes"][1])};
                     } else {
                         setValue(NaN, c3e.result, false);
                     }

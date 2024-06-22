@@ -105,16 +105,18 @@ reserved_words = {
 function verifica_variavel_declarada_em_escopos(escopo, variavel){
     for (let index=escopo; index>=0;index = tabela_de_simbolos[index]['escopo_pai']){
         if (variavel in tabela_de_simbolos[index]['variaveis']){
-            if (index !== escopo){
-                if (index === 0){
-                    dic_control['msg_erro'] = 'Variável "' + variavel + '" já está declarada globalmente (' + count_line + ', ' + count_column + ')' + '\n';
-                } else {
-                    dic_control['msg_erro'] = 'Variável "' + variavel + '" já declarada fora do escopo (' + count_line + ', ' + count_column + ')' + '\n';
-                }
-            } else {
+            if (index === escopo){
                 dic_control['msg_erro'] = 'Variável "' + variavel + '" já declarada no mesmo escopo (' + count_line + ', ' + count_column + ')' + '\n';
+                return false;
             }
-            return false;
+            //     if (index === 0){
+            //         dic_control['msg_erro'] = 'Variável "' + variavel + '" já está declarada globalmente (' + count_line + ', ' + count_column + ')' + '\n';
+            //     } else {
+            //         dic_control['msg_erro'] = 'Variável "' + variavel + '" já declarada fora do escopo (' + count_line + ', ' + count_column + ')' + '\n';
+            //     }
+            // } else {
+            //
+            // }
         }
         if (index === 0){
             break;
@@ -382,7 +384,7 @@ function compiler(debug=false){
             editor.setOption("readOnly", false);
         }
         esconde_tela_aguarde();
-    }, 0);
+    }, 500);
 }
 
 function atualiza_tabela_variaveis(data){
