@@ -166,6 +166,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
         }
     } else if (tk === TKs['TKAbreParenteses']){
         getToken();
+        debugger;
         if (tk === TKs['TKFechaParenteses']) {
             let label = '$' + arg1;
             geraInstrucao('', label, '', 'goto', count_line, true);
@@ -176,18 +177,26 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
             // } else {
             //     return false;
             // }
-        } else if (ExpressaoRestante()){
-            if (tk === TKs['TKFechaParenteses']) {
-                getToken();
-                return true;
-            } else {
-                if (dic_control['msg_erro'] === ''){
-                    dic_control['msg_erro'] = "não encontrou o caracter ')' na chamada da função " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+        } else {
+            if (Expressao()){
+                let parametros_funcao = lista_parametros_func.pop()
+                if (tk === TKs['TKFechaParenteses']) {
+                    let label = '$' + arg1;
+                    if (parametros_funcao){
+                        label += ' ' + parametros_funcao;
+                    }
+                    geraInstrucao('', label, '', 'goto', count_line, true);
+                    getToken();
+                    return true;
+                } else {
+                    if (dic_control['msg_erro'] === ''){
+                        dic_control['msg_erro'] = "não encontrou o caracter ')' na chamada da função " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                    }
+                    return false;
                 }
+            } else {
                 return false;
             }
-        } else {
-            return false;
         }
     } else if (tk === TKs['TKDuploMais']){
         getToken();
@@ -892,7 +901,11 @@ function ExpressaoRestante(lado_atribuicao, printf){
                         return result;
                     }
                 } else {
-                    return true;
+                    if (typeof temp2 === 'string') {
+                        return result + ',' + temp2;
+                    } else {
+                        return result;
+                    }
                 }
             } else {
                 return false;
@@ -906,11 +919,22 @@ function ExpressaoRestante(lado_atribuicao, printf){
 }
 
 
-function Expressao(lado_atribuicao){
+function Expressao(lado_atribuicao, empilha_parametros=true){
     let result = ExpressAtrib(lado_atribuicao);
     if (result){
-        if (ExpressaoRestante(lado_atribuicao)){
-            return result;
+        let temp2 = ExpressaoRestante(lado_atribuicao)
+        if (temp2){
+            if (typeof temp2 === 'string') {
+                if (empilha_parametros){
+                    lista_parametros_func.push(result + ',' +temp2)
+                }
+                return temp2;
+            } else {
+                if (empilha_parametros){
+                    lista_parametros_func.push(result)
+                }
+                return result;
+            }
         } else {
             return false;
         }
@@ -1043,12 +1067,16 @@ function InstrIteracao(){
         getToken();
         index_escopo_pai = index_escopo;
         index_escopo = tabela_de_simbolos.length;
+        geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
         if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
-            index_escopo -= 1;
+            index_escopo = index_escopo_pai;
+            index_escopo_pai = tabela_de_simbolos[index_escopo]['escopo_pai'];
+            geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
             if (tk === TKs['TKWhile']){
                 getToken();
                 if (tk === TKs['TKAbreParenteses']){
                     getToken();
+                    debugger;
                     let result = Expressao();
                     if (result){
                         geraInstrucao('goto', result, labelFim, 'ifFalse', count_line, true);
@@ -1432,7 +1460,11 @@ function DecRestante(tipo, variavel, vetor_matriz){
     if (tk === TKs['TKAbreColchete']){
         getToken();
         var tam_vetor = lexico.toString().replace(/\x00/g, '');
-        if (ExpressCondic()){
+        let result = ExpressCondic();
+        if (result){
+            if (typeof result === 'string') {
+                tam_vetor = result;
+            }
             if (tk === TKs['TKFechaColchete']){
                 getToken();
                 tabela_simbolos(index_escopo, 'tamanho', tipo, variavel, tam_vetor, vetor_matriz);

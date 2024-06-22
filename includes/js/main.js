@@ -25,6 +25,7 @@ var vai_ler = false;
 var tabela_de_simbolos = [];
 var obriga_return = false;
 var achou_return = false;
+var lista_parametros_func = [];
 
 TKs = {
     "TKId": 1,
@@ -259,6 +260,7 @@ function inicializa_compilacao(){
     erro_lexico = false;
     obriga_return = false;
     achou_return = false;
+    lista_parametros_func = [];
 }
 
 function backtracking(funcao){

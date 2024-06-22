@@ -18,7 +18,7 @@ async function executaC3E2(codigo_c3e) {
     inicializa_variaveis_globais(codigo_c3e);
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
-        if (c3e.result === '@t135'){
+        if (c3e.result === '@t12'){
             debugger;
         }
         if (c3e.result) {

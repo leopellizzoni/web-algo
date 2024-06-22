@@ -30,6 +30,7 @@ function inicializa_matriz(variavel, tam_vetor, tam_matriz) {
         }
     }
     variaveis_vm[vm_escopo]['variaveis'][variavel] = {'valor': vetor};
+    modifica_historico_variavel(variavel, variaveis_vm[vm_escopo]['variaveis'][variavel]["valor"]);
     return vetor;
 }
 
@@ -39,6 +40,7 @@ function inicializa_vetor(variavel, tam_vetor) {
         vetor.push(NaN);
     }
     variaveis_vm[vm_escopo]['variaveis'][variavel] = {'valor': vetor};
+    modifica_historico_variavel(variavel, variaveis_vm[vm_escopo]['variaveis'][variavel]["valor"]);
     return vetor;
 }
 
@@ -190,6 +192,9 @@ function getValue(expressao) {
     } else if (verifica_temporaria(expressao)) {
         let escopo_real = verifica_existencia_variavel_escopo(expressao);
         resultado = Number(variaveis_vm[escopo_real]['variaveis'][expressao]['valor']);
+        while (verifica_temporaria(resultado)){
+            resultado = Number(variaveis_vm[escopo_real]['variaveis'][expressao]['valor']);
+        }
     } else {
         eh_vetor = verifica_se_eh_vetor(expressao);
         eh_matriz = verifica_se_eh_matriz(expressao);
