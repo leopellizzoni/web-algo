@@ -498,3 +498,19 @@ int main(){
     printf("%d\n", a[2]);
     return 0;
 }
+
+#include <stdio.h>
+int main() {
+    int a, i, j;
+    for (i=0;i<10;i++)
+        for (j=0;j<10;j++)
+            if ((i+j)%2==0)
+                if ((i+j)%4==0)
+                	printf("%d + %d = %d é multiplo de 4\n", i, j, i+j);
+    			else
+                    printf("%d + %d = %d não é multiplo de 4\n", i, j, i+j);
+    		else
+                printf("%d + %d = %d é impar\n", i, j, i+j);
+   	printf("%d", a);
+    return 0;
+}
