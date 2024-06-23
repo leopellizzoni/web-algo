@@ -103,6 +103,12 @@ reserved_words = {
     "end_reserved_words": TKs['TKId']
 }
 
+function verifica_existencia_escopo_tabela_simbolos(escopo){
+    if (!tabela_de_simbolos[escopo]){
+        tabela_de_simbolos.push({'escopo_pai': index_escopo_pai, 'variaveis': {}});
+    }
+}
+
 function verifica_funcao_declarada(variavel){
     if (variavel in tabela_de_simbolos[0]['variaveis']){
         if (tabela_de_simbolos[0]['variaveis'][variavel]['tipo']['eh_funcao']){
@@ -138,9 +144,7 @@ function verifica_variavel_declarada_em_escopos(escopo, variavel){
 
 
 function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica_funcao=false, verifica_matriz_ou_vetor=false, verifica_dimensao=false){
-    if (!tabela_de_simbolos[escopo]){
-        tabela_de_simbolos.push({'escopo_pai': index_escopo_pai, 'variaveis': {}});
-    }
+    verifica_existencia_escopo_tabela_simbolos(escopo)
     let armazena_escopo = escopo;
     for (let index=escopo; index>=0;index = tabela_de_simbolos[index]['escopo_pai']){
         if (identificador in tabela_de_simbolos[index]['variaveis']){
@@ -190,9 +194,7 @@ function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica
 
 
 function tabela_simbolos(escopo, acao, tipo, variavel, tamanho, dimensao_vetor, define=false, funcao=false){
-    if (!tabela_de_simbolos[escopo]){
-        tabela_de_simbolos.push({'escopo_pai': index_escopo_pai, 'variaveis': {}});
-    }
+    verifica_existencia_escopo_tabela_simbolos(escopo)
     if (acao === 'grava'){
         if (variavel in tabela_de_simbolos[escopo]['variaveis']){
             dic_control['msg_erro'] = "variável '" + variavel + "' já especificada no mesmo escopo" + ' (' + count_line + ', ' + count_column + ')' + '\n';

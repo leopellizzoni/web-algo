@@ -376,6 +376,9 @@ function ExpressMultiplRestante(temp, arg1){
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '/' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else if (tk === TKs['TKMult']){
@@ -396,9 +399,13 @@ function ExpressMultiplRestante(temp, arg1){
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '*' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else if (tk === TKs['TKResto']){
+        debugger;
         getToken();
         let arg2 = lexico.toString().replace(/\x00/g, '');
         let result = ExpressUnaria();
@@ -416,6 +423,9 @@ function ExpressMultiplRestante(temp, arg1){
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '%' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else {
@@ -471,6 +481,9 @@ function ExpressAddRestante(temp, arg1) {
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '+' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else if (tk === TKs['TKMenos']) {
@@ -491,6 +504,9 @@ function ExpressAddRestante(temp, arg1) {
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '-' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else if (tk === TKs['TKLogicalNot']) {
@@ -511,6 +527,9 @@ function ExpressAddRestante(temp, arg1) {
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '!' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else {
@@ -565,6 +584,9 @@ function ExpressRelacionalRestante(temp, arg1){
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '<' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else if (tk === TKs['TKMaior']){
@@ -585,6 +607,9 @@ function ExpressRelacionalRestante(temp, arg1){
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '>' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else if (tk === TKs['TKMenorIgual']){
@@ -605,6 +630,9 @@ function ExpressRelacionalRestante(temp, arg1){
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '<=' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else if (tk === TKs['TKMaiorIgual']){
@@ -625,6 +653,9 @@ function ExpressRelacionalRestante(temp, arg1){
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '>=' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else {
@@ -679,6 +710,9 @@ function ExpressIgualRestante(temp, arg1){
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '==' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else if (tk === TKs['TKDiferent']) {
@@ -699,6 +733,9 @@ function ExpressIgualRestante(temp, arg1){
                 return temp;
             }
         } else {
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = "Não encontrou expressão após '!=' " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else {
@@ -1018,12 +1055,14 @@ function InstrCondicional(esta_em_laco){
                     geraInstrucao('goto', result, labelElse, 'ifFalse', count_line, true);
                     index_escopo_pai = index_escopo;
                     index_escopo = tabela_de_simbolos.length;
+                    verifica_existencia_escopo_tabela_simbolos(index_escopo);
                     geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                     if (Instr(esta_em_laco)) {
                         if (tk === TKs['TKElse']){
                             let labelSaidaElse = newLabel();
                             index_escopo_pai = index_escopo;
                             index_escopo = tabela_de_simbolos.length;
+                            verifica_existencia_escopo_tabela_simbolos(index_escopo);
                             geraInstrucao('', labelSaidaElse, '', 'goto', count_line, true);
                             geraInstrucao('', '', '', labelElse, count_line, false, false, true);
                             geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
