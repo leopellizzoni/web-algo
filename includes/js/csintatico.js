@@ -23,8 +23,8 @@ function geraInstrucaoInicial(op, arg1, arg2, result, linha, salto=false, escrit
     instrucoes.unshift({ op, arg1, arg2, result, salto, escrita, label, leitura, linha, escopo });
 }
 
-function geraInstrucao(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false, escopo=false) {
-    instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura, linha, escopo });
+function geraInstrucao(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false, escopo=false, parametros=false) {
+    instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura, linha, escopo, parametros });
 }
 
 function OperadorUnario(){
@@ -91,10 +91,26 @@ function NomeFunc(tipo){
 
 
 function Param(){
+    var tipo = {'tk': tk,
+                                 'tipo': lexico.toString().replace(/\x00/g, '')};
     if (Tipo()){
+        let variavel = lexico.toString().replace(/\x00/g, '');
         if (tk === TKs['TKId']){
-            getToken();
-            return true;
+            if (tabela_simbolos(index_escopo, 'verifica_define', tipo, variavel) && verifica_variavel_declarada_em_escopos(index_escopo, variavel)) {
+                tabela_simbolos(index_escopo, 'grava', tipo, variavel);
+                getToken();
+                let result = DecRestante(tipo, variavel, 1);
+                if (result) {
+                    if (typeof result === 'string') {
+                         return variavel+result;
+                    } else {
+                        return variavel;
+                    }
+                }
+                return true;
+            } else {
+                return false;
+            }
         } else {
             backtracking('pop');
             return false;
@@ -109,8 +125,14 @@ function Param(){
 function ListaParamRestantes(){
     if (tk === TKs['TKVirgula']){
         getToken();
-        if (Param()){
-            return ListaParamRestantes();
+        let result = Param();
+        if (result){
+            let temp2 = ListaParamRestantes()
+            if (typeof temp2 === 'string') {
+                return result + ',' + temp2;
+            } else {
+                return result;
+            }
         } else {
             return false;
         }
@@ -119,11 +141,18 @@ function ListaParamRestantes(){
     }
 }
 
-
 function ListaParam(){
     backtracking('push');
-    if (Param()){
-        return !!ListaParamRestantes();
+    let result = Param();
+    if (result){
+        let temp2 = ListaParamRestantes();
+        if (typeof temp2 === 'string') {
+            lista_parametros_func.push(result + ',' +temp2)
+            return true;
+        } else {
+            lista_parametros_func.push(result)
+            return true;
+        }
     } else {
         console.log('chegou aqui');
         return true;
@@ -166,7 +195,6 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
         }
     } else if (tk === TKs['TKAbreParenteses']){
         getToken();
-        debugger;
         if (tk === TKs['TKFechaParenteses']) {
             let label = '$' + arg1;
             geraInstrucao('', label, '', 'goto', count_line, true);
@@ -182,10 +210,14 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
                 let parametros_funcao = lista_parametros_func.pop()
                 if (tk === TKs['TKFechaParenteses']) {
                     let label = '$' + arg1;
+                    let parametros = '';
                     if (parametros_funcao){
-                        label += ' ' + parametros_funcao;
+                        parametros = parametros_funcao
                     }
-                    geraInstrucao('', label, '', 'goto', count_line, true);
+                    if (tabela_de_simbolos[0]['variaveis'][arg1]['qtd_parametros_func'] !== parametros_funcao.split(',').length){
+                        dic_control['msg_erro'] = "Quantidade de parâmetros da chamada de função '" + arg1  + "' difere do esperado (" + count_line + ', ' + count_column + ')' + '\n';
+                    }
+                    geraInstrucao('', label, parametros, 'goto', count_line, true);
                     getToken();
                     return true;
                 } else {
@@ -1003,7 +1035,6 @@ function InstrCondicional(esta_em_laco){
                             }
                         } else {
                             geraInstrucao('', '', '', labelElse, count_line, false, false, true);
-                            debugger;
                             index_escopo = index_escopo_pai;
                             index_escopo_pai = tabela_de_simbolos[index_escopo]['escopo_pai'];
                             geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
@@ -1076,7 +1107,6 @@ function InstrIteracao(){
                 getToken();
                 if (tk === TKs['TKAbreParenteses']){
                     getToken();
-                    debugger;
                     let result = Expressao();
                     if (result){
                         geraInstrucao('goto', result, labelFim, 'ifFalse', count_line, true);
@@ -1492,7 +1522,7 @@ function DecRestante(tipo, variavel, vetor_matriz){
 
 function Dec(tipo, variavel) {
     if (tk === TKs['TKId']) {
-        if (tabela_simbolos(index_escopo, 'verifica_define', tipo, variavel) && verifica_variavel_declarada_em_escopos(index_escopo, variavel)) {
+        if (tabela_simbolos(index_escopo, 'verifica_define', tipo, variavel) && verifica_variavel_declarada_em_escopos(index_escopo, variavel) && verifica_funcao_declarada(variavel)) {
             tabela_simbolos(index_escopo, 'grava', tipo, variavel);
             getToken();
             let result = DecRestante(tipo, variavel, 1);
@@ -1665,14 +1695,24 @@ function CorpoFunc(esta_no_laco){
 
 
 function DecFunc(){
+    lista_parametros_func = [];
     var tipo = {'tk': tk,
-                                           'tipo': lexico.toString().replace(/\x00/g, '')};
+                     'tipo': lexico.toString().replace(/\x00/g, '')};
     if (Tipo()){
         let nome_func = lexico.toString().replace(/\x00/g, '');
         if (NomeFunc(tipo)){
             if (tk === TKs['TKAbreParenteses']){
                 getToken();
+                index_escopo_pai = index_escopo;
+                index_escopo = tabela_de_simbolos.length;
+                geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                 if (ListaParam()){
+                    let parametros = lista_parametros_func.pop()
+                    if (!parametros){
+                        parametros = '';
+                    }
+                    geraInstrucao('', '', '', parametros, count_line, false, false, true, false, false, true);
+                    tabela_de_simbolos[0]["variaveis"][nome_func]['qtd_parametros_func'] = parametros.split(',').length;
                     if (tk === TKs['TKFechaParenteses']){
                         getToken();
                         achou_return = false;
@@ -1680,11 +1720,9 @@ function DecFunc(){
                         if (tipo['tipo'] !== 'void'){
                             obriga_return = true;
                         }
-                        index_escopo_pai = index_escopo;
-                        index_escopo = tabela_de_simbolos.length;
-                        geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                         if (CorpoFunc()){
-                            index_escopo = index_escopo_pai;
+                            index_escopo_pai = 0;
+                            index_escopo = 0;
                             if (obriga_return){
                                 if (achou_return){
                                     return true;

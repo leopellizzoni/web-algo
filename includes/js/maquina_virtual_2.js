@@ -3,6 +3,7 @@ var vm_escopo = '';
 var vm_escopo_pai = '';
 var variaveis_vm = {};
 var vm_escopos = {}
+var parametros_chamadas_funcao = []
 
 async function executaC3E2(codigo_c3e) {
     let c3e;
@@ -13,12 +14,13 @@ async function executaC3E2(codigo_c3e) {
     let returns = [];
     variaveis_vm = [];
     vm_escopos = []
+    parametros_chamadas_funcao = [];
     inicializa_escopos(qtd_escopos.result);
     indexa_linhas(codigo_c3e);
     inicializa_variaveis_globais(codigo_c3e);
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
-        if (c3e.result === '@t12'){
+        if (c3e.result === 'somar'){
             debugger;
         }
         if (c3e.result) {
@@ -32,13 +34,13 @@ async function executaC3E2(codigo_c3e) {
                     linha_anterior = c3e.linha;
                 }
             }
-            if (c3e.escopo){
+            if (c3e.escopo) {
                 if (Number(c3e.result.substring(1)) === 0) {
                     vm_escopo_pai = 0;
                     vm_escopo = 0;
                 } else {
                     let escopo_atual = Number(c3e.result.substring(1));
-                    if (Number(c3e.result.substring(1)) in vm_escopos){
+                    if (Number(c3e.result.substring(1)) in vm_escopos) {
                         vm_escopo_pai = vm_escopos[escopo_atual]['escopo_pai'];
                         vm_escopo = escopo_atual
                     } else {
@@ -49,34 +51,37 @@ async function executaC3E2(codigo_c3e) {
                     }
                 }
                 continue;
-            // INICIO EXECUÇÃO C3E
+            } else if (c3e.parametros){
+                let parametros = parametros_chamadas_funcao.pop();
+                realiza_atribuicao_parametros(c3e.result.split(','), parametros);
             } else if (c3e.label) {
                 continue;
             } else if (c3e.salto) {
                 // SALTO INCODICIONAL
                 if (c3e.result == 'goto') {
                     if (verifica_se_eh_chamada_de_funcao(c3e.arg1)) {
-                        debugger;
+                        parametros_chamadas_funcao.push(c3e.arg2.split(','));
+                        returns.push({'index': i, 'identificador': c3e.arg1.substring(1), 'escopo_pai': vm_escopo_pai, 'escopo': vm_escopo});
                         if (!(Number(codigo_c3e[index_goto[c3e.arg1]+1].result.substring(1)) in vm_escopos)){
                             vm_escopo_pai = 0;
                             vm_escopo = Number(codigo_c3e[index_goto[c3e.arg1]+1].result.substring(1));
                             vm_escopos[vm_escopo] = {'escopo_pai': vm_escopo_pai}
                             altera_escopo_pai();
                         }
-                        returns.push({'index': i, 'identificador': c3e.arg1.substring(1)});
                     }
                     i = index_goto[c3e.arg1] - 1;
                     continue;
                 } else if (verifica_se_eh_return(c3e.result)) {
                     // RETURN
-                    debugger;
-                    vm_escopo = variaveis_vm[vm_escopo]['escopo_pai'];
-                    vm_escopo_pai = variaveis_vm[vm_escopo]['escopo_pai'];
                     if (c3e.arg1) {
                         let dados = returns.pop();
                         arg1 = getValue(c3e.arg1);
                         result = arg1;
+                        vm_escopo = 0;
+                        vm_escopo_pai = 0;
                         setValue(result, dados['identificador']);
+                        vm_escopo = dados['escopo'];
+                        vm_escopo_pai = dados['escopo_pai'];
                         if (dados['identificador'] != 'main'){
                             i = dados['index'];
                         }

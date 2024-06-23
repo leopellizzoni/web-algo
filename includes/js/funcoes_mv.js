@@ -44,6 +44,12 @@ function inicializa_vetor(variavel, tam_vetor) {
     return vetor;
 }
 
+function realiza_atribuicao_parametros(parametros, dados){
+    for (let i=0; i<parametros.length; i++){
+        setValue(dados[i], parametros[i]);
+    }
+}
+
 function indexa_linhas(codigo_c3e) {
     let c3e;
     for (let i = 0; i < codigo_c3e.length; i++) {
@@ -246,7 +252,7 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true){
             escopo_real = vm_escopo;
         }
         let posicao = getValue(dados.posicao);
-        variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao] = Number(valor);
+        variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao] = Number(getValue(valor));
         modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor']);
     } else if (eh_matriz){
         dados = extrai_variavel_e_posicao_matriz(variavel);
@@ -257,7 +263,7 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true){
         } else {
             escopo_real = vm_escopo;
         }
-        variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1][posicao2] = Number(valor);
+        variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1][posicao2] = Number(getValue(valor));
         modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor']);
     } else {
         if (verifica_existencia_de_variavel){
@@ -265,9 +271,9 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true){
         } else {
             escopo_real = vm_escopo;
         }
-        variaveis_vm[escopo_real]['variaveis'][variavel] = {'valor': Number(valor)};
+        variaveis_vm[escopo_real]['variaveis'][variavel] = {'valor': Number(getValue(valor))};
         if (!verifica_temporaria(variavel)){
-            modifica_historico_variavel(variavel, valor);
+            modifica_historico_variavel(variavel, getValue(valor));
         }
 
     }

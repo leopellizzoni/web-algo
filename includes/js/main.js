@@ -103,6 +103,16 @@ reserved_words = {
     "end_reserved_words": TKs['TKId']
 }
 
+function verifica_funcao_declarada(variavel){
+    if (variavel in tabela_de_simbolos[0]['variaveis']){
+        if (tabela_de_simbolos[0]['variaveis'][variavel]['tipo']['eh_funcao']){
+            dic_control['msg_erro'] = 'Variável "' + variavel + '" não pode ser utilizada pois já esta sendo utilizada por função (' + count_line + ', ' + count_column + ')' + '\n';
+            return false;
+        }
+    }
+    return true;
+}
+
 function verifica_variavel_declarada_em_escopos(escopo, variavel){
     for (let index=escopo; index>=0;index = tabela_de_simbolos[index]['escopo_pai']){
         if (variavel in tabela_de_simbolos[index]['variaveis']){
