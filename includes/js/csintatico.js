@@ -991,16 +991,16 @@ function ExpressaoRestante(lado_atribuicao, printf){
 function Expressao(lado_atribuicao, empilha_parametros=true){
     let result = ExpressAtrib(lado_atribuicao);
     if (result){
-        let temp2 = ExpressaoRestante(lado_atribuicao)
+        let temp2 = ExpressaoRestante(lado_atribuicao);
         if (temp2){
             if (typeof temp2 === 'string') {
                 if (empilha_parametros){
-                    lista_parametros_func.push(result + ',' +temp2)
+                    lista_parametros_func.push(result + ',' +temp2);
                 }
                 return temp2;
             } else {
                 if (empilha_parametros){
-                    lista_parametros_func.push(result)
+                    lista_parametros_func.push(result);
                 }
                 return result;
             }

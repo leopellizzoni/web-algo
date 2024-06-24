@@ -28,7 +28,7 @@ async function executaC3E2(codigo_c3e) {
             if (debug_compiler) {
                 if (linha_anterior !== c3e.linha && (!c3e.label && !c3e.salto)) {
                     vai_ler = true;
-                    modifica_cor_linhas_editor_texto();
+                    modifica_cor_linhas_editor_texto(c3e.linha, linha_anterior);
                     await getUserDebug();
                     vai_ler = false;
                     linha_anterior = c3e.linha;
