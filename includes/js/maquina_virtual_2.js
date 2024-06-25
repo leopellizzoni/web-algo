@@ -20,9 +20,6 @@ async function executaC3E2(codigo_c3e) {
     inicializa_variaveis_globais(codigo_c3e);
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
-        if (c3e.result === 'somar'){
-            debugger;
-        }
         if (c3e.result) {
             // DEPURADOR
             if (debug_compiler) {
@@ -60,7 +57,7 @@ async function executaC3E2(codigo_c3e) {
                 // SALTO INCODICIONAL
                 if (c3e.result == 'goto') {
                     if (verifica_se_eh_chamada_de_funcao(c3e.arg1)) {
-                        parametros_chamadas_funcao.push(c3e.arg2.split(','));
+                        parametros_chamadas_funcao.push(carrega_parametros(c3e.arg2.split(',')));
                         returns.push({'index': i, 'identificador': c3e.arg1.substring(1), 'escopo_pai': vm_escopo_pai, 'escopo': vm_escopo});
                         if (!(Number(codigo_c3e[index_goto[c3e.arg1]+1].result.substring(1)) in vm_escopos)){
                             vm_escopo_pai = 0;
@@ -124,7 +121,7 @@ async function executaC3E2(codigo_c3e) {
                         let posicao2 = getValue(dados["posicoes"][0]);
                         variaveis_vm[vm_escopo]['variaveis'][dados.variavel] = {'valor': inicializa_matriz(dados['variavel'], posicao1, posicao2)};
                     } else {
-                        setValue(NaN, c3e.result, false);
+                        setValue(0, c3e.result, false);
                     }
                 } else {
                     arg1 = getValue(c3e.arg1);

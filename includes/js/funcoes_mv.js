@@ -26,7 +26,7 @@ function inicializa_matriz(variavel, tam_vetor, tam_matriz) {
     for (let i = 0; i < tam_vetor; i++) {
         vetor.push([]);
         for (let j = 0; j < tam_matriz; j++) {
-            vetor[i].push(NaN);
+            vetor[i].push(0);
         }
     }
     variaveis_vm[vm_escopo]['variaveis'][variavel] = {'valor': vetor};
@@ -37,7 +37,7 @@ function inicializa_matriz(variavel, tam_vetor, tam_matriz) {
 function inicializa_vetor(variavel, tam_vetor) {
     let vetor = [];
     for (let i = 0; i < tam_vetor; i++) {
-        vetor.push(NaN);
+        vetor.push(0);
     }
     variaveis_vm[vm_escopo]['variaveis'][variavel] = {'valor': vetor};
     modifica_historico_variavel(variavel, variaveis_vm[vm_escopo]['variaveis'][variavel]["valor"]);
@@ -116,8 +116,9 @@ function verifica_operador_unario(valor) {
     return ['!', '+', '-'].includes(String(valor)[0]);
 }
 
+const regex = /^[+-]?\d+(\.\d+)?$/;
 function verifica_constante(valor) {
-    return regexNumeroInteiro.test(String(valor));
+    return regex.test(String(valor));
 }
 
 function verifica_temporaria(valor) {
@@ -187,7 +188,7 @@ function getValue(expressao) {
     let operador = false;
     if (verifica_operador_unario(expressao)) {
         operador = String(expressao)[0];
-        expressao = expressao.substring(1);
+        expressao = expressao.toString().substring(1);
     }
 
     let eh_matriz;
@@ -320,6 +321,14 @@ function formataStringFloat(template, values) {
     });
 }
 
+function carrega_parametros(lista_param){
+    let parametros = [];
+    for (let i=0; i<=lista_param.length;i++){
+        parametros.push(getValue(lista_param[i]));
+    }
+    return parametros;
+}
+
 function formataStringQuebraLinha(template) {
     return template.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
 }
@@ -370,7 +379,7 @@ function calcula_argumentos(arg1, arg2, op){
         return Number(arg1) - Number(arg2);
     }
     if (op === '/') {
-        return Number(arg1) / Number(arg2);
+        return Math.floor(Number(arg1) / Number(arg2));
     }
     if (op === '*') {
         return Number(arg1) * Number(arg2);
@@ -433,7 +442,7 @@ function inicializa_variaveis_globais(codigo_c3e){
                     let dados = extrai_variavel_e_posicao_matriz(c3e.result);
                     inicializa_matriz(dados['variavel'], dados["posicoes"][0], dados["posicoes"][1]);
                 } else {
-                    setValue(NaN, c3e.result, false);
+                    setValue(0, c3e.result, false);
                 }
             } else {
                 arg2 = '';

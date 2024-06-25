@@ -157,7 +157,7 @@ function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica
         }
     }
     if (verifica_matriz_ou_vetor){
-        if (tabela_de_simbolos[armazena_escopo]['matriz_vetor'] === ''){
+        if (tabela_de_simbolos[armazena_escopo]["variaveis"][identificador]['matriz_vetor'] === ''){
             return false;
         } else {
             return true;
@@ -273,6 +273,7 @@ function inicializa_compilacao(){
     obriga_return = false;
     achou_return = false;
     lista_parametros_func = [];
+    empilha_operacao_aritmetica = [];
 }
 
 function backtracking(funcao){
@@ -386,9 +387,9 @@ function compiler(debug=false){
             }
         } catch (e){
             console.log(e);
-            if (erro_lexico){
-                textareaElement.value += dic_control['msg_erro'];
-            }
+
+            textareaElement.value += dic_control['msg_erro'];
+
             $("#button4")[0].hidden = false;
             $("#button5")[0].hidden = true;
             $("#button2")[0].hidden = false;

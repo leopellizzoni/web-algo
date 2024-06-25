@@ -167,11 +167,11 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
             return false;
         }
         getToken();
+        dimensao += 1;
         let result = Expressao();
         if (result) {
             if (tk === TKs['TKFechaColchete']) {
                 getToken();
-                dimensao += 1;
                 let temp2 = ExpressaoPosRestante(lado_atribuicao);
                 if (arg1){
                     if (typeof temp2 === 'string') {
@@ -212,7 +212,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
                     let label = '$' + arg1;
                     let parametros = '';
                     if (parametros_funcao){
-                        parametros = parametros_funcao
+                        parametros = parametros_funcao;
                     }
                     if (tabela_de_simbolos[0]['variaveis'][arg1]['qtd_parametros_func'] !== parametros_funcao.split(',').length){
                         dic_control['msg_erro'] = "Quantidade de parâmetros da chamada de função '" + arg1  + "' difere do esperado (" + count_line + ', ' + count_column + ')' + '\n';
@@ -232,17 +232,29 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
         }
     } else if (tk === TKs['TKDuploMais']){
         getToken();
+        if (empilha_operacao_aritmetica.length > 0){
+            dic_control['msg_erro'] = "Não é possível aplicar dois operadores ao mesmo tempo " + empilha_operacao_aritmetica[0] + identificador + '++ (' + count_line + ', ' + count_column + ')' + '\n';
+            return false;
+        }
+        let temp = newTemp();
+        geraInstrucao('', identificador, '', temp, count_line);
         geraInstrucao('+', identificador, 1, identificador, count_line);
         if (ExpressaoPosRestante(lado_atribuicao)) {
-            return true;
+            return temp;
         } else {
             return false;
         }
     } else if (tk === TKs['TKDuploMenos']){
+        if (empilha_operacao_aritmetica.length > 0){
+            dic_control['msg_erro'] = "Não é possível aplicar dois operadores ao mesmo tempo " + empilha_operacao_aritmetica[0] + identificador + '-- (' + count_line + ', ' + count_column + ')' + '\n';
+            return false;
+        }
         getToken();
+        let temp = newTemp();
+        geraInstrucao('', identificador, '', temp, count_line);
         geraInstrucao('-', identificador, 1, identificador, count_line);
         if (ExpressaoPosRestante(lado_atribuicao)) {
-            return true;
+            return temp;
         } else {
             return false;
         }
@@ -263,6 +275,7 @@ function ExpressaoPrima(lado_atribuicao) {
             getToken();
             return identificador;
         } else {
+            throw 'Variável não declarada';
             return false;
         }
     } else if (tk === TKs['TKCteInt'] || tk === TKs['TKCteDouble']) {
@@ -322,25 +335,28 @@ function ExpressPos(lado_atribuicao){
     }
 }
 
-
+let empilha_operacao_aritmetica = []
 function ExpressUnaria(lado_atribuicao){
     let arg1 = lexico.toString().replace(/\x00/g, '');
     let result = ExpressPos(lado_atribuicao);
     if (result){
         return result;
     } else if (tk === TKs['TKDuploMais']){
+        empilha_operacao_aritmetica.push('++');
         getToken();
         if (ExpressUnaria()){
+            empilha_operacao_aritmetica.pop();
             geraInstrucao('+', identificador, '1', identificador, count_line);
-            return true;
+            return identificador;
         } else {
             return false;
         }
     } else if (tk === TKs['TKDuploMenos']){
+        empilha_operacao_aritmetica.push('--');
         getToken();
         if (ExpressUnaria()){
             geraInstrucao('-', identificador, '1', identificador, count_line);
-            return true;
+            return identificador;
         } else {
             return false;
         }
@@ -405,7 +421,6 @@ function ExpressMultiplRestante(temp, arg1){
             return false;
         }
     } else if (tk === TKs['TKResto']){
-        debugger;
         getToken();
         let arg2 = lexico.toString().replace(/\x00/g, '');
         let result = ExpressUnaria();
@@ -896,11 +911,11 @@ function ExpressAtrib(lado_atribuicao){
         if (typeof id !== 'string'){
             id = identificador;
         }
-        // if (verifica_variavel_declarada(index_escopo, identificador, 0, false, true)){
-        //     if (!verifica_variavel_declarada(index_escopo, identificador, dimensao, false, false, true)){
-        //         return false;
-        //     }
-        // }
+        if (isNaN(parseFloat(id))){
+            if (!verifica_variavel_declarada(index_escopo, identificador, dimensao, false, false, true)){
+                throw 'Erro sintático';
+            }
+        }
         let operador = lexico.toString().replace(/\x00/g, '');
         if (OperadorAtrib()){
             // if (verifica_variavel_declarada(identificador, dimensao)){
@@ -1080,18 +1095,27 @@ function InstrCondicional(esta_em_laco){
                             return true;
                         }
                     } else {
+                        if (dic_control['msg_erro'] === '') {
+                            dic_control['msg_erro'] = "Instrução era esperada após ')' no comando if " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                        }
                         return false;
                     }
                 } else {
                     if (dic_control['msg_erro'] === '') {
-                        dic_control['msg_erro'] = "não encontrou o caracter ')' ao final da expressão " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                        dic_control['msg_erro'] = "não encontrou o caracter ')' ao final da expressão no comando if " + ' (' + count_line + ', ' + count_column + ')' + '\n';
                     }
                     return false;
                 }
             } else {
+                if (dic_control['msg_erro'] === '') {
+                    dic_control['msg_erro'] = "não encontrou o expressão antes de ')' no comando if " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
                 return false;
             }
         } else {
+            if (dic_control['msg_erro'] === '') {
+                dic_control['msg_erro'] = "não encontrou o caracter '(' ao final da expressão no comando if " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     }
@@ -1122,12 +1146,21 @@ function InstrIteracao(){
                         return true;
                     }
                 } else {
+                    if (dic_control['msg_erro'] === '') {
+                        dic_control['msg_erro'] = "não encontrou o caracter ')' ao final da expressão no comando while  " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                    }
                     return false;
                 }
             } else {
+                if (dic_control['msg_erro'] === '') {
+                    dic_control['msg_erro'] = "não encontrou o expressão antes de ')' no comando while " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
                 return false;
             }
         } else {
+            if (dic_control['msg_erro'] === '') {
+                dic_control['msg_erro'] = "não encontrou o caracter ')' ao final da expressão no comando while  " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
             return false;
         }
     } else if (tk === TKs['TKDo']){
@@ -1169,6 +1202,9 @@ function InstrIteracao(){
                             return false;
                         }
                     } else {
+                        if (dic_control['msg_erro'] === '') {
+                            dic_control['msg_erro'] = "não encontrou o expressão antes de ')' no comando while " + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                        }
                         return false;
                     }
                 } else {
@@ -1178,6 +1214,9 @@ function InstrIteracao(){
                     return false;
                 }
             } else {
+                if (dic_control['msg_erro'] === '') {
+                    dic_control['msg_erro'] = "não encontrou o comando while em laço de repetição do" + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
                 return false;
             }
         } else {
