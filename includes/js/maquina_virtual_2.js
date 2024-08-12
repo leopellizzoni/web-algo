@@ -39,7 +39,7 @@ async function executaC3E2(codigo_c3e) {
                     let escopo_atual = Number(c3e.result.substring(1));
                     if (Number(c3e.result.substring(1)) in vm_escopos) {
                         vm_escopo_pai = vm_escopos[escopo_atual]['escopo_pai'];
-                        vm_escopo = escopo_atual
+                        vm_escopo = escopo_atual;
                     } else {
                         vm_escopo_pai = vm_escopo;
                         vm_escopo = Number(c3e.result.substring(1));

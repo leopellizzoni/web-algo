@@ -3,17 +3,6 @@
 var historico_variaveis = {};
 var flag_saida_escrita = true;
 
-
-
-function modifica_historico_variavel(variavel, valor){
-    if (variavel in historico_variaveis){
-        historico_variaveis[variavel].push(valor);
-    } else {
-        historico_variaveis[variavel] = [valor];
-    }
-    atualiza_tabela_variaveis(historico_variaveis);
-}
-
 function calcula_argumentos(c3e) {
     let arg1;
     let arg2;

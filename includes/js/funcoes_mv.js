@@ -5,6 +5,17 @@ function inicializa_escopos(qtd_escopos){
     }
 }
 
+function modifica_historico_variavel(variavel, valor){
+    if (!(variavel in variaveis_vm[0]['variaveis'])){
+        if (variavel in historico_variaveis){
+            historico_variaveis[variavel].push(valor);
+        } else {
+            historico_variaveis[variavel] = [valor];
+        }
+        atualiza_tabela_variaveis(historico_variaveis);
+    }
+}
+
 function altera_escopo_pai(){
     variaveis_vm[vm_escopo]['escopo_pai'] = vm_escopo_pai;
 }

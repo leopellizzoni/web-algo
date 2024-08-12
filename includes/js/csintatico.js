@@ -1588,9 +1588,13 @@ function DecRestante(tipo, variavel, vetor_matriz){
                     return false;
                 }
             } else {
+                if (dic_control['msg_erro'] === '') {
+                    dic_control['msg_erro'] += "não encontrou o caracter ']' na declaração da variável " + variavel + ' (' + count_line + ', ' + count_column + ')' + '\n';
+                }
                  return false;
             }
         } else {
+            dic_control['msg_erro'] += "não encontrou a declaração do tamanho do vetor na declaração da variável " + variavel + ' (' + count_line + ', ' + count_column + ')' + '\n';
             return false;
         }
     } else {
@@ -1612,7 +1616,7 @@ function Dec(tipo, variavel) {
                 }
                 return true;
             }
-            return true;
+            return result;
         } else {
             if (dic_control['msg_erro'] === ''){
                 dic_control['msg_erro'] = "variável " + variavel + ' não pode ser declarada devido a macro com o mesmo nome declarada (' + count_line + ', ' + count_column + ')' + '\n';
