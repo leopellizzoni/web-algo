@@ -342,10 +342,18 @@ function formataStringInt(template, values) {
 function formataStringFloat(template, values) {
     let index = 0;
     let arg;
-    return template.replace(/%f/g, () => {
+    return template.replace(/%(\.\d+)?f/g, (match, decimals) => {
         arg = getValue(values[index]);
         index++;
-        return arg;
+
+        if (decimals) {
+            // Se o formato for do tipo %.nf, extrair o número de casas decimais
+            let precision = parseInt(decimals.slice(1)); // Remove o ponto (.) e converte para inteiro
+            return parseFloat(arg).toFixed(precision);
+        } else {
+            // Se for apenas %f, retorna o valor original como float
+            return parseFloat(arg);
+        }
     });
 }
 

@@ -137,52 +137,6 @@ function calcula_argumentos(c3e) {
 
 }
 
-function formataStringFloat(template, values) {
-    let index = 0;
-    return template.replace(/%f/g, () => {
-        if (values[index].replace(')', '').split('[')[0] in variaveis) {
-            if (values[index].replace(')', '').split('[')[0][0] !== '@') {
-                let var_tabela_simbolos = tabela_de_simbolos[values[index].replace(')', '').split('[')[0]];
-                if (['vetor', 'matriz'].includes(var_tabela_simbolos['matriz_vetor'])) {
-                    let primeira_dimensao = values[index].replace(')', '').split('[')[1].replace(']', '');
-                    let posicao_vetor;
-                    if (regexNumero.test(String(primeira_dimensao)[0])) {
-                        posicao_vetor = primeira_dimensao;
-                    } else {
-                        if (!(primeira_dimensao in variaveis)) {
-                            console.log('não tem variavel no array');
-                        }
-                        posicao_vetor = variaveis[primeira_dimensao]['valor'];
-                    }
-                    let vetor = values[index].replace(')', '').split('[')[0];
-                    if (var_tabela_simbolos['matriz_vetor'] === 'matriz') {
-                        let segunda_dimensao = values[index].replace(')', '').split('[')[2].replace(']', '');
-                        let posicao_matriz;
-                        if (regexNumero.test(String(segunda_dimensao)[0])) {
-                            posicao_matriz = segunda_dimensao;
-                        } else {
-                            if (!(segunda_dimensao in variaveis)) {
-                                console.log('não tem variavel no array');
-                            }
-                            posicao_matriz = variaveis[segunda_dimensao]['valor'];
-                        }
-                        return Number(variaveis[vetor]['valor'][posicao_vetor][posicao_matriz]).toFixed(5);;
-                    }
-                    return Number(variaveis[vetor]['valor'][posicao_vetor]).toFixed(5);;
-                } else {
-                    return Number(variaveis[values[index++].replace(')', '')].valor).toFixed(5);;
-                }
-            } else {
-                return Number(variaveis[values[index++].replace(')', '')].valor).toFixed(5);;
-            }
-        } else if (regexNumeroInteiro.test(String(values[index]))) {
-            return Number(values[index]).toFixed(5);
-        } else {
-            return '&falha';
-        }
-    });
-}
-
 function formataStringInt(template, values) {
     let index = 0;
     return template.replace(/%d/g, () => {
