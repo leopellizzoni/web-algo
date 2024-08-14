@@ -23,8 +23,8 @@ function geraInstrucaoInicial(op, arg1, arg2, result, linha, salto=false, escrit
     instrucoes.unshift({ op, arg1, arg2, result, salto, escrita, label, leitura, linha, escopo });
 }
 
-function geraInstrucao(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false, escopo=false, parametros=false) {
-    instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura, linha, escopo, parametros });
+function geraInstrucao(op, arg1, arg2, result, linha, salto=false, escrita=false, label=false, leitura=false, escopo=false, parametros=false, tipo_variavel=false) {
+    instrucoes.push({ op, arg1, arg2, result, salto, escrita, label, leitura, linha, escopo, parametros, tipo_variavel });
 }
 
 function OperadorUnario(){
@@ -68,7 +68,7 @@ function OperadorAtrib(){
 
 
 function Tipo(){
-    if (tk === TKs['TKInt'] || tk === TKs['TKVoid'] || tk === TKs['TKFloat']){
+    if (tk === TKs['TKInt'] || tk === TKs['TKVoid'] || tk === TKs['TKFloat'] || tk === TKs['TKDouble']){
         getToken();
         return true;
     } else {
@@ -127,7 +127,7 @@ function ListaParamRestantes(){
         getToken();
         let result = Param();
         if (result){
-            let temp2 = ListaParamRestantes()
+            let temp2 = ListaParamRestantes();
             if (typeof temp2 === 'string') {
                 return result + ',' + temp2;
             } else {
@@ -1610,9 +1610,9 @@ function Dec(tipo, variavel) {
             let result = DecRestante(tipo, variavel, 1);
             if (result) {
                 if (typeof result === 'string') {
-                    geraInstrucao('', '', '', variavel+result, count_line);
+                    geraInstrucao('', '', '', variavel+result, count_line, false, false, false, false, false, false, tipo['tipo']);
                 } else {
-                    geraInstrucao('', '', '', variavel, count_line);
+                    geraInstrucao('', '', '', variavel, count_line, false, false, false, false, false, false, tipo['tipo']);
                 }
                 return true;
             }

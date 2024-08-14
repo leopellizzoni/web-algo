@@ -18,6 +18,7 @@ async function executaC3E2(codigo_c3e) {
     inicializa_escopos(qtd_escopos.result);
     indexa_linhas(codigo_c3e);
     inicializa_variaveis_globais(codigo_c3e);
+    debugger;
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
         if (c3e.result) {
@@ -111,17 +112,20 @@ async function executaC3E2(codigo_c3e) {
                 }
             } else {
                 if (!c3e.arg1) {
+                    debugger;
                     if (verifica_se_eh_vetor(c3e.result)) {
                         let dados = extrai_variavel_e_posicao_vetor(c3e.result);
                         let posicao = getValue(dados["posicao"]);
-                        variaveis_vm[vm_escopo]['variaveis'][dados.variavel] = {'valor': inicializa_vetor(dados['variavel'], posicao)};
+                        variaveis_vm[vm_escopo]['variaveis'][dados.variavel] = {'valor': inicializa_vetor(dados['variavel'], posicao),
+                                                                                'tipo': c3e.tipo_variavel};
                     } else if (verifica_se_eh_matriz(c3e.result)){
                         let dados = extrai_variavel_e_posicao_matriz(c3e.result);
                         let posicao1 = getValue(dados["posicoes"][0]);
                         let posicao2 = getValue(dados["posicoes"][0]);
-                        variaveis_vm[vm_escopo]['variaveis'][dados.variavel] = {'valor': inicializa_matriz(dados['variavel'], posicao1, posicao2)};
+                        variaveis_vm[vm_escopo]['variaveis'][dados.variavel] = {'valor': inicializa_matriz(dados['variavel'], posicao1, posicao2),
+                                                                                'tipo': c3e.tipo_variavel};
                     } else {
-                        setValue(0, c3e.result, false);
+                        setValue(0, c3e.result, false, c3e.tipo_variavel);
                     }
                 } else {
                     arg1 = getValue(c3e.arg1);

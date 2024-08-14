@@ -194,6 +194,16 @@ function extrai_variavel_e_posicao_matriz(valor) {
 }
 
 
+function formata_numero_conforme_tipo(arg, tipo){
+    if (tipo === 'int'){
+        return Math.floor(arg);
+    } else {
+        return arg;
+    }
+
+}
+
+
 function getValue(expressao) {
     let resultado;
     let operador = false;
@@ -251,7 +261,7 @@ function getValue(expressao) {
     }
 }
 
-function setValue(valor, variavel, verifica_existencia_de_variavel=true){
+function setValue(valor, variavel, verifica_existencia_de_variavel=true, tipo_variavel=false){
     let eh_vetor = verifica_se_eh_vetor(variavel);
     let eh_matriz = verifica_se_eh_matriz(variavel);
     let dados;
@@ -264,7 +274,7 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true){
             escopo_real = vm_escopo;
         }
         let posicao = getValue(dados.posicao);
-        variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao] = Number(getValue(valor));
+        variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao] = Number(formata_numero_conforme_tipo(getValue(valor), variaveis_vm[escopo_real]['variaveis'][dados.variavel]['tipo']));
         modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor']);
     } else if (eh_matriz){
         dados = extrai_variavel_e_posicao_matriz(variavel);
@@ -275,7 +285,7 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true){
         } else {
             escopo_real = vm_escopo;
         }
-        variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1][posicao2] = Number(getValue(valor));
+        variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1][posicao2] = Number(formata_numero_conforme_tipo(getValue(valor), variaveis_vm[escopo_real]["variaveis"][dados.variavel]['tipo']));
         modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor']);
     } else {
         if (verifica_existencia_de_variavel){
@@ -283,9 +293,16 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true){
         } else {
             escopo_real = vm_escopo;
         }
-        variaveis_vm[escopo_real]['variaveis'][variavel] = {'valor': Number(getValue(valor))};
+        if (!(variavel in variaveis_vm[escopo_real]['variaveis'])) {
+            variaveis_vm[escopo_real]['variaveis'][variavel] = {'valor': '',
+                                                                'tipo': ''};
+            if (tipo_variavel){
+                variaveis_vm[escopo_real]['variaveis'][variavel]['tipo'] = tipo_variavel;
+            }
+        }
+        variaveis_vm[escopo_real]['variaveis'][variavel]['valor'] = Number(formata_numero_conforme_tipo(getValue(valor), variaveis_vm[escopo_real]['variaveis'][variavel]['tipo']));
         if (!verifica_temporaria(variavel)){
-            modifica_historico_variavel(variavel, getValue(valor));
+            modifica_historico_variavel(variavel, variaveis_vm[escopo_real]['variaveis'][variavel]['valor']);
         }
 
     }
@@ -328,7 +345,7 @@ function formataStringFloat(template, values) {
     return template.replace(/%f/g, () => {
         arg = getValue(values[index]);
         index++;
-        return Math.floor(arg);
+        return arg;
     });
 }
 
