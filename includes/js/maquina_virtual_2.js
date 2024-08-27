@@ -58,7 +58,9 @@ async function executaC3E2(codigo_c3e) {
                 // SALTO INCODICIONAL
                 if (c3e.result == 'goto') {
                     if (verifica_se_eh_chamada_de_funcao(c3e.arg1)) {
-                        parametros_chamadas_funcao.push(carrega_parametros(c3e.arg2.split(',')));
+                        if (c3e.arg2) {
+                            parametros_chamadas_funcao.push(carrega_parametros(c3e.arg2.split(',')));
+                        }
                         returns.push({'index': i, 'identificador': c3e.arg1.substring(1), 'escopo_pai': vm_escopo_pai, 'escopo': vm_escopo});
                         if (!(Number(codigo_c3e[index_goto[c3e.arg1]+1].result.substring(1)) in vm_escopos)){
                             vm_escopo_pai = 0;
@@ -112,7 +114,6 @@ async function executaC3E2(codigo_c3e) {
                 }
             } else {
                 if (!c3e.arg1) {
-                    debugger;
                     if (verifica_se_eh_vetor(c3e.result)) {
                         let dados = extrai_variavel_e_posicao_vetor(c3e.result);
                         let posicao = getValue(dados["posicao"]);

@@ -144,7 +144,7 @@ function verifica_variavel_declarada_em_escopos(escopo, variavel){
 
 
 function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica_funcao=false, verifica_matriz_ou_vetor=false, verifica_dimensao=false){
-    verifica_existencia_escopo_tabela_simbolos(escopo)
+    verifica_existencia_escopo_tabela_simbolos(escopo);
     let armazena_escopo = escopo;
     for (let index=escopo; index>=0;index = tabela_de_simbolos[index]['escopo_pai']){
         if (identificador in tabela_de_simbolos[index]['variaveis']){

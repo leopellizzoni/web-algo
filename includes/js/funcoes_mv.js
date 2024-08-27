@@ -138,15 +138,19 @@ function verifica_temporaria(valor) {
 
 function verifica_se_eh_vetor(valor) {
     // Regex para variável ou constante: [a-zA-Z_]\w*
-    // Regex para expressão: qualquer coisa válida dentro dos colchetes [a-zA-Z0-9_+\-*/()@ ]
-    let arrayNotationRegex = /^[a-zA-Z_]\w*\[[a-zA-Z0-9_+\-*/()@ ]+\]$/;
+    // Regex para expressão dentro dos colchetes: aceita variáveis, números, operadores, e parênteses
+    //const arrayNotationRegex = /^[a-zA-Z_]\w*(\[\s*([a-zA-Z_]\w*|\d+|@\w+|\[[a-zA-Z_]\w*|\d+|@\w+\])\s*\])+$/;
+    //const arrayNotationRegex = /^[a-zA-Z_]\w*(\[(?:[a-zA-Z_]\w*|\d+|@\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@\d+|[+\-*/()])*\])*\])*\])$/;
+    // const arrayNotationRegex = /^[a-zA-Z_]\w*(\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()])*\])*\])*\])$/;
+    // 7 aninhações
+    const arrayNotationRegex = /^[a-zA-Z_]\w*(\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()])*\])*\])*\])*\])*\])*\])*\])$/;
     return arrayNotationRegex.test(valor);
 }
 
 function verifica_se_eh_matriz(valor) {
     // Regex para variável ou constante: [a-zA-Z_]\w*
     // Regex para expressões dentro dos colchetes: [a-zA-Z0-9_+\-*/()@ ]
-    let matrixNotationRegex = /^[a-zA-Z_]\w*(\[[a-zA-Z0-9_+\-*/()@ ]+\])+$/;
+    let matrixNotationRegex = /^[a-zA-Z_]\w*(\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()])*\])*\])*\]?)\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()])*\])*\])*\]?$/;
     return matrixNotationRegex.test(valor);
 }
 
@@ -179,17 +183,60 @@ function extrai_variavel_e_posicao_vetor(valor) {
 }
 
 function extrai_variavel_e_posicao_matriz(valor) {
-    // Regex para variável ou constante: [a-zA-Z_]\w*
-    // Regex para posições dentro dos colchetes: [a-zA-Z0-9_+\-*/()@ ]+
-    let regex = /^([a-zA-Z_]\w*)((\[[a-zA-Z0-9_+\-*/()@ ]+\])+)/;
-    let match = valor.match(regex);
+    // Regex para capturar a variável e os colchetes
+    const regex = /^([a-zA-Z_]\w*)(\[(.*)\])$/;
+
+    // Executa o regex na expressão fornecida
+    const match = valor.match(regex);
 
     if (match) {
-        let variavel = match[1];
-        let posicoes = match[2].match(/\[([a-zA-Z0-9_+\-*/()@ ]+)\]/g).map(pos => pos.slice(1, -1));
-        return { variavel, posicoes };
+        const variavel = match[1];
+        const dimensoes = match[2];
+
+        // Função para processar aninhamentos
+        function processaDimensoes(dimensao) {
+            let resultado = [];
+            let nivel = 0;
+            let inicio = 0;
+
+            for (let i = 0; i < dimensao.length; i++) {
+                if (dimensao[i] === '[') {
+                    if (nivel === 0) {
+                        inicio = i + 1;
+                    }
+                    nivel++;
+                } else if (dimensao[i] === ']') {
+                    nivel--;
+                    if (nivel === 0) {
+                        resultado.push(dimensao.substring(inicio, i).trim());
+                    }
+                }
+            }
+
+            return resultado;
+        }
+
+        // Processa as dimensões para cada nível
+        let dimensaoAtual = dimensoes;
+        let dimensoesSeparadas = [];
+
+        while (dimensaoAtual) {
+            const dimensoesNiveis = processaDimensoes(dimensaoAtual);
+            dimensoesSeparadas = dimensoesSeparadas.concat(dimensoesNiveis);
+            if (dimensoesNiveis.length > 1) {
+                // Adiciona o próximo nível de dimensões
+                dimensaoAtual = dimensoesNiveis.pop();
+            } else {
+                break;
+            }
+        }
+
+        return {
+            variavel: variavel,
+            posicoes: dimensoesSeparadas
+        };
     } else {
-        return null;
+        return null; // Retorna null se a expressão não corresponder ao padrão esperado
     }
 }
 
@@ -249,7 +296,6 @@ function getValue(expressao) {
 
     switch (operador) {
         case '!':
-            debugger;
             let operacao = !Number(resultado);
             return operacao ? 1 : 0;
         case '+':
@@ -352,7 +398,7 @@ function formataStringFloat(template, values) {
             return parseFloat(arg).toFixed(precision);
         } else {
             // Se for apenas %f, retorna o valor original como float
-            return parseFloat(arg);
+            return parseFloat(arg).toFixed(6);
         }
     });
 }
@@ -418,7 +464,7 @@ function calcula_argumentos(arg1, arg2, op){
         return Math.floor(Number(arg1) / Number(arg2));
     }
     if (op === '*') {
-        return Number(arg1) * Number(arg2);
+        return parseFloat((Number(arg1) * Number(arg2)).toFixed(3));
     }
     if (op === '%') {
         return Number(arg1) % Number(arg2);
