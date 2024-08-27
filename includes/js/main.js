@@ -288,6 +288,7 @@ function backtracking(funcao){
         dic["instrucoes_c3e"] = instrucoes.slice();
         dic["msg_erro"] = dic_control['msg_erro'];
         dic["tabela_de_simbolos"] = JSON.parse(JSON.stringify(tabela_de_simbolos));
+        dic["dimensao"] = dimensao;
         lista_backtracking.push(dic);
     } else {
         ultima_posicao = lista_backtracking.pop();
@@ -299,6 +300,7 @@ function backtracking(funcao){
         count_line = ultima_posicao["count_line"];
         instrucoes = ultima_posicao['instrucoes_c3e'];
         dic_control['msg_erro'] = ultima_posicao['msg_erro'];
+        dimensao = ultima_posicao['dimensao'];
         tabela_de_simbolos = ultima_posicao['tabela_de_simbolos'];
     }
 }

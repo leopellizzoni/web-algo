@@ -147,10 +147,10 @@ function ListaParam(){
     if (result){
         let temp2 = ListaParamRestantes();
         if (typeof temp2 === 'string') {
-            lista_parametros_func.push(result + ',' +temp2)
+            lista_parametros_func.push(result + ',' +temp2);
             return true;
         } else {
-            lista_parametros_func.push(result)
+            lista_parametros_func.push(result);
             return true;
         }
     } else {
@@ -160,8 +160,10 @@ function ListaParam(){
 }
 
 
-function ExpressaoPosRestante(lado_atribuicao, arg1){
-    if (tk === TKs['TKAbreColchete']) {
+function ExpressaoPosRestante(lado_atribuicao, arg1) {
+    if (ExpressaoPrima(lado_atribuicao)) {
+        return true;
+    } else if (tk === TKs['TKAbreColchete']) {
         if (arg1 && !verifica_variavel_declarada(index_escopo, arg1, 0, false, true)){
             dic_control['msg_erro'] = " variável '" + arg1 + "' não é vetor " + ' (' + count_line + ', ' + count_column + ')' + '\n';
             return false;
@@ -173,10 +175,15 @@ function ExpressaoPosRestante(lado_atribuicao, arg1){
             if (tk === TKs['TKFechaColchete']) {
                 getToken();
                 let temp2 = ExpressaoPosRestante(lado_atribuicao);
+                debugger;
                 if (arg1){
                     if (typeof temp2 === 'string') {
                         return arg1 + "[" + result + "]" + temp2;
                     } else {
+                        debugger;
+                        if (!verifica_variavel_declarada(index_escopo, arg1, dimensao, false, false, true)){
+                            return false;
+                        }
                         return arg1 + "[" + result + "]";
                     }
                 } else {
@@ -323,11 +330,15 @@ function ExpressPos(lado_atribuicao){
             }
         } else {
             let temp2 = ExpressaoPosRestante(lado_atribuicao, arg1);
-            if (typeof temp2 === 'string'){
-                return temp2;
+            if (temp2){
+                if (typeof temp2 === 'string'){
+                    return temp2;
+                } else {
+                    // tempCount--;
+                    return result;
+                }
             } else {
-                // tempCount--;
-                return result;
+                return false;
             }
         }
     } else {
@@ -911,14 +922,15 @@ function ExpressAtrib(lado_atribuicao){
         if (typeof id !== 'string'){
             id = identificador;
         }
-        if (isNaN(parseFloat(id))){
-            if (!verifica_variavel_declarada(index_escopo, identificador, dimensao, false, false, true)){
-                throw 'Erro sintático';
-            }
-        }
+        // if (isNaN(parseFloat(id))){
+        //     if (!verifica_variavel_declarada(index_escopo, identificador, dimensao, false, false, true)){
+        //         throw 'Erro sintático';
+        //     }
+        // }
         let operador = lexico.toString().replace(/\x00/g, '');
         if (OperadorAtrib()){
             // if (verifica_variavel_declarada(identificador, dimensao)){
+                dimensao = 0;
                 var arg1 = lexico.toString().replace(/\x00/g, '');
                 let result = ExpressAtrib();
                 if (result){
