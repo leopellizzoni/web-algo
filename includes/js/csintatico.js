@@ -175,12 +175,10 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
             if (tk === TKs['TKFechaColchete']) {
                 getToken();
                 let temp2 = ExpressaoPosRestante(lado_atribuicao);
-                debugger;
                 if (arg1){
                     if (typeof temp2 === 'string') {
                         return arg1 + "[" + result + "]" + temp2;
                     } else {
-                        debugger;
                         if (!verifica_variavel_declarada(index_escopo, arg1, dimensao, false, false, true)){
                             return false;
                         }
@@ -240,7 +238,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
     } else if (tk === TKs['TKDuploMais']){
         getToken();
         if (empilha_operacao_aritmetica.length > 0){
-            dic_control['msg_erro'] = "Não é possível aplicar dois operadores ao mesmo tempo " + empilha_operacao_aritmetica[0] + identificador + '++ (' + count_line + ', ' + count_column + ')' + '\n';
+            dic_control['msg_erro'] = `Comportamento indefinido em ${empilha_operacao_aritmetica[0]}${identificador}++. Não é permitido usar operadores pré e pós na mesma variável em uma única expressão (${count_line}, ${count_column}).`;
             return false;
         }
         let temp = newTemp();
@@ -253,7 +251,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
         }
     } else if (tk === TKs['TKDuploMenos']){
         if (empilha_operacao_aritmetica.length > 0){
-            dic_control['msg_erro'] = "Não é possível aplicar dois operadores ao mesmo tempo " + empilha_operacao_aritmetica[0] + identificador + '-- (' + count_line + ', ' + count_column + ')' + '\n';
+            dic_control['msg_erro'] = `Comportamento indefinido em ${empilha_operacao_aritmetica[0]}${identificador}--. Não é permitido usar operadores pré e pós na mesma variável em uma única expressão (${count_line}, ${count_column}).`;
             return false;
         }
         getToken();
@@ -297,6 +295,7 @@ function ExpressaoPrima(lado_atribuicao) {
             return false;
         }
     } else if(tk === TKs['TKAbreParenteses']){
+        debugger;
         getToken();
         let result = Expressao();
         if (result){
@@ -319,7 +318,6 @@ function ExpressPos(lado_atribuicao){
     let arg1 = lexico.toString().replace(/\x00/g, '');
     let result = ExpressaoPrima(lado_atribuicao);
     if (result){
-
         if (typeof result !== 'string'){
             let temp = newTemp();
             result = ExpressaoPosRestante(lado_atribuicao, arg1);
@@ -346,7 +344,7 @@ function ExpressPos(lado_atribuicao){
     }
 }
 
-let empilha_operacao_aritmetica = []
+let empilha_operacao_aritmetica = [];
 function ExpressUnaria(lado_atribuicao){
     let arg1 = lexico.toString().replace(/\x00/g, '');
     let result = ExpressPos(lado_atribuicao);
@@ -355,6 +353,12 @@ function ExpressUnaria(lado_atribuicao){
     } else if (tk === TKs['TKDuploMais']){
         empilha_operacao_aritmetica.push('++');
         getToken();
+        if (tk === TKs['TKCteInt'] || tk === TKs['TKCteDouble']){
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = `Operação inválida ++${lexico}. O operador de incremento não pode ser aplicado a uma constante. `  + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
+            return false;
+        }
         if (ExpressUnaria()){
             empilha_operacao_aritmetica.pop();
             geraInstrucao('+', identificador, '1', identificador, count_line);
@@ -365,6 +369,12 @@ function ExpressUnaria(lado_atribuicao){
     } else if (tk === TKs['TKDuploMenos']){
         empilha_operacao_aritmetica.push('--');
         getToken();
+        if (tk === TKs['TKCteInt'] || tk === TKs['TKCteDouble']){
+            if (dic_control['msg_erro'] === ''){
+                dic_control['msg_erro'] = `Operação inválida --${lexico}. O operador de decremento não pode ser aplicado a uma constante. `  + ' (' + count_line + ', ' + count_column + ')' + '\n';
+            }
+            return false;
+        }
         if (ExpressUnaria()){
             geraInstrucao('-', identificador, '1', identificador, count_line);
             return identificador;

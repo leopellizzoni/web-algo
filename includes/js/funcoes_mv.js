@@ -250,6 +250,10 @@ function formata_numero_conforme_tipo(arg, tipo){
 
 }
 
+function verificarPosicaoExiste(array, posicao) {
+    return posicao in array;
+}
+
 
 function getValue(expressao) {
     let resultado;
@@ -278,13 +282,25 @@ function getValue(expressao) {
             dados = extrai_variavel_e_posicao_vetor(expressao);
             let posicao = getValue(dados.posicao);
             let escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
-            resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao]);
+            if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao)){
+                resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao]);
+            } else {
+                throw `Erro: A posição ${posicao} não existe no vetor.`;
+            }
         } else if (eh_matriz){
             dados = extrai_variavel_e_posicao_matriz(expressao);
             let posicao1 = getValue(dados["posicoes"][0]);
             let posicao2 = getValue(dados["posicoes"][1]);
             let escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
-            resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao1][posicao2]);
+            if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao1)){
+                if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1], posicao2)){
+                    resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao1][posicao2]);
+                } else {
+                    throw `Erro: A posição ${posicao2} não existe no vetor.`;
+                }
+            } else {
+                throw `Erro: A posição ${posicao1} não existe no vetor.`;
+            }
         } else {
             let escopo_real = verifica_existencia_variavel_escopo(expressao);
             if (!(expressao in variaveis_vm[escopo_real]['variaveis'])){
@@ -320,8 +336,13 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true, tipo_va
             escopo_real = vm_escopo;
         }
         let posicao = getValue(dados.posicao);
-        variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao] = Number(formata_numero_conforme_tipo(getValue(valor), variaveis_vm[escopo_real]['variaveis'][dados.variavel]['tipo']));
-        modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor']);
+        // FAZER TESTE DE TAMANHO DO VETOR EM CASO DE ERRO ESTOURAR ERRO DE TAMANHO DE MATRIZ.
+        if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao)){
+            variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao] = Number(formata_numero_conforme_tipo(getValue(valor), variaveis_vm[escopo_real]['variaveis'][dados.variavel]['tipo']));
+            modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor']);
+        } else {
+            throw `Erro: A posição ${posicao} não existe no vetor.`;
+        }
     } else if (eh_matriz){
         dados = extrai_variavel_e_posicao_matriz(variavel);
         let posicao1 = getValue(dados["posicoes"][0]);
@@ -331,8 +352,17 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true, tipo_va
         } else {
             escopo_real = vm_escopo;
         }
-        variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1][posicao2] = Number(formata_numero_conforme_tipo(getValue(valor), variaveis_vm[escopo_real]["variaveis"][dados.variavel]['tipo']));
-        modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor']);
+        // FAZER TESTE DE TAMANHO DO VETOR EM CASO DE ERRO ESTOURAR ERRO DE TAMANHO.
+        if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao1)){
+            if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1], posicao2)){
+                variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1][posicao2] = Number(formata_numero_conforme_tipo(getValue(valor), variaveis_vm[escopo_real]["variaveis"][dados.variavel]['tipo']));
+                modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor']);
+            } else {
+                throw `Erro: A posição ${posicao2} não existe no vetor.`;
+            }
+        } else {
+            throw `Erro: A posição ${posicao1} não existe no vetor.`;
+        }
     } else {
         if (verifica_existencia_de_variavel){
             escopo_real = verifica_existencia_variavel_escopo(variavel);
