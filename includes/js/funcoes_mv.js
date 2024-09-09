@@ -55,9 +55,9 @@ function inicializa_vetor(variavel, tam_vetor) {
     return vetor;
 }
 
-function realiza_atribuicao_parametros(parametros, dados){
+function realiza_atribuicao_parametros(parametros, dados, parametros_tipos){
     for (let i=0; i<parametros.length; i++){
-        setValue(dados[i], parametros[i]);
+        setValue(dados[i], parametros[i], true, parametros_tipos[parametros[i]]['tipo']);
     }
 }
 
@@ -554,7 +554,7 @@ function inicializa_variaveis_globais(codigo_c3e){
                     let dados = extrai_variavel_e_posicao_matriz(c3e.result);
                     inicializa_matriz(dados['variavel'], dados["posicoes"][0], dados["posicoes"][1]);
                 } else {
-                    setValue(0, c3e.result, false);
+                    setValue(0, c3e.result, false, c3e.tipo_variavel);
                 }
             } else {
                 arg2 = '';
@@ -567,7 +567,7 @@ function inicializa_variaveis_globais(codigo_c3e){
                     result = arg1;
                 }
 
-                setValue(result, c3e.result, false);
+                setValue(result, c3e.result, false, c3e.tipo_variavel);
             }
 
         }

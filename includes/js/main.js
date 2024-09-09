@@ -194,7 +194,7 @@ function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica
 
 
 function tabela_simbolos(escopo, acao, tipo, variavel, tamanho, dimensao_vetor, define=false, funcao=false){
-    verifica_existencia_escopo_tabela_simbolos(escopo)
+    verifica_existencia_escopo_tabela_simbolos(escopo);
     if (acao === 'grava'){
         if (variavel in tabela_de_simbolos[escopo]['variaveis']){
             dic_control['msg_erro'] = "variável '" + variavel + "' já especificada no mesmo escopo" + ' (' + count_line + ', ' + count_column + ')' + '\n';
@@ -230,6 +230,11 @@ function tabela_simbolos(escopo, acao, tipo, variavel, tamanho, dimensao_vetor, 
             return true;
         }
     }
+}
+
+
+function busca_tipo_variavel(variavel){
+    return tabela_de_simbolos[0]['variaveis'][variavel]['tipo']['tipo'];
 }
 
 

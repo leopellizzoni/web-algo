@@ -51,7 +51,7 @@ async function executaC3E2(codigo_c3e) {
                     continue;
                 } else if (c3e.parametros) {
                     let parametros = parametros_chamadas_funcao.pop();
-                    realiza_atribuicao_parametros(c3e.result.split(','), parametros);
+                    realiza_atribuicao_parametros(c3e.result.split(','), parametros, c3e.parametros);
                 } else if (c3e.label) {
                     continue;
                 } else if (c3e.salto) {
@@ -65,12 +65,13 @@ async function executaC3E2(codigo_c3e) {
                                 'index': i,
                                 'identificador': c3e.arg1.substring(1),
                                 'escopo_pai': vm_escopo_pai,
-                                'escopo': vm_escopo
+                                'escopo': vm_escopo,
+                                'tipo_variavel': c3e.tipo_variavel
                             });
                             if (!(Number(codigo_c3e[index_goto[c3e.arg1] + 1].result.substring(1)) in vm_escopos)) {
                                 vm_escopo_pai = 0;
                                 vm_escopo = Number(codigo_c3e[index_goto[c3e.arg1] + 1].result.substring(1));
-                                vm_escopos[vm_escopo] = {'escopo_pai': vm_escopo_pai}
+                                vm_escopos[vm_escopo] = {'escopo_pai': vm_escopo_pai};
                                 altera_escopo_pai();
                             }
                         }
@@ -84,7 +85,7 @@ async function executaC3E2(codigo_c3e) {
                             result = arg1;
                             vm_escopo = 0;
                             vm_escopo_pai = 0;
-                            setValue(result, dados['identificador']);
+                            setValue(result, dados['identificador'], true, dados['tipo_variavel']);
                             vm_escopo = dados['escopo'];
                             vm_escopo_pai = dados['escopo_pai'];
                             if (dados['identificador'] != 'main') {
@@ -102,7 +103,7 @@ async function executaC3E2(codigo_c3e) {
                     }
                 } else if (c3e.escrita) {
                     let quebra_printf = parsePrintf(c3e.result);
-                    let parametros = quebra_printf.params.slice(1)
+                    let parametros = quebra_printf.params.slice(1);
                     let formatarString = formataStringInt(quebra_printf.formattedString, parametros);
                     formatarString = formataStringFloat(formatarString, parametros);
                     formatarString = formataStringQuebraLinha(formatarString);

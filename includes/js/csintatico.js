@@ -202,7 +202,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
         getToken();
         if (tk === TKs['TKFechaParenteses']) {
             let label = '$' + arg1;
-            geraInstrucao('', label, '', 'goto', count_line, true);
+            geraInstrucao('', label, '', 'goto', count_line, true, false, false, false, false, false, busca_tipo_variavel(arg1));
             getToken();
             return true;
             // if (ExpressaoPosRestante()){
@@ -212,7 +212,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
             // }
         } else {
             if (Expressao()){
-                let parametros_funcao = lista_parametros_func.pop()
+                let parametros_funcao = lista_parametros_func.pop();
                 if (tk === TKs['TKFechaParenteses']) {
                     let label = '$' + arg1;
                     let parametros = '';
@@ -222,7 +222,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
                     if (tabela_de_simbolos[0]['variaveis'][arg1]['qtd_parametros_func'] !== parametros_funcao.split(',').length){
                         dic_control['msg_erro'] = "Quantidade de parâmetros da chamada de função '" + arg1  + "' difere do esperado (" + count_line + ', ' + count_column + ')' + '\n';
                     }
-                    geraInstrucao('', label, parametros, 'goto', count_line, true);
+                    geraInstrucao('', label, parametros, 'goto', count_line, true, false, false, false, false, false, busca_tipo_variavel(arg1));
                     getToken();
                     return true;
                 } else {
@@ -1812,10 +1812,15 @@ function DecFunc(){
                 geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                 if (ListaParam()){
                     let parametros = lista_parametros_func.pop()
+                    let lista_parametros = {};
                     if (!parametros){
                         parametros = '';
+                    } else {
+                        for (let i in parametros.split(',')){
+                            lista_parametros[parametros.split(',')[i]] = {'tipo': tabela_de_simbolos[index_escopo]['variaveis'][parametros.split(',')[i]]['tipo']['tipo']};
+                        }
                     }
-                    geraInstrucao('', '', '', parametros, count_line, false, false, true, false, false, true);
+                    geraInstrucao('', '', '', parametros, count_line, false, false, true, false, false, lista_parametros);
                     tabela_de_simbolos[0]["variaveis"][nome_func]['qtd_parametros_func'] = parametros.split(',').length;
                     if (tk === TKs['TKFechaParenteses']){
                         getToken();
