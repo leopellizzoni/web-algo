@@ -161,7 +161,7 @@ function ListaParam(){
 
 
 function ExpressaoPosRestante(lado_atribuicao, arg1) {
-    if (ExpressaoPrima(lado_atribuicao)) {
+    if (tk !== TKs['TKAbreParenteses'] && ExpressaoPrima(lado_atribuicao)) {
         return true;
     } else if (tk === TKs['TKAbreColchete']) {
         if (arg1 && !verifica_variavel_declarada(index_escopo, arg1, 0, false, true)){
