@@ -154,6 +154,9 @@ async function executaC3E2(codigo_c3e) {
                 }
             }
         }
+        if (dic_control['msg_warning']){
+            textareaElement.value += dic_control['msg_warning'];
+        }
         textareaElement.value += '\n\nPrograma compilado e executado com sucesso.';
     } catch (e){
         textareaElement.value += '\n\n' + e;

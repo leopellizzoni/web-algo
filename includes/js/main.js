@@ -16,6 +16,7 @@ var dic_control = {
     encontrou_main: false,
     encontrou_expressao: false,
     msg_erro: '',
+    msg_warning: '',
     printf: '',
     c3e: '',
     bibliotecas: {}
@@ -259,6 +260,7 @@ function inicializa_compilacao(){
     count_column = 0;
     count_line = 1;
     dic_control['msg_erro'] = '';
+    dic_control['msg_warning'] = '';
     dic_control['printf'] = '';
     dic_control['encontrou_expressao'] = false;
     dic_control["encontrou_main"] = false;
@@ -352,7 +354,8 @@ function compiler(debug=false){
         getToken();
         try{
             if (Programa()) {
-                textareaElement.value += 'Compilação OK' + '\n';
+                textareaElement.value += 'Léxico OK' + '\n';
+                textareaElement.value += 'Sintático OK' + '\n\n';
                 instrucoes.forEach(inst => {
                     if (inst.result) {
                         if (inst.salto || inst.label) {
@@ -371,9 +374,6 @@ function compiler(debug=false){
                     }
                 });
                 executaC3E2(instrucoes);
-                // if (dic_control["printf"] !== ''){
-                //     textareaElement.value += 'Saída de escrita:' + '\n' + dic_control["printf"];
-                // }
             } else {
                 if (dic_control['msg_erro']){
                     textareaElement.value += dic_control['msg_erro'];

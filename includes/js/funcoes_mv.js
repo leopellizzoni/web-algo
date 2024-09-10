@@ -491,7 +491,10 @@ function calcula_argumentos(arg1, arg2, op){
         return Number(arg1) - Number(arg2);
     }
     if (op === '/') {
-        return Math.floor(Number(arg1) / Number(arg2));
+        if (Number(arg2) === 0){
+            dic_control['msg_warning'] = `\nAtenção: divisão por 0 encontrada em ${arg1}/${arg2}`;
+        }
+        return parseInt(Number(arg1) / Number(arg2));
     }
     if (op === '*') {
         return parseFloat((Number(arg1) * Number(arg2)).toFixed(3));
