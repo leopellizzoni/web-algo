@@ -397,6 +397,9 @@ function getToken(){
 						proxC();
 						break;
 					}
+					dic_control['msg_erro'] = 'Erro encontrado na expressão %' + caracter + '. Conversão de tipo desconhecida. (' + count_line + ', ' + count_column + ')' + '\n';
+					erro_lexico = true;
+					throw 'Erro léxico';
 				}
 				if (caracter === ' '){
 					proxC();
