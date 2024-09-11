@@ -295,7 +295,6 @@ function ExpressaoPrima(lado_atribuicao) {
             return false;
         }
     } else if(tk === TKs['TKAbreParenteses']){
-        debugger;
         getToken();
         let result = Expressao();
         if (result){
@@ -1094,8 +1093,10 @@ function InstrCondicional(esta_em_laco){
                     index_escopo = tabela_de_simbolos.length;
                     verifica_existencia_escopo_tabela_simbolos(index_escopo);
                     geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
+                    index_escopo -= 1;
                     if (Instr(esta_em_laco)) {
                         if (tk === TKs['TKElse']){
+                            geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                             let labelSaidaElse = newLabel();
                             index_escopo_pai = index_escopo;
                             index_escopo = tabela_de_simbolos.length;
@@ -1104,9 +1105,9 @@ function InstrCondicional(esta_em_laco){
                             geraInstrucao('', '', '', labelElse, count_line, false, false, true);
                             geraInstrucao('', '', '', '#' + index_escopo, count_line, false, false, true, false, true);
                             getToken();
+                            index_escopo -= 2;
                             if (Instr()){
                                 geraInstrucao('', '', '', labelSaidaElse, count_line, false, false, true);
-                                index_escopo -= 2;
                                 return true;
                             }
                         } else {
@@ -1869,24 +1870,6 @@ function DecFunc(){
 }
 
 
-function DecVariavel(){
-    if (Tipo()){
-        if (tk === TKs['TKId']){
-            getToken();
-            if (tk === TKs['TKPontoEVirgula']){
-                getToken();
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    } else {
-        return false;
-    }
-}
-
 function DecLibDefine(){
     if (tk === TKs['TKDefine']){
         getToken();
@@ -1931,6 +1914,7 @@ function Dec2(){
     }
     backtracking('pop');
     if (DecFunc()){
+        geraInstrucao('', '', '', '#' + 0, count_line, false, false, true, false, true);
         if ('main' in tabela_de_simbolos[0]['variaveis']) {
             dic_control["encontrou_main"] = true;
         } else {

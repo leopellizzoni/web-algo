@@ -250,6 +250,20 @@ function formata_numero_conforme_tipo(arg, tipo){
 
 }
 
+function empilha_variaveis_recursao(escopo){
+    if ('recursao' in variaveis_vm[escopo]){
+        variaveis_vm[escopo]['recursao'].push(JSON.parse(JSON.stringify(variaveis_vm[escopo]['variaveis'])));
+    } else {
+        variaveis_vm[escopo]['recursao'] = [JSON.parse(JSON.stringify(variaveis_vm[escopo]['variaveis']))];
+    }
+
+    for (let chave in variaveis_vm[escopo]['variaveis']) {
+        if (variaveis_vm[escopo]['variaveis'].hasOwnProperty(chave)) {
+            variaveis_vm[escopo]['variaveis'][chave] = {'valor': 0, 'tipo': variaveis_vm[escopo]['variaveis']['tipo']};
+        }
+    }
+}
+
 function verificarPosicaoExiste(array, posicao) {
     return posicao in array;
 }
@@ -528,25 +542,26 @@ function calcula_argumentos(arg1, arg2, op){
     }
 }
 
+function verifica_se_eh_escopo(label){
+    if (label.startsWith("#") && /^\#\d+$/.test(label)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function inicializa_variaveis_globais(codigo_c3e){
     let esta_em_funcao = false;
     let c3e;
     vm_escopo = 0;  // variavel global
     vm_escopo_pai = 0;
+    debugger;
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
-        if (c3e.result === 'goto' && verifica_se_eh_chamada_de_funcao(c3e.arg1)){
-            continue;
+        if (c3e.escopo && c3e.label){
+            vm_escopo = parseInt(c3e.result.substring(1));
         }
-        if (!c3e.salto && verifica_se_eh_chamada_de_funcao(c3e.result) && esta_em_funcao == false) {
-            esta_em_funcao = true;
-            continue;
-        }
-        if (verifica_se_eh_return(c3e.result)){
-            esta_em_funcao = false;
-            continue;
-        }
-        if (!esta_em_funcao && c3e.arg1){
+        if (vm_escopo === 0 && !c3e.escopo && !c3e.salto && !c3e.escrita && !c3e.label && !c3e.leitura){
             arg1 = getValue(c3e.arg1);
             if (!arg1){
                 if (verifica_se_eh_vetor(c3e.result)) {
@@ -557,7 +572,7 @@ function inicializa_variaveis_globais(codigo_c3e){
                     let dados = extrai_variavel_e_posicao_matriz(c3e.result);
                     inicializa_matriz(dados['variavel'], dados["posicoes"][0], dados["posicoes"][1]);
                 } else {
-                    setValue(0, c3e.result, false, c3e.tipo_variavel);
+                    setValue(0, c3e.result, false);
                 }
             } else {
                 arg2 = '';
@@ -570,9 +585,10 @@ function inicializa_variaveis_globais(codigo_c3e){
                     result = arg1;
                 }
 
-                setValue(result, c3e.result, false, c3e.tipo_variavel);
+                setValue(result, c3e.result, false);
             }
 
         }
     }
+    vm_escopo = 0;
 }

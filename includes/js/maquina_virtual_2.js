@@ -3,7 +3,8 @@ var vm_escopo = '';
 var vm_escopo_pai = '';
 var variaveis_vm = {};
 var vm_escopos = {}
-var parametros_chamadas_funcao = []
+var parametros_chamadas_funcao = [];
+var pilha_funcoes = [];
 
 async function executaC3E2(codigo_c3e) {
     let c3e;
@@ -12,8 +13,9 @@ async function executaC3E2(codigo_c3e) {
     let arg2;
     let qtd_escopos = codigo_c3e.shift();
     let returns = [];
+    pilha_funcoes = [];
     variaveis_vm = [];
-    vm_escopos = []
+    vm_escopos = [];
     parametros_chamadas_funcao = [];
     inicializa_escopos(qtd_escopos.result);
     indexa_linhas(codigo_c3e);
@@ -38,6 +40,12 @@ async function executaC3E2(codigo_c3e) {
                         vm_escopo = 0;
                     } else {
                         let escopo_atual = Number(c3e.result.substring(1));
+                        if (codigo_c3e[i+1].salto && verifica_se_eh_return(codigo_c3e[i+1].result)){
+                            if (verifica_temporaria(codigo_c3e[i+1].arg1)){
+                                arg1 = getValue(codigo_c3e[i+1].arg1);
+                                setValue(arg1, pilha_funcoes[pilha_funcoes.length - 1].substring(1));
+                            }
+                        }
                         if (Number(c3e.result.substring(1)) in vm_escopos) {
                             vm_escopo_pai = vm_escopos[escopo_atual]['escopo_pai'];
                             vm_escopo = escopo_atual;
@@ -73,7 +81,14 @@ async function executaC3E2(codigo_c3e) {
                                 vm_escopo = Number(codigo_c3e[index_goto[c3e.arg1] + 1].result.substring(1));
                                 vm_escopos[vm_escopo] = {'escopo_pai': vm_escopo_pai};
                                 altera_escopo_pai();
+                            } else {
+
+                                if (c3e.arg1 === pilha_funcoes[pilha_funcoes.length - 1]) {
+                                    // empilha variaveis de chamada recursiva no mesmo escopo
+                                    empilha_variaveis_recursao(Number(codigo_c3e[index_goto[c3e.arg1] + 1].result.substring(1)));
+                                }
                             }
+                            pilha_funcoes.push(c3e.arg1);
                         }
                         i = index_goto[c3e.arg1] - 1;
                         continue;
@@ -81,13 +96,25 @@ async function executaC3E2(codigo_c3e) {
                         // RETURN
                         if (c3e.arg1) {
                             let dados = returns.pop();
-                            arg1 = getValue(c3e.arg1);
-                            result = arg1;
-                            vm_escopo = 0;
-                            vm_escopo_pai = 0;
-                            setValue(result, dados['identificador'], true, dados['tipo_variavel']);
+                            // desempilha recursão caso houver
+                            debugger;
+                            if (variaveis_vm[vm_escopo]['recursao'].length > 0){
+                                variaveis_vm[vm_escopo]['variaveis'] = variaveis_vm[vm_escopo]['recursao'].pop();
+                            }
                             vm_escopo = dados['escopo'];
                             vm_escopo_pai = dados['escopo_pai'];
+                            if (!verifica_temporaria(c3e.arg1)) {
+                                arg1 = getValue(c3e.arg1);
+                                result = arg1;
+                            }
+                            vm_escopo = 0;
+                            vm_escopo_pai = 0;
+                            if (!verifica_temporaria(c3e.arg1)) {
+                                setValue(result, dados['identificador'], true, dados['tipo_variavel']);
+                            }
+                            vm_escopo = dados['escopo'];
+                            vm_escopo_pai = dados['escopo_pai'];
+                            pilha_funcoes.pop();
                             if (dados['identificador'] != 'main') {
                                 i = dados['index'];
                             }
@@ -159,6 +186,7 @@ async function executaC3E2(codigo_c3e) {
         }
         textareaElement.value += '\n\nPrograma compilado e executado com sucesso.';
     } catch (e){
+        debugger;
         textareaElement.value += '\n\n' + e;
     }
     $("#button4")[0].hidden = false;
