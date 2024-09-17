@@ -6,7 +6,8 @@ function inicializa_escopos(qtd_escopos){
 }
 
 function modifica_historico_variavel(variavel, valor){
-    if (!(variavel in variaveis_vm[0]['variaveis'])){
+    console.log(variavel);
+    if (!(vm_funcoes.includes(variavel))){
         if (variavel in historico_variaveis){
             historico_variaveis[variavel].push(valor);
         } else {
@@ -555,11 +556,13 @@ function inicializa_variaveis_globais(codigo_c3e){
     let c3e;
     vm_escopo = 0;  // variavel global
     vm_escopo_pai = 0;
-    debugger;
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
         if (c3e.escopo && c3e.label){
             vm_escopo = parseInt(c3e.result.substring(1));
+        }
+        if (c3e.salto && c3e.result == 'goto' && verifica_se_eh_chamada_de_funcao(c3e.arg1)){
+            vm_funcoes.push(c3e.arg1.substring(1));
         }
         if (vm_escopo === 0 && !c3e.escopo && !c3e.salto && !c3e.escrita && !c3e.label && !c3e.leitura){
             arg1 = getValue(c3e.arg1);
@@ -573,6 +576,7 @@ function inicializa_variaveis_globais(codigo_c3e){
                     inicializa_matriz(dados['variavel'], dados["posicoes"][0], dados["posicoes"][1]);
                 } else {
                     setValue(0, c3e.result, false);
+                    modifica_historico_variavel(c3e.result, 0);
                 }
             } else {
                 arg2 = '';
@@ -586,6 +590,8 @@ function inicializa_variaveis_globais(codigo_c3e){
                 }
 
                 setValue(result, c3e.result, false);
+                debugger;
+                modifica_historico_variavel(c3e.result, result);
             }
 
         }

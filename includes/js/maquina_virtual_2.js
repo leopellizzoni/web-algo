@@ -5,6 +5,7 @@ var variaveis_vm = {};
 var vm_escopos = {}
 var parametros_chamadas_funcao = [];
 var pilha_funcoes = [];
+var vm_funcoes = [];
 
 async function executaC3E2(codigo_c3e) {
     let c3e;
@@ -13,6 +14,7 @@ async function executaC3E2(codigo_c3e) {
     let arg2;
     let qtd_escopos = codigo_c3e.shift();
     let returns = [];
+    vm_funcoes = [];
     pilha_funcoes = [];
     variaveis_vm = [];
     vm_escopos = [];
@@ -98,7 +100,7 @@ async function executaC3E2(codigo_c3e) {
                             let dados = returns.pop();
                             // desempilha recursão caso houver
                             debugger;
-                            if (variaveis_vm[vm_escopo]['recursao'].length > 0){
+                            if ('recursao' in variaveis_vm[vm_escopo] && variaveis_vm[vm_escopo]['recursao'].length > 0){
                                 variaveis_vm[vm_escopo]['variaveis'] = variaveis_vm[vm_escopo]['recursao'].pop();
                             }
                             vm_escopo = dados['escopo'];
@@ -181,6 +183,7 @@ async function executaC3E2(codigo_c3e) {
                 }
             }
         }
+        debugger;
         if (dic_control['msg_warning']){
             textareaElement.value += dic_control['msg_warning'];
         }
