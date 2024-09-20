@@ -259,6 +259,7 @@ function inicializa_compilacao(){
     textareaElement.value = "";
     count_column = 0;
     count_line = 1;
+    dic_control['c3e'] = '';
     dic_control['msg_erro'] = '';
     dic_control['msg_warning'] = '';
     dic_control['printf'] = '';
@@ -356,21 +357,23 @@ function compiler(debug=false){
             if (Programa()) {
                 textareaElement.value += 'Léxico OK' + '\n';
                 textareaElement.value += 'Sintático OK' + '\n\n';
+                let contador = 1;
                 instrucoes.forEach(inst => {
                     if (inst.result) {
                         if (inst.salto || inst.label) {
                             console.log(`[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}`);
-                            dic_control['c3e'] = `[${inst.linha}] ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                            dic_control['c3e'] += `${contador}. ${inst.result} ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
                         } else if (inst.escrita || inst.leitura) {
                             console.log(`[${inst.linha}] ${inst.result}`);
-                            dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
+                            dic_control['c3e'] += `${contador}. ${inst.result}\n`;
                         } else if (inst.result && inst.arg1) {
                             console.log(`[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}`);
-                            dic_control['c3e'] = `[${inst.linha}] ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
+                            dic_control['c3e'] += `${contador}. ${inst.result} = ${inst.arg1} ${inst.op} ${inst.arg2}\n`;
                         } else {
                             console.log(`[${inst.linha}] ${inst.result}`);
-                            dic_control['c3e'] = `[${inst.linha}] ${inst.result}\n`;
+                            dic_control['c3e'] += `${contador}. ${inst.result}\n`;
                         }
+                        contador += 1;
                     }
                 });
                 executaC3E2(instrucoes);
