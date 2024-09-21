@@ -151,8 +151,8 @@
                 <div class="col-4 button">
                     <button type="button" class="btn btn-light" id="button6" hidden onclick="retira_depuracao()">Continuar sem depuração</button>
                     <button type="button" class="btn btn-success" id="button5" hidden>Próximo passo</button>
-                    <button type="button" class="btn" id="button4" onclick="compiler(true)"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M480-200q66 0 113-47t47-113v-160q0-66-47-113t-113-47q-66 0-113 47t-47 113v160q0 66 47 113t113 47Zm-80-120h160v-80H400v80Zm0-160h160v-80H400v80Zm80 40Zm0 320q-65 0-120.5-32T272-240H160v-80h84q-3-20-3.5-40t-.5-40h-80v-80h80q0-20 .5-40t3.5-40h-84v-80h112q14-23 31.5-43t40.5-35l-64-66 56-56 86 86q28-9 57-9t57 9l88-86 56 56-66 66q23 15 41.5 34.5T688-640h112v80h-84q3 20 3.5 40t.5 40h80v80h-80q0 20-.5 40t-3.5 40h84v80H688q-32 56-87.5 88T480-120Z"/></svg></button>
-                    <button type="button" class="btn btn-success" id="button2" onclick="compiler()">Executar</button>
+                    <button type="button" class="btn" id="button4" onclick="inicia_worker(true)"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M480-200q66 0 113-47t47-113v-160q0-66-47-113t-113-47q-66 0-113 47t-47 113v160q0 66 47 113t113 47Zm-80-120h160v-80H400v80Zm0-160h160v-80H400v80Zm80 40Zm0 320q-65 0-120.5-32T272-240H160v-80h84q-3-20-3.5-40t-.5-40h-80v-80h80q0-20 .5-40t3.5-40h-84v-80h112q14-23 31.5-43t40.5-35l-64-66 56-56 86 86q28-9 57-9t57 9l88-86 56 56-66 66q23 15 41.5 34.5T688-640h112v80h-84q3 20 3.5 40t.5 40h80v80h-80q0 20-.5 40t-3.5 40h84v80H688q-32 56-87.5 88T480-120Z"/></svg></button>
+                    <button type="button" class="btn btn-success" id="button2" onclick="inicia_worker()">Executar</button>
                     <button type="button" class="btn btn-danger" id="button3" onclick="cancelarExecucao()" title="Cancelar execução" hidden>Cancelar</button>
                 </div>
             </div>
@@ -240,15 +240,16 @@
             <!-- Bootstrap 5.3.3 -->
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
             <!-- Arquivo JS do programa -->
-            <script src="includes/js/main.js"></script>
-            <!-- Arquivo JS do programa léxico -->
-            <script src="includes/js/clexico.js"></script>
-            <!-- Arquivo JS do programa sintático -->
-            <script src="includes/js/csintatico.js"></script>
-            <!-- Arquivo JS do programa maquina virtual para execução do C3E -->
-            <script src="includes/js/maquina_virtual.js"></script>
-            <script src="includes/js/maquina_virtual_2.js"></script>
-            <script src="includes/js/funcoes_mv.js"></script>
+<!--            <script src="includes/js/worker.js"></script>-->
+<!--            &lt;!&ndash; Arquivo JS do programa léxico &ndash;&gt;-->
+<!--            <script src="includes/js/clexico.js"></script>-->
+<!--            &lt;!&ndash; Arquivo JS do programa sintático &ndash;&gt;-->
+<!--            <script src="includes/js/csintatico.js"></script>-->
+<!--            &lt;!&ndash; Arquivo JS do programa maquina virtual para execução do C3E &ndash;&gt;-->
+<!--            <script src="includes/js/maquina_virtual.js"></script>-->
+<!--            <script src="includes/js/maquina_virtual_2.js"></script>-->
+<!--            <script src="includes/js/funcoes_mv.js"></script>-->
+                <script src="includes/js/main.js"></script>
 <!--            MODAL DO HISTÓRICO DE VARIÁVEIS - INÍCIO-->
             <div class="modal fade" id="modal_historico_variaveis" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -472,7 +473,7 @@
         }
 
         function exibe_c3e(){
-            if (instrucoes.length > 0){
+            if ('c3e' in dic_control){
                    $("#id_p_c3e")[0].innerText = dic_control['c3e'];
             }
             $("#modal_C3E").modal('show');

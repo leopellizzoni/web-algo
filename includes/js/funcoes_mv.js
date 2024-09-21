@@ -1,39 +1,42 @@
-function inicializa_escopos(qtd_escopos){
+/* jshint esversion: 6 */
+import { globalVar } from './globals.js';
+
+export function inicializa_escopos(qtd_escopos){
     while(qtd_escopos >= 0){
-        variaveis_vm.push({'variaveis': {}, 'escopo_pai': 0});
+        globalVar.variaveis_vm.push({'variaveis': {}, 'escopo_pai': 0});
         qtd_escopos--;
     }
 }
 
 function modifica_historico_variavel(variavel, valor){
     console.log(variavel);
-    if (!(vm_funcoes.includes(variavel))){
-        if (variavel in historico_variaveis){
-            historico_variaveis[variavel].push(valor);
+    if (!(globalVar.vm_funcoes.includes(variavel))){
+        if (variavel in globalVar.historico_variaveis){
+            globalVar.historico_variaveis[variavel].push(valor);
         } else {
-            historico_variaveis[variavel] = [valor];
+            globalVar.historico_variaveis[variavel] = [valor];
         }
-        atualiza_tabela_variaveis(historico_variaveis);
+        globalVar.worker.postMessage({'atualiza_tabela_variaveis': globalVar.historico_variaveis});
     }
 }
 
-function altera_escopo_pai(){
-    variaveis_vm[vm_escopo]['escopo_pai'] = vm_escopo_pai;
+export function altera_escopo_pai(){
+    globalVar.variaveis_vm[globalVar.vm_escopo]['escopo_pai'] = globalVar.vm_escopo_pai;
 }
 
 function verifica_existencia_variavel_escopo(variavel){
 
-    for (let index=vm_escopo; index>=0;index = variaveis_vm[index]['escopo_pai']){
-        if (variavel in variaveis_vm[index]['variaveis']){
+    for (let index=globalVar.vm_escopo; index>=0;index = globalVar.variaveis_vm[index]['escopo_pai']){
+        if (variavel in globalVar.variaveis_vm[index]['variaveis']){
             return index;
         }
         if (index === 0){
-            return vm_escopo;
+            return globalVar.vm_escopo;
         }
     }
 }
 
-function inicializa_matriz(variavel, tam_vetor, tam_matriz) {
+export function inicializa_matriz(variavel, tam_vetor, tam_matriz) {
     let vetor = [];
     for (let i = 0; i < tam_vetor; i++) {
         vetor.push([]);
@@ -41,38 +44,38 @@ function inicializa_matriz(variavel, tam_vetor, tam_matriz) {
             vetor[i].push(0);
         }
     }
-    variaveis_vm[vm_escopo]['variaveis'][variavel] = {'valor': vetor};
-    modifica_historico_variavel(variavel, variaveis_vm[vm_escopo]['variaveis'][variavel]["valor"]);
+    globalVar.variaveis_vm[globalVar.vm_escopo]['variaveis'][variavel] = {'valor': vetor};
+    modifica_historico_variavel(variavel, globalVar.variaveis_vm[globalVar.vm_escopo]['variaveis'][variavel]["valor"]);
     return vetor;
 }
 
-function inicializa_vetor(variavel, tam_vetor) {
+export function inicializa_vetor(variavel, tam_vetor) {
     let vetor = [];
     for (let i = 0; i < tam_vetor; i++) {
         vetor.push(0);
     }
-    variaveis_vm[vm_escopo]['variaveis'][variavel] = {'valor': vetor};
-    modifica_historico_variavel(variavel, variaveis_vm[vm_escopo]['variaveis'][variavel]["valor"]);
+    globalVar.variaveis_vm[globalVar.vm_escopo]['variaveis'][variavel] = {'valor': vetor};
+    modifica_historico_variavel(variavel, globalVar.variaveis_vm[globalVar.vm_escopo]['variaveis'][variavel]["valor"]);
     return vetor;
 }
 
-function realiza_atribuicao_parametros(parametros, dados, parametros_tipos){
+export function realiza_atribuicao_parametros(parametros, dados, parametros_tipos){
     for (let i=0; i<parametros.length; i++){
         setValue(dados[i], parametros[i], true, parametros_tipos[parametros[i]]['tipo']);
     }
 }
 
-function indexa_linhas(codigo_c3e) {
+export function indexa_linhas(codigo_c3e) {
     let c3e;
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
         if (c3e.label) {
-            index_goto[c3e.result] = i;
+            globalVar.index_goto[c3e.result] = i;
         }
     }
 }
 
-function getUserInput() {
+export function getUserInput(worker) {
     return new Promise((resolve) => {
         const inputElement = document.getElementById('inputText');
         // signal.addEventListener('abort', () => {
@@ -84,8 +87,8 @@ function getUserInput() {
             if (event.key === 'Enter') {
                 // Resolve a Promise com o valor do input
                 resolve(inputElement.value);
-                textareaElement.value += inputElement.value + '\n';
-                textareaElement.scrollTop = textareaElement.scrollHeight;
+                worker.postMessage({'saida_console': inputElement.value + '\n'});
+                //textareaElement.scrollTop = textareaElement.scrollHeight;
 
                 // Remove o event listener após a resolução
                 inputElement.removeEventListener('keydown', onEnter);
@@ -97,7 +100,7 @@ function getUserInput() {
     });
 }
 
-function getUserDebug() {
+export function getUserDebug() {
     return new Promise((resolve) => {
         // Adiciona um event listener para o botão "Próximo passo"
         const buttonProximoPasso = document.getElementById('button5');
@@ -119,7 +122,7 @@ function getUserDebug() {
     });
 }
 
-function modifica_cor_linhas_editor_texto(linha_atual, linha_anterior) {
+export function modifica_cor_linhas_editor_texto(linha_atual, linha_anterior) {
     addLineDecoration(linha_atual - 1, 'line-decoration');
     editor.removeLineClass(linha_anterior - 1, 'wrap', 'line-decoration');
 }
@@ -133,11 +136,11 @@ function verifica_constante(valor) {
     return regex.test(String(valor));
 }
 
-function verifica_temporaria(valor) {
+export function verifica_temporaria(valor) {
     return String(valor)[0] === '@';
 }
 
-function verifica_se_eh_vetor(valor) {
+export function verifica_se_eh_vetor(valor) {
     // Regex para variável ou constante: [a-zA-Z_]\w*
     // Regex para expressão dentro dos colchetes: aceita variáveis, números, operadores, e parênteses
     //const arrayNotationRegex = /^[a-zA-Z_]\w*(\[\s*([a-zA-Z_]\w*|\d+|@\w+|\[[a-zA-Z_]\w*|\d+|@\w+\])\s*\])+$/;
@@ -148,24 +151,24 @@ function verifica_se_eh_vetor(valor) {
     return arrayNotationRegex.test(valor);
 }
 
-function verifica_se_eh_matriz(valor) {
+export function verifica_se_eh_matriz(valor) {
     // Regex para variável ou constante: [a-zA-Z_]\w*
     // Regex para expressões dentro dos colchetes: [a-zA-Z0-9_+\-*/()@ ]
     let matrixNotationRegex = /^[a-zA-Z_]\w*(\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()])*\])*\])*\]?)\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()])*\])*\])*\]?$/;
     return matrixNotationRegex.test(valor);
 }
 
-function verifica_se_eh_chamada_de_funcao(valor){
+export function verifica_se_eh_chamada_de_funcao(valor){
     // Regex para verificar se a string começa com $ seguido por uma letra e depois qualquer combinação de letras, números ou sublinhados
     const functionRegex = /^\$[a-zA-Z][a-zA-Z0-9_]*$/;
     return functionRegex.test(valor);
 }
 
-function verifica_se_eh_return(valor){
+export function verifica_se_eh_return(valor){
     return valor === 'return';
 }
 
-function extrai_variavel_e_posicao_vetor(valor) {
+export function extrai_variavel_e_posicao_vetor(valor) {
     // Regex para capturar a variável e a posição, onde a posição pode incluir variáveis, constantes e expressões
     const regex = /^([a-zA-Z_$@][a-zA-Z_$@0-9]*)\[(.+)\]$/;
 
@@ -183,7 +186,7 @@ function extrai_variavel_e_posicao_vetor(valor) {
     }
 }
 
-function extrai_variavel_e_posicao_matriz(valor) {
+export function extrai_variavel_e_posicao_matriz(valor) {
     // Regex para capturar a variável e os colchetes
     const regex = /^([a-zA-Z_]\w*)(\[(.*)\])$/;
 
@@ -251,16 +254,16 @@ function formata_numero_conforme_tipo(arg, tipo){
 
 }
 
-function empilha_variaveis_recursao(escopo){
-    if ('recursao' in variaveis_vm[escopo]){
-        variaveis_vm[escopo]['recursao'].push(JSON.parse(JSON.stringify(variaveis_vm[escopo]['variaveis'])));
+export function empilha_variaveis_recursao(escopo){
+    if ('recursao' in globalVar.variaveis_vm[escopo]){
+        globalVar.variaveis_vm[escopo]['recursao'].push(JSON.parse(JSON.stringify(globalVar.variaveis_vm[escopo]['variaveis'])));
     } else {
-        variaveis_vm[escopo]['recursao'] = [JSON.parse(JSON.stringify(variaveis_vm[escopo]['variaveis']))];
+        globalVar.variaveis_vm[escopo]['recursao'] = [JSON.parse(JSON.stringify(globalVar.variaveis_vm[escopo]['variaveis']))];
     }
 
-    for (let chave in variaveis_vm[escopo]['variaveis']) {
-        if (variaveis_vm[escopo]['variaveis'].hasOwnProperty(chave)) {
-            variaveis_vm[escopo]['variaveis'][chave] = {'valor': 0, 'tipo': variaveis_vm[escopo]['variaveis']['tipo']};
+    for (let chave in globalVar.variaveis_vm[escopo]['variaveis']) {
+        if (globalVar.variaveis_vm[escopo]['variaveis'].hasOwnProperty(chave)) {
+            globalVar.variaveis_vm[escopo]['variaveis'][chave] = {'valor': 0, 'tipo': globalVar.variaveis_vm[escopo]['variaveis']['tipo']};
         }
     }
 }
@@ -270,7 +273,7 @@ function verificarPosicaoExiste(array, posicao) {
 }
 
 
-function getValue(expressao) {
+export function getValue(expressao) {
     let resultado;
     let operador = false;
     if (verifica_operador_unario(expressao)) {
@@ -285,9 +288,9 @@ function getValue(expressao) {
         resultado = expressao;
     } else if (verifica_temporaria(expressao)) {
         let escopo_real = verifica_existencia_variavel_escopo(expressao);
-        resultado = Number(variaveis_vm[escopo_real]['variaveis'][expressao]['valor']);
+        resultado = Number(globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['valor']);
         while (verifica_temporaria(resultado)){
-            resultado = Number(variaveis_vm[escopo_real]['variaveis'][expressao]['valor']);
+            resultado = Number(globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['valor']);
         }
     } else {
         eh_vetor = verifica_se_eh_vetor(expressao);
@@ -297,8 +300,8 @@ function getValue(expressao) {
             dados = extrai_variavel_e_posicao_vetor(expressao);
             let posicao = getValue(dados.posicao);
             let escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
-            if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao)){
-                resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao]);
+            if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao)){
+                resultado = Number(globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao]);
             } else {
                 throw `Erro: A posição ${posicao} não existe no vetor.`;
             }
@@ -307,9 +310,9 @@ function getValue(expressao) {
             let posicao1 = getValue(dados["posicoes"][0]);
             let posicao2 = getValue(dados["posicoes"][1]);
             let escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
-            if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao1)){
-                if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1], posicao2)){
-                    resultado = Number(variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao1][posicao2]);
+            if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao1)){
+                if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1], posicao2)){
+                    resultado = Number(globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao1][posicao2]);
                 } else {
                     throw `Erro: A posição ${posicao2} não existe no vetor.`;
                 }
@@ -318,10 +321,10 @@ function getValue(expressao) {
             }
         } else {
             let escopo_real = verifica_existencia_variavel_escopo(expressao);
-            if (!(expressao in variaveis_vm[escopo_real]['variaveis'])){
-                variaveis_vm[escopo_real]['variaveis'][expressao] = {'valor': Number(NaN)};
+            if (!(expressao in globalVar.variaveis_vm[escopo_real]['variaveis'])){
+                globalVar.variaveis_vm[escopo_real]['variaveis'][expressao] = {'valor': Number(NaN)};
             }
-            resultado = variaveis_vm[escopo_real]['variaveis'][expressao]['valor'];
+            resultado = globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['valor'];
         }
     }
 
@@ -338,7 +341,7 @@ function getValue(expressao) {
     }
 }
 
-function setValue(valor, variavel, verifica_existencia_de_variavel=true, tipo_variavel=false){
+export function setValue(valor, variavel, verifica_existencia_de_variavel=true, tipo_variavel=false){
     let eh_vetor = verifica_se_eh_vetor(variavel);
     let eh_matriz = verifica_se_eh_matriz(variavel);
     let dados;
@@ -348,13 +351,13 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true, tipo_va
         if (verifica_existencia_de_variavel){
             escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
         } else {
-            escopo_real = vm_escopo;
+            escopo_real = globalVar.vm_escopo;
         }
         let posicao = getValue(dados.posicao);
         // FAZER TESTE DE TAMANHO DO VETOR EM CASO DE ERRO ESTOURAR ERRO DE TAMANHO DE MATRIZ.
-        if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao)){
-            variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao] = Number(formata_numero_conforme_tipo(getValue(valor), variaveis_vm[escopo_real]['variaveis'][dados.variavel]['tipo']));
-            modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor']);
+        if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao)){
+            globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao] = Number(formata_numero_conforme_tipo(getValue(valor), globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['tipo']));
+            modifica_historico_variavel(dados.variavel, globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor']);
         } else {
             throw `Erro: A posição ${posicao} não existe no vetor.`;
         }
@@ -365,13 +368,13 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true, tipo_va
         if (verifica_existencia_de_variavel){
             escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
         } else {
-            escopo_real = vm_escopo;
+            escopo_real = globalVar.vm_escopo;
         }
         // FAZER TESTE DE TAMANHO DO VETOR EM CASO DE ERRO ESTOURAR ERRO DE TAMANHO.
-        if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao1)){
-            if (verificarPosicaoExiste(variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1], posicao2)){
-                variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1][posicao2] = Number(formata_numero_conforme_tipo(getValue(valor), variaveis_vm[escopo_real]["variaveis"][dados.variavel]['tipo']));
-                modifica_historico_variavel(dados.variavel, variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor']);
+        if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao1)){
+            if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1], posicao2)){
+                globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1][posicao2] = Number(formata_numero_conforme_tipo(getValue(valor), globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['tipo']));
+                modifica_historico_variavel(dados.variavel, globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor']);
             } else {
                 throw `Erro: A posição ${posicao2} não existe no vetor.`;
             }
@@ -382,24 +385,24 @@ function setValue(valor, variavel, verifica_existencia_de_variavel=true, tipo_va
         if (verifica_existencia_de_variavel){
             escopo_real = verifica_existencia_variavel_escopo(variavel);
         } else {
-            escopo_real = vm_escopo;
+            escopo_real = globalVar.vm_escopo;
         }
-        if (!(variavel in variaveis_vm[escopo_real]['variaveis'])) {
-            variaveis_vm[escopo_real]['variaveis'][variavel] = {'valor': '',
+        if (!(variavel in globalVar.variaveis_vm[escopo_real]['variaveis'])) {
+            globalVar.variaveis_vm[escopo_real]['variaveis'][variavel] = {'valor': '',
                                                                 'tipo': ''};
             if (tipo_variavel){
-                variaveis_vm[escopo_real]['variaveis'][variavel]['tipo'] = tipo_variavel;
+                globalVar.variaveis_vm[escopo_real]['variaveis'][variavel]['tipo'] = tipo_variavel;
             }
         }
-        variaveis_vm[escopo_real]['variaveis'][variavel]['valor'] = Number(formata_numero_conforme_tipo(getValue(valor), variaveis_vm[escopo_real]['variaveis'][variavel]['tipo']));
+        globalVar.variaveis_vm[escopo_real]['variaveis'][variavel]['valor'] = Number(formata_numero_conforme_tipo(getValue(valor), globalVar.variaveis_vm[escopo_real]['variaveis'][variavel]['tipo']));
         if (!verifica_temporaria(variavel)){
-            modifica_historico_variavel(variavel, variaveis_vm[escopo_real]['variaveis'][variavel]['valor']);
+            modifica_historico_variavel(variavel, globalVar.variaveis_vm[escopo_real]['variaveis'][variavel]['valor']);
         }
 
     }
 }
 
-function parsePrintf(valor) {
+export function parsePrintf(valor) {
     // Regex para capturar a string formatada e os parâmetros
     const printfRegex = /printf\s*\(\s*"([^"]*)"\s*(?:,\s*([^()]*|\([^()]*\))*\s*)*\)/;
 
@@ -420,7 +423,7 @@ function parsePrintf(valor) {
     };
 }
 
-function formataStringInt(template, values) {
+export function formataStringInt(template, values) {
     let index = 0;
     let arg;
     return template.replace(/%d/g, () => {
@@ -430,7 +433,7 @@ function formataStringInt(template, values) {
     });
 }
 
-function formataStringFloat(template, values) {
+export function formataStringFloat(template, values) {
     let index = 0;
     let arg;
     return template.replace(/%(\.\d+)?f/g, (match, decimals) => {
@@ -448,7 +451,7 @@ function formataStringFloat(template, values) {
     });
 }
 
-function carrega_parametros(lista_param){
+export function carrega_parametros(lista_param){
     let parametros = [];
     for (let i=0; i<=lista_param.length;i++){
         parametros.push(getValue(lista_param[i]));
@@ -456,11 +459,11 @@ function carrega_parametros(lista_param){
     return parametros;
 }
 
-function formataStringQuebraLinha(template) {
+export function formataStringQuebraLinha(template) {
     return template.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
 }
 
-function parseScanf(valor) {
+export function parseScanf(valor) {
     // Regex para capturar a string formatada e os parâmetros
     const scanfRegex = /scanf\s*\(\s*"([^"]*)"\s*(?:,\s*([^()]*|\([^()]*\))*\s*)*\)/;
 
@@ -481,7 +484,7 @@ function parseScanf(valor) {
     };
 }
 
-function configura_leitura(vai_ler){
+export function configura_leitura(vai_ler){
     if (vai_ler){
         vai_ler = true;
         $("#inputText")[0].disabled = false;
@@ -498,7 +501,7 @@ function configura_leitura(vai_ler){
     }
 }
 
-function calcula_argumentos(arg1, arg2, op){
+export function calcula_argumentos(arg1, arg2, op){
     if (op === '+') {
         return Number(arg1) + Number(arg2);
     }
@@ -507,7 +510,7 @@ function calcula_argumentos(arg1, arg2, op){
     }
     if (op === '/') {
         if (Number(arg2) === 0){
-            dic_control['msg_warning'] = `\nAtenção: divisão por 0 encontrada em ${arg1}/${arg2}`;
+            globalVar.warning_msg = `\nAtenção: divisão por 0 encontrada em ${arg1}/${arg2}`;
         }
         return parseInt(Number(arg1) / Number(arg2));
     }
@@ -551,21 +554,21 @@ function verifica_se_eh_escopo(label){
     }
 }
 
-function inicializa_variaveis_globais(codigo_c3e){
+export function inicializa_variaveis_globais(codigo_c3e){
     let esta_em_funcao = false;
     let c3e;
-    vm_escopo = 0;  // variavel global
-    vm_escopo_pai = 0;
+    globalVar.vm_escopo = 0;  // variavel global
+    globalVar.vm_escopo_pai = 0;
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
         if (c3e.escopo && c3e.label){
-            vm_escopo = parseInt(c3e.result.substring(1));
+            globalVar.vm_escopo = parseInt(c3e.result.substring(1));
         }
         if (c3e.salto && c3e.result == 'goto' && verifica_se_eh_chamada_de_funcao(c3e.arg1)){
-            vm_funcoes.push(c3e.arg1.substring(1));
+            globalVar.vm_funcoes.push(c3e.arg1.substring(1));
         }
-        if (vm_escopo === 0 && !c3e.escopo && !c3e.salto && !c3e.escrita && !c3e.label && !c3e.leitura){
-            arg1 = getValue(c3e.arg1);
+        if (globalVar.vm_escopo === 0 && !c3e.escopo && !c3e.salto && !c3e.escrita && !c3e.label && !c3e.leitura){
+            let arg1 = getValue(c3e.arg1);
             if (!arg1){
                 if (verifica_se_eh_vetor(c3e.result)) {
                     let dados = extrai_variavel_e_posicao_vetor(c3e.result);
@@ -579,10 +582,11 @@ function inicializa_variaveis_globais(codigo_c3e){
                     modifica_historico_variavel(c3e.result, 0);
                 }
             } else {
-                arg2 = '';
+                let arg2 = '';
                 if (c3e.arg2){
                     arg2 = getValue(c3e.arg2);
                 }
+                let result;
                 if (c3e.op){
                     result = calcula_argumentos(arg1, arg2, c3e.op);
                 } else {
@@ -590,11 +594,10 @@ function inicializa_variaveis_globais(codigo_c3e){
                 }
 
                 setValue(result, c3e.result, false);
-                debugger;
                 modifica_historico_variavel(c3e.result, result);
             }
 
         }
     }
-    vm_escopo = 0;
+    globalVar.vm_escopo = 0;
 }

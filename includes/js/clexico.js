@@ -1,444 +1,426 @@
-// Identificadores começam com uma letra ou sublinhado, seguido de letras, números ou sublinhados
-var regexIdentificador = /[a-zA-Z_]\w*/;
-// Expressão regular para identificar identificadores e números inteiros
-var regexIdentificadorNumero = /[a-zA-Z_]\w*|\d+/;
-// REGEX PRINTF
-var regexPrintf = /%([+-]?(?:\d+|\*)?(?:\.\d+|\.\*)?(?:hh|h|l|ll|L|z|j|t)?[diuoxXfFeEgGaAcspn%])/g;
-// Números inteiros
-var regexNumero = /\d+/;
-var regexNumeroInteiro = /^-?\d+$/;
+/* jshint esversion: 6 */
+import { globalVarC } from './cglobals.js';
 
-function getToken(){
+// Função que busca o próximo caractér do código digitado pelo usuário
+export function proxC(){
+    globalVarC.count_column += 1;
+    if (globalVarC.caracter === '\n'){
+        globalVarC.count_column = 0;
+        globalVarC.count_line += 1;
+    }
+    // Pegue o próximo caractere
+    globalVarC.caracter = globalVarC.code.charAt(globalVarC.code_position + 1);
+    globalVarC.code_position += 1;
+}
+
+export function getToken(){
     var fim = false;
     var estado = 0;
 	var loopInfinito = false;
-	lexico = '';
+	globalVarC.lexico = '';
     while (!fim){
-		lexico += caracter;
+		globalVarC.lexico += globalVarC.caracter;
         switch (estado){
             case 0:
-                if (regexIdentificador.test(caracter)){
+                if (globalVarC.regexIdentificador.test(globalVarC.caracter)){
                     proxC();
                     estado = 1;
                     break;
                 }
-                if (regexNumero.test(caracter)) { // verifica numero
+                if (globalVarC.regexNumero.test(globalVarC.caracter)) { // verifica numero
                     proxC();
-                    while (regexNumero.test(caracter)){
-                        lexico += caracter;
+                    while (globalVarC.regexNumero.test(globalVarC.caracter)){
+                        globalVarC.lexico += globalVarC.caracter;
 	                	proxC();
                     }
-                    if (caracter === '.'){ // double / float
-						lexico += caracter;
+                    if (globalVarC.caracter === '.'){ // double / float
+						globalVarC.lexico += globalVarC.caracter;
 						proxC();
-						while (regexNumero.test(caracter)){
-							lexico += caracter;
+						while (globalVarC.regexNumero.test(globalVarC.caracter)){
+							globalVarC.lexico += globalVarC.caracter;
 							proxC();
 						}
-						lexico += '\0';
-						tk = TKs['TKCteDouble'];
+						globalVarC.lexico += '\0';
+						globalVarC.tk = globalVarC.TKs['TKCteDouble'];
 						return;
 					} else { // inteiro
-						lexico += '\0';
-						tk = TKs['TKCteInt'];
+						globalVarC.lexico += '\0';
+						globalVarC.tk = globalVarC.TKs['TKCteInt'];
 						return;
 					}
                 }
-                if (caracter === ','){ // verifica ','
-					lexico += '\0';
+                if (globalVarC.caracter === ','){ // verifica ','
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKVirgula'];
+					globalVarC.tk = globalVarC.TKs['TKVirgula'];
 					return;
 				}
-				if (caracter === '.'){ // verifica '.'
-					lexico += '\0';
+				if (globalVarC.caracter === '.'){ // verifica '.'
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKPonto'];
+					globalVarC.tk = globalVarC.TKs['TKPonto'];
 					return;
 				}
-				if (caracter === ':'){ // verifica ':'
-					lexico += '\0';
+				if (globalVarC.caracter === ':'){ // verifica ':'
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKDoisPontos'];
+					globalVarC.tk = globalVarC.TKs['TKDoisPontos'];
 					return;
 				}
-				if (caracter === ';'){ // verifica ';'
-					lexico += '\0';
+				if (globalVarC.caracter === ';'){ // verifica ';'
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKPontoEVirgula'];
+					globalVarC.tk = globalVarC.TKs['TKPontoEVirgula'];
 					return;
 				}
-				if (caracter === '('){ // verifica '('
-					lexico += '\0';
+				if (globalVarC.caracter === '('){ // verifica '('
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKAbreParenteses'];
+					globalVarC.tk = globalVarC.TKs['TKAbreParenteses'];
 					return;
 				}
-				if (caracter === ')'){ // verifica ')'
-					lexico += '\0';
+				if (globalVarC.caracter === ')'){ // verifica ')'
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKFechaParenteses'];
+					globalVarC.tk = globalVarC.TKs['TKFechaParenteses'];
 					return;
 				}
-				if (caracter === '['){ // verifica '['
-					lexico += '\0';
+				if (globalVarC.caracter === '['){ // verifica '['
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKAbreColchete'];
+					globalVarC.tk = globalVarC.TKs['TKAbreColchete'];
 					return;
 				}
-				if (caracter === ']'){ // verifica ']'
-					lexico += '\0';
+				if (globalVarC.caracter === ']'){ // verifica ']'
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKFechaColchete'];
+					globalVarC.tk = globalVarC.TKs['TKFechaColchete'];
 					return;
 				}
-				if (caracter === '{'){ // verifica '{'
-					lexico += '\0';
+				if (globalVarC.caracter === '{'){ // verifica '{'
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKAbreChaves'];
+					globalVarC.tk = globalVarC.TKs['TKAbreChaves'];
 					return;
 				}
-				if (caracter === '}'){ // verifica '}'
-					lexico += '\0';
+				if (globalVarC.caracter === '}'){ // verifica '}'
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKFechaChaves'];
+					globalVarC.tk = globalVarC.TKs['TKFechaChaves'];
 					return;
 				}
-                if (caracter === '+'){ // verifica '+' '+=' '++'
+                if (globalVarC.caracter === '+'){ // verifica '+' '+=' '++'
 				    proxC();
-					if (caracter === '+'){ // '++'
-					   lexico += '+';
-	     			   lexico += '\0';
+					if (globalVarC.caracter === '+'){ // '++'
+					   globalVarC.lexico += '+';
+	     			   globalVarC.lexico += '\0';
 					   proxC();
-					   tk = TKs['TKDuploMais'];
+					   globalVarC.tk = globalVarC.TKs['TKDuploMais'];
 					   return;
-					} else if (caracter === '='){ // '+='
-					   lexico += '=';
-	     			   lexico += '\0';
+					} else if (globalVarC.caracter === '='){ // '+='
+					   globalVarC.lexico += '=';
+	     			   globalVarC.lexico += '\0';
 					   proxC();
-					   tk = TKs['TKMaisIgual'];
+					   globalVarC.tk = globalVarC.TKs['TKMaisIgual'];
 					   return;
 					} else { // '+'
-		               lexico += '\0';
-					   tk = TKs['TKMais'];
+		               globalVarC.lexico += '\0';
+					   globalVarC.tk = globalVarC.TKs['TKMais'];
 					   return;
 					}
 				}
-                if (caracter === '-'){ // verifica '-' '-=' '--'
+                if (globalVarC.caracter === '-'){ // verifica '-' '-=' '--'
 					proxC();
-					if (caracter === '-'){ // '--'
-						lexico += '-';
-						lexico += '\0';
+					if (globalVarC.caracter === '-'){ // '--'
+						globalVarC.lexico += '-';
+						globalVarC.lexico += '\0';
 						proxC();
-						tk = TKs['TKDuploMenos'];
+						globalVarC.tk = globalVarC.TKs['TKDuploMenos'];
 						return;
-					} else if (caracter === '=') { // '-='
-						lexico += '=';
-						lexico += '\0';
+					} else if (globalVarC.caracter === '=') { // '-='
+						globalVarC.lexico += '=';
+						globalVarC.lexico += '\0';
 						proxC();
-						tk = TKs['TKMenosIgual'];
+						globalVarC.tk = globalVarC.TKs['TKMenosIgual'];
 						return;
-					// } else if (regexNumero.test(caracter)){
-
-						// lexico += caracter;
-						// proxC();
-						// while (regexNumero.test(caracter)){
-						// 	lexico += caracter;
-						// 	proxC();
-						// }
-						// if (caracter === '.'){ // double / float
-						// 	lexico += caracter;
-						// 	proxC();
-						// 	while (regexNumero.test(caracter)){
-						// 		lexico += caracter;
-						// 		proxC();
-						// 	}
-						// 	lexico += '\0';
-						// 	tk = TKs['TKCteDouble'];
-						// 	return;
-						// } else { // inteiro
-						// 	lexico += '\0';
-						// 	tk = TKs['TKCteInt'];
-						// 	return;
-						// }
 					} else { // '-'
-						lexico += '\0';
-						tk = TKs['TKMenos'];
+						globalVarC.lexico += '\0';
+						globalVarC.tk = globalVarC.TKs['TKMenos'];
 						return;
 					}
 				}
-                if (caracter === '*') { // verifica '*' '*='
+                if (globalVarC.caracter === '*') { // verifica '*' '*='
 				 	proxC();
-	             	if (caracter === '='){ // '*='
-	             		lexico += '=';
-	     			    lexico += '\0';
+	             	if (globalVarC.caracter === '='){ // '*='
+	             		globalVarC.lexico += '=';
+	     			    globalVarC.lexico += '\0';
 				 		proxC();
-				 		tk = TKs['TKMultIgual'];
+				 		globalVarC.tk = globalVarC.TKs['TKMultIgual'];
 				 		return;
 					} else { // '*'
-						lexico += '\0';
-				 		tk = TKs['TKMult'];
+						globalVarC.lexico += '\0';
+				 		globalVarC.tk = globalVarC.TKs['TKMult'];
 				 		return;
 					}
 				}
-                if (caracter === '/') { // verifica '/' '/='
+                if (globalVarC.caracter === '/') { // verifica '/' '/='
 				 	proxC();
-	             	if (caracter === '=') { // '/='
-						lexico += '=';
-						lexico += '\0';
+	             	if (globalVarC.caracter === '=') { // '/='
+						globalVarC.lexico += '=';
+						globalVarC.lexico += '\0';
 						proxC();
-						tk = TKs['TKDivIgual'];
+						globalVarC.tk = globalVarC.TKs['TKDivIgual'];
 						return;
-					} else if (caracter === '*') {
-						lexico += '*';
+					} else if (globalVarC.caracter === '*') {
+						globalVarC.lexico += '*';
 						proxC();
 						estado = 3;
 						break;
-					} else if (caracter === '/'){
-						 lexico += '/';
+					} else if (globalVarC.caracter === '/'){
+						 globalVarC.lexico += '/';
 						 proxC();
 						 estado = 3;
 						 break;
 					} else { // '/'
-						lexico += '\0';
-				 		tk = TKs['TKDiv'];
+						globalVarC.lexico += '\0';
+				 		globalVarC.tk = globalVarC.TKs['TKDiv'];
 				 		return;
 					}
 				}
-                if (caracter === '%') { // verifica '%' '%='
+                if (globalVarC.caracter === '%') { // verifica '%' '%='
 				 	proxC();
-	             	if (caracter === '='){ // '%='
-	             		lexico += '=';
-	     			    lexico += '\0';
+	             	if (globalVarC.caracter === '='){ // '%='
+	             		globalVarC.lexico += '=';
+	     			    globalVarC.lexico += '\0';
 				 		proxC();
-				 		tk = TKs['TKRestoIgual'];
+				 		globalVarC.tk = globalVarC.TKs['TKRestoIgual'];
 				 		return;
 					} else { // '%'
-						lexico += '\0';
-				 		tk = TKs['TKResto'];
+						globalVarC.lexico += '\0';
+				 		globalVarC.tk = globalVarC.TKs['TKResto'];
 				 		return;
 					}
 				}
-                if (caracter === '='){ // verifica '=' '=='
+                if (globalVarC.caracter === '='){ // verifica '=' '=='
 					proxC();
-					if (caracter === '='){ // '=='
-						lexico += '=';
+					if (globalVarC.caracter === '='){ // '=='
+						globalVarC.lexico += '=';
 						proxC();
-						tk = TKs['TKCompare'];
+						globalVarC.tk = globalVarC.TKs['TKCompare'];
 						return;
 					} else { // '='
-						lexico += '\0';
-						tk = TKs['TKIgual'];
+						globalVarC.lexico += '\0';
+						globalVarC.tk = globalVarC.TKs['TKIgual'];
 						return;
 					}
 				}
-				if (caracter === '!'){ // verifica '!' '!='
+				if (globalVarC.caracter === '!'){ // verifica '!' '!='
 					proxC();
-				 	if (caracter === '='){ // '!='
-						lexico += '=';
-	     			    lexico += '\0';
+				 	if (globalVarC.caracter === '='){ // '!='
+						globalVarC.lexico += '=';
+	     			    globalVarC.lexico += '\0';
 					    proxC();
-					    tk = TKs['TKDiferent'];
+					    globalVarC.tk = globalVarC.TKs['TKDiferent'];
 					    return;
 					} else { // '!'
-						lexico += '\0';
-						tk = TKs['TKLogicalNot'];
+						globalVarC.lexico += '\0';
+						globalVarC.tk = globalVarC.TKs['TKLogicalNot'];
 					    return;
 					}
 				}
-				if (caracter === '<'){ // verifica '<' '<='
+				if (globalVarC.caracter === '<'){ // verifica '<' '<='
 				 	proxC();
-					if (caracter === '=') { // '<='
-						lexico += '=';
-						lexico += '\0';
+					if (globalVarC.caracter === '=') { // '<='
+						globalVarC.lexico += '=';
+						globalVarC.lexico += '\0';
 						proxC();
-						tk = TKs['TKMenorIgual'];
+						globalVarC.tk = globalVarC.TKs['TKMenorIgual'];
 						return;
-					} else if (regexIdentificador.test(caracter) && caracter === 's'){
-						while (regexIdentificador.test(caracter)){
-							lexico += caracter;
+					} else if (globalVarC.regexIdentificador.test(globalVarC.caracter) && globalVarC.caracter === 's'){
+						while (globalVarC.regexIdentificador.test(globalVarC.caracter)){
+							globalVarC.lexico += globalVarC.caracter;
 							proxC();
 						}
-						if (lexico === '<stdio'){
-							if (caracter === '.'){
-								lexico += caracter;
+						if (globalVarC.lexico === '<stdio'){
+							if (globalVarC.caracter === '.'){
+								globalVarC.lexico += globalVarC.caracter;
 								proxC();
-								if (caracter === 'h'){
-									lexico += caracter;
+								if (globalVarC.caracter === 'h'){
+									globalVarC.lexico += globalVarC.caracter;
 									proxC();
-									if (caracter === '>'){
-										lexico += caracter;
+									if (globalVarC.caracter === '>'){
+										globalVarC.lexico += globalVarC.caracter;
 										proxC();
-										tk = TKs['TKStdioh'];
+										globalVarC.tk = globalVarC.TKs['TKStdioh'];
 										return;
 									}
 								}
 							}
 						}
-						dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + lexico + ' (' + count_line + ', ' + count_column + ')' + '\n';
-						erro_lexico = true;
+						globalVarC.dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + globalVarC.lexico + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+						globalVarC.erro_lexico = true;
 						throw 'Erro léxico';
 
 					} else { // '<'
-						lexico += '\0';
-						tk = TKs['TKMenor'];
+						globalVarC.lexico += '\0';
+						globalVarC.tk = globalVarC.TKs['TKMenor'];
 					    return;
 					}
 				}
-				if (caracter === '>'){ // verifica '>' '>='
+				if (globalVarC.caracter === '>'){ // verifica '>' '>='
 					proxC();
-					if (caracter === '='){ // '>='
-						lexico += '=';
-	     			    lexico += '\0';
+					if (globalVarC.caracter === '='){ // '>='
+						globalVarC.lexico += '=';
+	     			    globalVarC.lexico += '\0';
 					    proxC();
-					    tk = TKs['TKMaiorIgual'];
+					    globalVarC.tk = globalVarC.TKs['TKMaiorIgual'];
 					    return;
 					} else { // >
-						lexico += '\0';
-						tk = TKs['TKMaior'];
+						globalVarC.lexico += '\0';
+						globalVarC.tk = globalVarC.TKs['TKMaior'];
 					    return;
 					}
 				}
-				if (caracter === '&'){ // verifica '&&' e '&'
+				if (globalVarC.caracter === '&'){ // verifica '&&' e '&'
 	             	proxC();
-	             	if (caracter === '&'){ // '&&'
-	             		lexico += '&';
-	     			    lexico += '\0';
+	             	if (globalVarC.caracter === '&'){ // '&&'
+	             		globalVarC.lexico += '&';
+	     			    globalVarC.lexico += '\0';
 				 		proxC();
-				 		tk = TKs['TKLogicalAnd'];
+				 		globalVarC.tk = globalVarC.TKs['TKLogicalAnd'];
 				 		return;
 					} else { // '&'
-						lexico += '\0';
-				 		tk = TKs['TKEnderecoVariavel'];
+						globalVarC.lexico += '\0';
+				 		globalVarC.tk = globalVarC.TKs['TKEnderecoVariavel'];
 				 		return;
 					}
 				}
-				if (caracter === '|'){ // verifica '||'
+				if (globalVarC.caracter === '|'){ // verifica '||'
 	             	proxC();
-	             	if (caracter === '|'){ // ||
-	             		lexico += '|';
-	     			    lexico += '\0';
+	             	if (globalVarC.caracter === '|'){ // ||
+	             		globalVarC.lexico += '|';
+	     			    globalVarC.lexico += '\0';
 				 		proxC();
-				 		tk = TKs['TKLogicalOr'];
+				 		globalVarC.tk = globalVarC.TKs['TKLogicalOr'];
 				 		return;
 					}
 				}
-				if (caracter === '#'){ // verifica '#'
+				if (globalVarC.caracter === '#'){ // verifica '#'
 					proxC();
-					while (regexIdentificador.test(caracter)){
-                        lexico += caracter;
+					while (globalVarC.regexIdentificador.test(globalVarC.caracter)){
+                        globalVarC.lexico += globalVarC.caracter;
 	                	proxC();
                     }
-					if (lexico === '#define'){
+					if (globalVarC.lexico === '#define'){
 						proxC();
-						tk = TKs['TKDefine'];
+						globalVarC.tk = globalVarC.TKs['TKDefine'];
 						return;
-					} else if (lexico === '#include'){
+					} else if (globalVarC.lexico === '#include'){
 						proxC();
-						tk = TKs['TKInclude'];
+						globalVarC.tk = globalVarC.TKs['TKInclude'];
 						return;
 					} else {
-						dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + lexico + ' (' + count_line + ', ' + count_column + ')' + '\n';
-						erro_lexico = true;
+						globalVarC.dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + globalVarC.lexico + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+						globalVarC.erro_lexico = true;
 						throw 'Erro léxico';
 					}
 				}
-				if (caracter === '"'){ // verifica '"'
+				if (globalVarC.caracter === '"'){ // verifica '"'
 					proxC();
 					estado = 2;
 					break;
 				}
-				if (caracter === '\n' || caracter === '\t' || caracter === ' '){
-					lexico = lexico.slice(0, -1);
+				if (globalVarC.caracter === '\n' || globalVarC.caracter === '\t' || globalVarC.caracter === ' '){
+					globalVarC.lexico = globalVarC.lexico.slice(0, -1);
 					proxC();
 					break;
 				}
-				if (code.length === code_position){
-					tk = -1;
+				if (globalVarC.code.length === globalVarC.code_position){
+					globalVarC.tk = -1;
 					return true;
 				}
-				dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + lexico + ' (' + count_line + ', ' + count_column + ')' + '\n';
-				erro_lexico = true;
+				globalVarC.dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + globalVarC.lexico + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+				globalVarC.erro_lexico = true;
 				throw 'Erro léxico';
 			// Token
             case 1:
-                if (regexIdentificadorNumero.test(caracter)){
+                if (globalVarC.regexIdentificadorNumero.test(globalVarC.caracter)){
                     proxC();
 					break;
                 }
-				if (caracter === '"') { // verifica '"'
-					lexico += '"';
-					lexico += '\0';
+				if (globalVarC.caracter === '"') { // verifica '"'
+					globalVarC.lexico += '"';
+					globalVarC.lexico += '\0';
 					proxC();
-					tk = TKs['TKString'];
+					globalVarC.tk = globalVarC.TKs['TKString'];
 					break;
 				}
 
-				lexico = lexico.slice(0, -1);
-				tk = reserved_words[lexico.replace(/\s/g, '')];
-				if (typeof tk === 'undefined') {
-					tk = TKs['TKId'];
+				globalVarC.lexico = globalVarC.lexico.slice(0, -1);
+				globalVarC.tk = globalVarC.reserved_words[globalVarC.lexico.replace(/\s/g, '')];
+				if (typeof globalVarC.tk === 'undefined') {
+					globalVarC.tk = globalVarC.TKs['TKId'];
 				}
-				lexico += '\0';
+				globalVarC.lexico += '\0';
 				return;
 
 			// String
 			case 2:
-				if (caracter === '%'){  // verifica parametro float, double ou int
+				if (globalVarC.caracter === '%'){  // verifica parametro float, double ou int
 					proxC();
-					lexico += caracter;
-					if (caracter === 'd'){  // integer
-						lista_param_printf.push('int');
+					globalVarC.lexico += globalVarC.caracter;
+					if (globalVarC.caracter === 'd'){  // integer
+						globalVarC.lista_param_printf.push('int');
 						proxC();
 						break;
 					}
-					if (caracter === 'f'){  // float
-						lista_param_printf.push('float');
+					if (globalVarC.caracter === 'f'){  // float
+						globalVarC.lista_param_printf.push('float');
 						proxC();
 						break;
 					}
-					dic_control['msg_erro'] = 'Erro encontrado na expressão %' + caracter + '. Conversão de tipo desconhecida. (' + count_line + ', ' + count_column + ')' + '\n';
-					erro_lexico = true;
+					globalVarC.dic_control['msg_erro'] = 'Erro encontrado na expressão %' + globalVarC.caracter + '. Conversão de tipo desconhecida. (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+					globalVarC.erro_lexico = true;
 					throw 'Erro léxico';
 				}
-				if (caracter === ' '){
+				if (globalVarC.caracter === ' '){
 					proxC();
 					break;
 				}
-				if (caracter.includes("\\") ){
+				if (globalVarC.caracter.includes("\\") ){
 					proxC();
-					lexico += caracter;
-					if (caracter === 'n' || caracter === 't'){
+					globalVarC.lexico += globalVarC.caracter;
+					if (globalVarC.caracter === 'n' || globalVarC.caracter === 't'){
 						proxC();
 						break;
 					}
 				}
-				if (caracter === '"') { // verifica '"'
-					lexico += '\0';
-					tk = TKs['TKString'];
+				if (globalVarC.caracter === '"') { // verifica '"'
+					globalVarC.lexico += '\0';
+					globalVarC.tk = globalVarC.TKs['TKString'];
 					proxC();
 					return;
 				}
 				if (loopInfinito){
 					return;
 				}
-				if (code.length === code_position){
+				if (globalVarC.code.length === globalVarC.code_position){
 					loopInfinito = true;
 				}
 				proxC();
 				break;
 			// Comentário
 			case 3:
-				if (caracter === '*') {
+				if (globalVarC.caracter === '*') {
 					proxC();
-					if (caracter === '/') {
+					if (globalVarC.caracter === '/') {
 						proxC();
 						return getToken();
 					}
-				} else if (caracter == '\n'){
+				} else if (globalVarC.caracter === '\n'){
 					proxC();
 					return getToken();
-				} else if (caracter === ''){
+				} else if (globalVarC.caracter === ''){
 					return getToken();
 				} else {
 					proxC();

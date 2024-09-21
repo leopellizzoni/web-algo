@@ -1,8 +1,5 @@
 // Executa código intermediário de três endereços gerado pelo compilador
 
-var historico_variaveis = {};
-var flag_saida_escrita = true;
-
 function calcula_argumentos(c3e) {
     let arg1;
     let arg2;
