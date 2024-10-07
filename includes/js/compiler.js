@@ -78,25 +78,25 @@ export function compiler(debug=false, codigo, worker){
                     worker.postMessage({'saida_console': 'Não encontrou a função de entrada main'});
                 }
             }
-            $("#button4")[0].hidden = false;
-            $("#button5")[0].hidden = true;
-            $("#button2")[0].hidden = false;
-            $("#button3")[0].hidden = true;
-            $("#button6")[0].hidden = true;
-            $("#inputText")[0].disabled = true;
-            editor.setOption("readOnly", false);
+            // $("#button4")[0].hidden = false;
+            // $("#button5")[0].hidden = true;
+            // $("#button2")[0].hidden = false;
+            // $("#button3")[0].hidden = true;
+            // $("#button6")[0].hidden = true;
+            // $("#inputText")[0].disabled = true;
+            // editor.setOption("readOnly", false);
         }
     } catch (e){
         console.log(e);
 
         worker.postMessage({'saida_console': globalVarC.dic_control['msg_erro']});
 
-        $("#button4")[0].hidden = false;
-        $("#button5")[0].hidden = true;
-        $("#button2")[0].hidden = false;
-        $("#button3")[0].hidden = true;
-        $("#button6")[0].hidden = true;
-        $("#inputText")[0].disabled = true;
-        editor.setOption("readOnly", false);
+        // $("#button4")[0].hidden = false;
+        // $("#button5")[0].hidden = true;
+        // $("#button2")[0].hidden = false;
+        // $("#button3")[0].hidden = true;
+        // $("#button6")[0].hidden = true;
+        // $("#inputText")[0].disabled = true;
+        // editor.setOption("readOnly", false);
     }
 }

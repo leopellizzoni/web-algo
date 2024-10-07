@@ -7,11 +7,9 @@ self.onmessage = function(event) {
   const { debug } = event.data;
   console.log('vai chamar compiler');
   let c3e = compiler(debug, code, self);
-  debugger;
-  executaC3E2(c3e.instrucoes, self);
-  try {
+  if (c3e){
+    executaC3E2(c3e.instrucoes, self);
     self.postMessage({'finalizou_execucao': true, 'c3e': c3e.c3e});
-  } catch (error) {
-    self.postMessage(`Erro: ${error.message}`);
   }
+  self.postMessage({'finalizou_execucao': true, 'c3e': []});
 };

@@ -145,9 +145,9 @@ export async function executaC3E2(codigo_c3e, worker) {
                     let quebra_scanf = parseScanf(c3e.result);
                     let values = quebra_scanf.params;
                     for (let i = 0; i < values.length; i++) {
-                        configura_leitura(true);
+                        configura_leitura(true, worker);
                         let userInput = await getUserInput(worker);
-                        configura_leitura(false);
+                        configura_leitura(false, worker);
                         setValue(userInput, values[i]);
                     }
                 } else {

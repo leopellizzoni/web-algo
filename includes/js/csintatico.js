@@ -379,8 +379,8 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKDuploMais']){
         getToken();
-        if (empilha_operacao_aritmetica.length > 0){
-            globalVarC.dic_control['msg_erro'] = `Comportamento indefinido em ${empilha_operacao_aritmetica[0]}${globalVarC.identificador}++. Não é permitido usar operadores pré e pós na mesma variável em uma única expressão (${globalVarC.count_line}, ${globalVarC.count_column}).`;
+        if (globalVarC.empilha_operacao_aritmetica.length > 0){
+            globalVarC.dic_control['msg_erro'] = `Comportamento indefinido em ${globalVarC.empilha_operacao_aritmetica[0]}${globalVarC.identificador}++. Não é permitido usar operadores pré e pós na mesma variável em uma única expressão (${globalVarC.count_line}, ${globalVarC.count_column}).`;
             return false;
         }
         let temp = newTemp();
@@ -392,8 +392,8 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
             return false;
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKDuploMenos']){
-        if (empilha_operacao_aritmetica.length > 0){
-            globalVarC.dic_control['msg_erro'] = `Comportamento indefinido em ${empilha_operacao_aritmetica[0]}${globalVarC.identificador}--. Não é permitido usar operadores pré e pós na mesma variável em uma única expressão (${globalVarC.count_line}, ${globalVarC.count_column}).`;
+        if (globalVarC.empilha_operacao_aritmetica.length > 0){
+            globalVarC.dic_control['msg_erro'] = `Comportamento indefinido em ${globalVarC.empilha_operacao_aritmetica[0]}${globalVarC.identificador}--. Não é permitido usar operadores pré e pós na mesma variável em uma única expressão (${globalVarC.count_line}, ${globalVarC.count_column}).`;
             return false;
         }
         getToken();
@@ -490,7 +490,7 @@ function ExpressUnaria(lado_atribuicao){
     if (result){
         return result;
     } else if (globalVarC.tk === globalVarC.TKs['TKDuploMais']){
-        empilha_operacao_aritmetica.push('++');
+        globalVarC.empilha_operacao_aritmetica.push('++');
         getToken();
         if (globalVarC.tk === globalVarC.TKs['TKCteInt'] || globalVarC.tk === globalVarC.TKs['TKCteDouble']){
             if (globalVarC.dic_control['msg_erro'] === ''){
@@ -499,14 +499,14 @@ function ExpressUnaria(lado_atribuicao){
             return false;
         }
         if (ExpressUnaria()){
-            empilha_operacao_aritmetica.pop();
+            globalVarC.empilha_operacao_aritmetica.pop();
             geraInstrucao('+', globalVarC.identificador, '1', globalVarC.identificador, globalVarC.count_line);
             return globalVarC.identificador;
         } else {
             return false;
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKDuploMenos']){
-        empilha_operacao_aritmetica.push('--');
+        globalVarC.empilha_operacao_aritmetica.push('--');
         getToken();
         if (globalVarC.tk === globalVarC.TKs['TKCteInt'] || globalVarC.tk === globalVarC.TKs['TKCteDouble']){
             if (globalVarC.dic_control['msg_erro'] === ''){
@@ -1232,7 +1232,7 @@ function InstrCondicional(esta_em_laco){
                             }
                         } else {
                             geraInstrucao('', '', '', labelElse, globalVarC.count_line, false, false, true);
-                            globalVarC.globalVarC.index_escopo = index_escopo_pai;
+                            globalVarC.index_escopo = globalVarC.index_escopo_pai;
                             globalVarC.index_escopo_pai = globalVarC.tabela_de_simbolos[globalVarC.index_escopo]['escopo_pai'];
                             geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
                             return true;
@@ -1315,7 +1315,7 @@ function InstrIteracao(){
         globalVarC.index_escopo = globalVarC.tabela_de_simbolos.length;
         geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
         if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
-            globalVarC.globalVarC.index_escopo = index_escopo_pai;
+            globalVarC.index_escopo = globalVarC.index_escopo_pai;
             globalVarC.index_escopo_pai = globalVarC.tabela_de_simbolos[globalVarC.index_escopo]['escopo_pai'];
             geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
             if (globalVarC.tk === globalVarC.TKs['TKWhile']){
@@ -1392,7 +1392,7 @@ function InstrIteracao(){
                             if (Instr({'labelInicio': labelIncremento, 'labelFim': labelFim})){
                                 geraInstrucao('', labelIncremento, '', 'goto', globalVarC.count_line, true);
                                 geraInstrucao('', '', '', labelFim, globalVarC.count_line, false, false, true);
-                                globalVarC.globalVarC.index_escopo = index_escopo_pai;
+                                globalVarC.index_escopo = globalVarC.index_escopo_pai;
                                 globalVarC.index_escopo_pai = globalVarC.tabela_de_simbolos[globalVarC.index_escopo]['escopo_pai'];
                                 geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
                                 return true;

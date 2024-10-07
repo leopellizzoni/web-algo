@@ -1,3 +1,28 @@
+function getUserInput() {
+    return new Promise((resolve) => {
+        const inputElement = document.getElementById('inputText');
+        // signal.addEventListener('abort', () => {
+        //     reject(new Error('Task was aborted'));
+        // });
+
+        // Adiciona um event listener para a tecla "Enter"
+        inputElement.addEventListener('keydown', function onEnter(event) {
+            if (event.key === 'Enter') {
+                // Resolve a Promise com o valor do input
+                resolve(inputElement.value);
+                textareaElement.value += inputElement.value + '\n';
+                textareaElement.scrollTop = textareaElement.scrollHeight;
+
+                // Remove o event listener após a resolução
+                inputElement.removeEventListener('keydown', onEnter);
+
+                // Limpa o campo de input para a próxima entrada
+                inputElement.value = '';
+            }
+        });
+    });
+}
+
 function atualiza_tabela_variaveis(data){
     let $table = $('#tabela_variaveis');
     let $tbody = $('<tbody></tbody>');
@@ -94,7 +119,7 @@ function inicia_worker(debug=false){
 }
 
 // Ouvir a resposta do Worker
-worker.onmessage = function(event) {
+worker.onmessage = async function(event) {
 
     if ('saida_console' in event.data){
         textareaElement.value += event.data.saida_console;
@@ -116,5 +141,23 @@ worker.onmessage = function(event) {
     if ('atualiza_tabela_variaveis' in event.data){
         dic_control.historico_variavel =  event.data.atualiza_tabela_variaveis;
         atualiza_tabela_variaveis(event.data.atualiza_tabela_variaveis);
+    }
+
+    if ('le' in event.data){
+        console.log('entrou aqui');
+        setTimeout(function (){
+            document.getElementById('inputText').removeAttribute('disabled');
+            $("#inputText").addClass('input-insere-dados');
+            $("#inputText")[0].placeholder = 'Digite um valor de entrada para variável ';
+            $("#inputText").focus();
+            textareaElement.scrollTop = textareaElement.scrollHeight;
+        }, 50);
+        let userInput = await getUserInput(worker);
+        console.log(userInput);
+        $("#inputText")[0].placeholder = '';
+        document.getElementById('inputText').setAttribute('disabled', 'disabled');
+        $("#inputText").removeClass('input-insere-dados');
+        textareaElement.scrollTop = textareaElement.scrollHeight;
+        worker.postMessage(userInput);
     }
 };

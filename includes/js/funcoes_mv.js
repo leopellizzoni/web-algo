@@ -9,7 +9,6 @@ export function inicializa_escopos(qtd_escopos){
 }
 
 function modifica_historico_variavel(variavel, valor){
-    console.log(variavel);
     if (!(globalVar.vm_funcoes.includes(variavel))){
         if (variavel in globalVar.historico_variaveis){
             globalVar.historico_variaveis[variavel].push(valor);
@@ -77,26 +76,14 @@ export function indexa_linhas(codigo_c3e) {
 
 export function getUserInput(worker) {
     return new Promise((resolve) => {
-        const inputElement = document.getElementById('inputText');
-        // signal.addEventListener('abort', () => {
-        //     reject(new Error('Task was aborted'));
-        // });
 
-        // Adiciona um event listener para a tecla "Enter"
-        inputElement.addEventListener('keydown', function onEnter(event) {
-            if (event.key === 'Enter') {
-                // Resolve a Promise com o valor do input
-                resolve(inputElement.value);
-                worker.postMessage({'saida_console': inputElement.value + '\n'});
-                //textareaElement.scrollTop = textareaElement.scrollHeight;
+        // Envia a solicitação ao script principal
+        worker.postMessage({'le': true});
 
-                // Remove o event listener após a resolução
-                inputElement.removeEventListener('keydown', onEnter);
-
-                // Limpa o campo de input para a próxima entrada
-                inputElement.value = '';
-            }
-        });
+        // Aguardar a resposta do script principal
+        worker.onmessage = (event) => {
+          resolve(event.data); // Resolve a Promise com o dado recebido
+        };
     });
 }
 
@@ -484,21 +471,16 @@ export function parseScanf(valor) {
     };
 }
 
-export function configura_leitura(vai_ler){
-    if (vai_ler){
-        vai_ler = true;
-        $("#inputText")[0].disabled = false;
-        $("#inputText").addClass('input-insere-dados');
-        $("#inputText")[0].placeholder = 'Digite um valor de entrada para variável ';
-        $("#inputText").focus();
-        textareaElement.scrollTop = textareaElement.scrollHeight;
-    } else {
-        $("#inputText")[0].placeholder = '';
-        $("#inputText")[0].disabled = true;
-        $("#inputText").removeClass('input-insere-dados');
-        textareaElement.scrollTop = textareaElement.scrollHeight;
-        vai_ler = false;
-    }
+export function configura_leitura(vai_ler, worker){
+    // if (vai_ler){
+    //     worker.postMessage({ 'prepara_leitura': true});
+    //     // vai_ler = true;
+    //
+    // } else {
+    //     worker.postMessage({ 'prepara_leitura': false});
+    //     // vai_ler = false;
+    // }
+    return true;
 }
 
 export function calcula_argumentos(arg1, arg2, op){
@@ -554,6 +536,12 @@ function verifica_se_eh_escopo(label){
     }
 }
 
+function adiciona_funcao_a_pilha_de_funcao(funcao){
+    if (globalVar.vm_funcoes.indexOf(funcao) === -1){
+        globalVar.vm_funcoes.push(funcao);
+    }
+}
+
 export function inicializa_variaveis_globais(codigo_c3e){
     let esta_em_funcao = false;
     let c3e;
@@ -565,7 +553,11 @@ export function inicializa_variaveis_globais(codigo_c3e){
             globalVar.vm_escopo = parseInt(c3e.result.substring(1));
         }
         if (c3e.salto && c3e.result == 'goto' && verifica_se_eh_chamada_de_funcao(c3e.arg1)){
-            globalVar.vm_funcoes.push(c3e.arg1.substring(1));
+            adiciona_funcao_a_pilha_de_funcao(c3e.arg1.substring(1));
+        }
+        if (c3e.label && verifica_se_eh_chamada_de_funcao(c3e.result)){
+            adiciona_funcao_a_pilha_de_funcao(c3e.result.substring(1));
+            setValue(0, c3e.result.substring(1), false);
         }
         if (globalVar.vm_escopo === 0 && !c3e.escopo && !c3e.salto && !c3e.escrita && !c3e.label && !c3e.leitura){
             let arg1 = getValue(c3e.arg1);
