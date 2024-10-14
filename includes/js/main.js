@@ -1,9 +1,8 @@
+var esta_no_debug = false;
+
 function getUserInput() {
     return new Promise((resolve) => {
         const inputElement = document.getElementById('inputText');
-        // signal.addEventListener('abort', () => {
-        //     reject(new Error('Task was aborted'));
-        // });
 
         // Adiciona um event listener para a tecla "Enter"
         inputElement.addEventListener('keydown', function onEnter(event) {
@@ -19,6 +18,29 @@ function getUserInput() {
                 // Limpa o campo de input para a próxima entrada
                 inputElement.value = '';
             }
+        });
+    });
+}
+
+function getUserDebug2() {
+
+    return new Promise((resolve) => {
+        // Adiciona um event listener para o botão "Próximo passo"
+        const buttonProximoPasso = document.getElementById('button5');
+
+        // Adiciona um event listener ao botão
+        buttonProximoPasso.addEventListener('click', function onProximoPasso() {
+            // Emite um console log quando o botão é pressionado
+            resolve(inputElement.value);
+            buttonProximoPasso.removeEventListener('click', onProximoPasso);
+        });
+
+        const buttonExecutar = document.getElementById('button6');
+        // Adiciona um event listener ao botão
+        buttonExecutar.addEventListener('click', function onExecutar() {
+            // Emite um console log quando o botão é pressionado
+            resolve(inputElement.value);
+            buttonExecutar.removeEventListener('click', onExecutar);
         });
     });
 }
@@ -94,11 +116,17 @@ function carrega_historico_variaveis(){
     return false;
 }
 
+function modifica_cor_linhas_editor_texto(linha_atual, linha_anterior) {
+    addLineDecoration(linha_atual - 1, 'line-decoration');
+    editor.removeLineClass(linha_anterior - 1, 'wrap', 'line-decoration');
+}
+
 
 let worker = new Worker('includes/js/worker.js', { type: 'module' });
 var dic_control = {'c3e': '',
                                                  'historico_variavel': {}};
 function inicia_worker(debug=false){
+  esta_no_debug = false;
   textareaElement.value = "";
   saveDataAndReload(false);
   $("#button2")[0].hidden = true;
@@ -125,9 +153,10 @@ worker.onmessage = async function(event) {
         textareaElement.value += event.data.saida_console;
         textareaElement.scrollTop = textareaElement.scrollHeight;
     }
-    if ('finalizou_execucao' in event.data){
+    if ('finalizou_execucao' in event.data && !esta_no_debug){
         $("#button4")[0].hidden = false;
         $("#button5")[0].hidden = true;
+        $("#button6")[0].hidden = true;
         $("#button2")[0].hidden = false;
         $("#button3")[0].hidden = true;
         $("#inputText")[0].disabled = true;
@@ -153,11 +182,21 @@ worker.onmessage = async function(event) {
             textareaElement.scrollTop = textareaElement.scrollHeight;
         }, 50);
         let userInput = await getUserInput(worker);
-        console.log(userInput);
         $("#inputText")[0].placeholder = '';
         document.getElementById('inputText').setAttribute('disabled', 'disabled');
         $("#inputText").removeClass('input-insere-dados');
         textareaElement.scrollTop = textareaElement.scrollHeight;
         worker.postMessage(userInput);
+    }
+
+    if ('debugger' in event.data){
+        setTimeout(function (){
+            esconde_tela_aguarde();
+        }, 500);
+        modifica_cor_linhas_editor_texto(event.data.linha_atual, event.data.linha_anterior);
+        esta_no_debug = true;
+        await getUserDebug2();
+        esta_no_debug = false;
+        worker.postMessage('');
     }
 };

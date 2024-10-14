@@ -1,13 +1,13 @@
 /* jshint esversion: 6 */
 import { globalVar } from './globals.js';
-import { inicializa_escopos, indexa_linhas, inicializa_variaveis_globais, modifica_cor_linhas_editor_texto, getUserDebug,
+import { inicializa_escopos, indexa_linhas, inicializa_variaveis_globais, getUserDebug,
     verifica_se_eh_return, verifica_temporaria, getValue, setValue, realiza_atribuicao_parametros, altera_escopo_pai,
     verifica_se_eh_chamada_de_funcao, carrega_parametros, empilha_variaveis_recursao, parsePrintf, formataStringInt,
-    formataStringFloat, formataStringQuebraLinha, parseScanf, configura_leitura, getUserInput, verifica_se_eh_vetor,
+    formataStringFloat, formataStringQuebraLinha, parseScanf, getUserInput, verifica_se_eh_vetor,
     extrai_variavel_e_posicao_vetor, inicializa_vetor, verifica_se_eh_matriz, extrai_variavel_e_posicao_matriz,
     inicializa_matriz, calcula_argumentos} from './funcoes_mv.js';
 
-export async function executaC3E2(codigo_c3e, worker) {
+export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
     globalVar.worker = worker;
     let c3e;
     let result;
@@ -33,11 +33,12 @@ export async function executaC3E2(codigo_c3e, worker) {
             if (c3e.result) {
                 // DEPURADOR
                 if (globalVar.debug_compiler) {
-                    if (globalVar.linha_anterior !== c3e.linha && (!c3e.label && !c3e.salto)) {
-                        globalVar.vai_ler = true;
-                        modifica_cor_linhas_editor_texto(c3e.linha, globalVar.linha_anterior);
-                        await getUserDebug();
-                        globalVar.vai_ler = false;
+                    if (globalVar.linha_anterior !== c3e.linha && !c3e.label) {
+                        debugger;
+                        // globalVar.vai_ler = true;
+                        globalVar.linha_atual = c3e.linha;
+                        await getUserDebug(worker);
+                        // globalVar.vai_ler = false;
                         globalVar.linha_anterior = c3e.linha;
                     }
                 }
@@ -145,9 +146,9 @@ export async function executaC3E2(codigo_c3e, worker) {
                     let quebra_scanf = parseScanf(c3e.result);
                     let values = quebra_scanf.params;
                     for (let i = 0; i < values.length; i++) {
-                        configura_leitura(true, worker);
+                        //configura_leitura(true, worker);
                         let userInput = await getUserInput(worker);
-                        configura_leitura(false, worker);
+                        //configura_leitura(false, worker);
                         setValue(userInput, values[i]);
                     }
                 } else {
@@ -190,7 +191,10 @@ export async function executaC3E2(codigo_c3e, worker) {
             worker.postMessage({'saida_console': globalVar.warning_msg});
         }
         worker.postMessage({'saida_console': '\n\nPrograma compilado e executado com sucesso.'});
+        worker.postMessage({'finalizou_execucao': true, 'c3e': c3e_txt});
+
     } catch (e){
         worker.postMessage({'saida_console': '\n\n' + e});
     }
+    return;
 }

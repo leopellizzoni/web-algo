@@ -1545,7 +1545,6 @@ function InstrLeitura(){
                     if (globalVarC.tk === globalVarC.TKs["TKFechaParenteses"]){
                         getToken();
                         if (globalVarC.tk === globalVarC.TKs["TKPontoEVirgula"]){
-                            getToken();
                             let qtd_args = 0;
                             if (typeof result === 'string'){
                                 qtd_args = result.split(',').length;
@@ -1562,6 +1561,7 @@ function InstrLeitura(){
                                 geraInstrucao('', '', '', "scanf(" + printf + ")", globalVarC.count_line, false, false, false, true);
                                 return true;
                             }
+                            getToken();
                         } else {
                             if (globalVarC.dic_control['msg_erro'] === '') {
                                 globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
@@ -1597,7 +1597,6 @@ function InstrEscrita(){
                     if (globalVarC.tk === globalVarC.TKs["TKFechaParenteses"]){
                         getToken();
                         if (globalVarC.tk === globalVarC.TKs["TKPontoEVirgula"]) {
-                            getToken();
                             let qtd_args = 0;
                             if (typeof result === 'string') {
                                 qtd_args = result.split(',').length;
@@ -1614,6 +1613,7 @@ function InstrEscrita(){
                                 geraInstrucao('', '', '', "printf(" + printf + ")", globalVarC.count_line, false, true);
                                 return true;
                             }
+                            getToken();
                         } else {
                             if (globalVarC.dic_control['msg_erro'] === '') {
                                 globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' no comando printf " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';

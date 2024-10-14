@@ -87,31 +87,39 @@ export function getUserInput(worker) {
     });
 }
 
-export function getUserDebug() {
+export function getUserDebug(worker) {
+
     return new Promise((resolve) => {
-        // Adiciona um event listener para o botão "Próximo passo"
-        const buttonProximoPasso = document.getElementById('button5');
 
-        // Adiciona um event listener ao botão
-        buttonProximoPasso.addEventListener('click', function onProximoPasso() {
-            // Emite um console log quando o botão é pressionado
-            resolve(inputElement.value);
-            buttonProximoPasso.removeEventListener('click', onProximoPasso);
-        });
+        // Envia a solicitação ao script principal
+        worker.postMessage({'debugger': true, 'linha_atual': globalVar.linha_atual, 'linha_anterior': globalVar.linha_anterior});
 
-        const buttonExecutar = document.getElementById('button6');
-        // Adiciona um event listener ao botão
-        buttonExecutar.addEventListener('click', function onExecutar() {
-            // Emite um console log quando o botão é pressionado
-            resolve(inputElement.value);
-            buttonExecutar.removeEventListener('click', onExecutar);
-        });
+        // Aguardar a resposta do script principal
+        worker.onmessage = (event) => {
+          resolve(event.data); // Resolve a Promise com o dado recebido
+        };
     });
-}
 
-export function modifica_cor_linhas_editor_texto(linha_atual, linha_anterior) {
-    addLineDecoration(linha_atual - 1, 'line-decoration');
-    editor.removeLineClass(linha_anterior - 1, 'wrap', 'line-decoration');
+
+    // return new Promise((resolve) => {
+    //     // Adiciona um event listener para o botão "Próximo passo"
+    //     const buttonProximoPasso = document.getElementById('button5');
+    //
+    //     // Adiciona um event listener ao botão
+    //     buttonProximoPasso.addEventListener('click', function onProximoPasso() {
+    //         // Emite um console log quando o botão é pressionado
+    //         resolve(inputElement.value);
+    //         buttonProximoPasso.removeEventListener('click', onProximoPasso);
+    //     });
+    //
+    //     const buttonExecutar = document.getElementById('button6');
+    //     // Adiciona um event listener ao botão
+    //     buttonExecutar.addEventListener('click', function onExecutar() {
+    //         // Emite um console log quando o botão é pressionado
+    //         resolve(inputElement.value);
+    //         buttonExecutar.removeEventListener('click', onExecutar);
+    //     });
+    // });
 }
 
 function verifica_operador_unario(valor) {
@@ -469,18 +477,6 @@ export function parseScanf(valor) {
         formattedString,
         params
     };
-}
-
-export function configura_leitura(vai_ler, worker){
-    // if (vai_ler){
-    //     worker.postMessage({ 'prepara_leitura': true});
-    //     // vai_ler = true;
-    //
-    // } else {
-    //     worker.postMessage({ 'prepara_leitura': false});
-    //     // vai_ler = false;
-    // }
-    return true;
 }
 
 export function calcula_argumentos(arg1, arg2, op){

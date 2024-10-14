@@ -10,6 +10,7 @@ export var globalVar = {
     vm_funcoes: [],
     index_goto: {},
     debug_compiler: false,
+    linha_atual: 0,
     linha_anterior: 0,
     vai_ler: false,
     historico_variaveis: {},
