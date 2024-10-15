@@ -1,6 +1,6 @@
 var esta_no_debug = false;
 
-function getUserInput() {
+function getUserInput2() {
     return new Promise((resolve) => {
         const inputElement = document.getElementById('inputText');
 
@@ -122,10 +122,14 @@ function modifica_cor_linhas_editor_texto(linha_atual, linha_anterior) {
 }
 
 
-let worker = new Worker('includes/js/worker.js', { type: 'module' });
+
 var dic_control = {'c3e': '',
                                                  'historico_variavel': {}};
+
+
+
 function inicia_worker(debug=false){
+  var worker= new Worker('includes/js/worker.js', { type: 'module' });
   esta_no_debug = false;
   textareaElement.value = "";
   saveDataAndReload(false);
@@ -144,59 +148,62 @@ function inicia_worker(debug=false){
   }
   mostra_tela_aguarde('Compilando...');
   worker.postMessage({ code: editor.getValue(), debug: debug});
-}
 
-// Ouvir a resposta do Worker
-worker.onmessage = async function(event) {
+  // Ouvir a resposta do Worker
+    worker.onmessage = async function(event) {
 
-    if ('saida_console' in event.data){
-        textareaElement.value += event.data.saida_console;
-        textareaElement.scrollTop = textareaElement.scrollHeight;
-    }
-    if ('finalizou_execucao' in event.data && !esta_no_debug){
-        $("#button4")[0].hidden = false;
-        $("#button5")[0].hidden = true;
-        $("#button6")[0].hidden = true;
-        $("#button2")[0].hidden = false;
-        $("#button3")[0].hidden = true;
-        $("#inputText")[0].disabled = true;
-        editor.setOption("readOnly", false);
-        textareaElement.scrollTop = textareaElement.scrollHeight;
-        dic_control.c3e =  event.data.c3e;
-        setTimeout(function (){
-            esconde_tela_aguarde();
-        }, 500);
-    }
-    if ('atualiza_tabela_variaveis' in event.data){
-        dic_control.historico_variavel =  event.data.atualiza_tabela_variaveis;
-        atualiza_tabela_variaveis(event.data.atualiza_tabela_variaveis);
-    }
-
-    if ('le' in event.data){
-        console.log('entrou aqui');
-        setTimeout(function (){
-            document.getElementById('inputText').removeAttribute('disabled');
-            $("#inputText").addClass('input-insere-dados');
-            $("#inputText")[0].placeholder = 'Digite um valor de entrada para variável ';
-            $("#inputText").focus();
+        if ('saida_console' in event.data){
+            textareaElement.value += event.data.saida_console;
             textareaElement.scrollTop = textareaElement.scrollHeight;
-        }, 50);
-        let userInput = await getUserInput(worker);
-        $("#inputText")[0].placeholder = '';
-        document.getElementById('inputText').setAttribute('disabled', 'disabled');
-        $("#inputText").removeClass('input-insere-dados');
-        textareaElement.scrollTop = textareaElement.scrollHeight;
-        worker.postMessage(userInput);
-    }
+        }
+        if ('finalizou_execucao' in event.data){
+            $("#button4")[0].hidden = false;
+            $("#button5")[0].hidden = true;
+            $("#button6")[0].hidden = true;
+            $("#button2")[0].hidden = false;
+            $("#button3")[0].hidden = true;
+            $("#inputText")[0].disabled = true;
+            editor.setOption("readOnly", false);
+            textareaElement.scrollTop = textareaElement.scrollHeight;
+            dic_control.c3e =  event.data.c3e;
+            setTimeout(function (){
+                esconde_tela_aguarde();
+            }, 500);
+            worker.terminate();
+        }
+        if ('atualiza_tabela_variaveis' in event.data){
+            dic_control.historico_variavel =  event.data.atualiza_tabela_variaveis;
+            atualiza_tabela_variaveis(event.data.atualiza_tabela_variaveis);
+        }
 
-    if ('debugger' in event.data){
-        setTimeout(function (){
-            esconde_tela_aguarde();
-        }, 500);
-        modifica_cor_linhas_editor_texto(event.data.linha_atual, event.data.linha_anterior);
-        esta_no_debug = true;
-        await getUserDebug2();
-        esta_no_debug = false;
-        worker.postMessage('');
-    }
-};
+        if ('le' in event.data){
+            setTimeout(function (){
+                esconde_tela_aguarde();
+            }, 500);
+            setTimeout(function (){
+                document.getElementById('inputText').removeAttribute('disabled');
+                $("#inputText").addClass('input-insere-dados');
+                $("#inputText")[0].placeholder = 'Digite um valor de entrada para variável ';
+                $("#inputText").focus();
+                textareaElement.scrollTop = textareaElement.scrollHeight;
+            }, 50);
+            let userInput = await getUserInput2();
+            $("#inputText")[0].placeholder = '';
+            document.getElementById('inputText').setAttribute('disabled', 'disabled');
+            $("#inputText").removeClass('input-insere-dados');
+            textareaElement.scrollTop = textareaElement.scrollHeight;
+            worker.postMessage(userInput);
+        }
+
+        if ('debugger' in event.data){
+            setTimeout(function (){
+                esconde_tela_aguarde();
+            }, 500);
+            modifica_cor_linhas_editor_texto(event.data.linha_atual, event.data.linha_anterior);
+            esta_no_debug = true;
+            await getUserDebug2();
+            esta_no_debug = false;
+            worker.postMessage('');
+        }
+    };
+}
