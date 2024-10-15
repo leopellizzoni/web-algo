@@ -527,3 +527,31 @@ int main() {
 
     return 0;
 }
+
+
+#include <stdio.h>
+
+// Função recursiva para calcular o fatorial
+int fatorial(int n) {
+    if (n == 0 || n == 1) {
+        return 1;  // Caso base: fatorial de 0 ou 1 é 1
+    } else {
+        return n * fatorial(n - 1);  // Passo recursivo
+    }
+}
+
+int main() {
+    int numero;
+
+    // Solicita ao usuário para inserir um número
+    printf("Digite um número inteiro: ");
+    int a;
+    scanf("%d %d", &numero, &a);
+
+    // Calcula e exibe o fatorial
+    printf("O fatorial de %d é: %d\n", numero, fatorial(numero));
+
+    printf("%d", a);
+
+    return 0;
+}

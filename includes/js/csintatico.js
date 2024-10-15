@@ -311,11 +311,11 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
             return false;
         }
         getToken();
-        globalVarC.dimensao += 1;
         let result = Expressao();
         if (result) {
             if (globalVarC.tk === globalVarC.TKs['TKFechaColchete']) {
                 getToken();
+                globalVarC.dimensao += 1;
                 let temp2 = ExpressaoPosRestante(lado_atribuicao);
                 if (arg1){
                     if (typeof temp2 === 'string') {
@@ -462,6 +462,7 @@ function ExpressPos(lado_atribuicao){
         if (typeof result !== 'string'){
             let temp = newTemp();
             result = ExpressaoPosRestante(lado_atribuicao, arg1);
+            globalVarC.dimensao = 0;
             if (result){
                 return result;
             } else {
@@ -469,6 +470,7 @@ function ExpressPos(lado_atribuicao){
             }
         } else {
             let temp2 = ExpressaoPosRestante(lado_atribuicao, arg1);
+            globalVarC.dimensao = 0;
             if (temp2){
                 if (typeof temp2 === 'string'){
                     return temp2;
