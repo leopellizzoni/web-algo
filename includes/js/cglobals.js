@@ -129,5 +129,6 @@ export var globalVarC = {
     parametros_chamadas_funcao: [],
     pilha_funcoes: [],
     vm_funcoes: [],
+    verifica_vetor_matriz_numeral: true,
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 };

@@ -34,7 +34,6 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
                 // DEPURADOR
                 if (globalVar.debug_compiler) {
                     if (globalVar.linha_anterior !== c3e.linha && !c3e.label) {
-                        debugger;
                         // globalVar.vai_ler = true;
                         globalVar.linha_atual = c3e.linha;
                         await getUserDebug(worker);
@@ -67,7 +66,7 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
                     continue;
                 } else if (c3e.parametros) {
                     let parametros = globalVar.parametros_chamadas_funcao.pop();
-                    realiza_atribuicao_parametros(c3e.result.split(','), parametros, c3e.parametros);
+                    realiza_atribuicao_parametros(c3e.result.split(','), parametros, c3e.parametros, c3e.linha);
                 } else if (c3e.label) {
                     continue;
                 } else if (c3e.salto) {
@@ -195,6 +194,7 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
 
     } catch (e){
         worker.postMessage({'saida_console': '\n\n' + e});
+        worker.postMessage({'finalizou_execucao': true, 'c3e': c3e_txt});
     }
     return;
 }

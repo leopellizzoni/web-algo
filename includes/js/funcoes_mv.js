@@ -58,9 +58,52 @@ export function inicializa_vetor(variavel, tam_vetor) {
     return vetor;
 }
 
-export function realiza_atribuicao_parametros(parametros, dados, parametros_tipos){
+export function realiza_atribuicao_parametros(parametros, dados_param, parametros_tipos, linha){
     for (let i=0; i<parametros.length; i++){
-        setValue(dados[i], parametros[i], true, parametros_tipos[parametros[i]]['tipo']);
+        let eh_vetor = verifica_se_eh_vetor(parametros[i]);
+        let eh_matriz = verifica_se_eh_matriz(parametros[i]);
+        let dados;
+        let escopo_real;
+        debugger;
+        if (eh_vetor) {
+            dados = extrai_variavel_e_posicao_vetor(parametros[i]);
+            escopo_real = globalVar.vm_escopo;
+            let posicao = getValue(dados.posicao);
+            if (Array.isArray(dados_param[i])) {
+                for (let j = 0; j < posicao; j++) {
+                    if (!Array.isArray(dados_param[i][j])){
+                        globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][j] = dados_param[i][j];
+                    } else {
+                        throw `Erro: Valor passado não corresponde com valor esperado no parâmetro ${dados.variavel} (linha: ${linha})`;
+                    }
+                }
+            } else {
+                throw `Erro: Valor passado não corresponde com valor esperado no parâmetro ${dados.variavel} (linha: ${linha})`;
+            }
+        } else if (eh_matriz){
+            dados = extrai_variavel_e_posicao_matriz(parametros[i]);
+            escopo_real = globalVar.vm_escopo;
+            let posicao1 = getValue(dados["posicoes"][0]);
+            let posicao2 = getValue(dados["posicoes"][1]);
+            if (Array.isArray(dados_param[i])) {
+                for (let j = 0; j < posicao1; j++) {
+                    if (Array.isArray(dados_param[i][j])) {
+                        for (let k = 0; k < posicao2; k++) {
+                            globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][j][k] = dados_param[i][j][k];
+                        }
+                    } else {
+                        throw `Erro: Valor passado não corresponde com valor esperado no parâmetro ${dados.variavel} (linha: ${linha})`;
+                    }
+                }
+            } else {
+                throw `Erro: Valor passado não corresponde com valor esperado no parâmetro ${dados.variavel} (linha: ${linha})`;
+            }
+        } else {
+            if (Array.isArray(dados_param[i])){
+                throw `Erro de tipo: Esperado um valor do tipo 'numeral' e recebeu um 'vetor' (linha: ${linha})`;
+            }
+            setValue(dados_param[i], parametros[i], true, parametros_tipos[parametros[i]]['tipo']);
+        }
     }
 }
 
@@ -99,27 +142,6 @@ export function getUserDebug(worker) {
           resolve(event.data); // Resolve a Promise com o dado recebido
         };
     });
-
-
-    // return new Promise((resolve) => {
-    //     // Adiciona um event listener para o botão "Próximo passo"
-    //     const buttonProximoPasso = document.getElementById('button5');
-    //
-    //     // Adiciona um event listener ao botão
-    //     buttonProximoPasso.addEventListener('click', function onProximoPasso() {
-    //         // Emite um console log quando o botão é pressionado
-    //         resolve(inputElement.value);
-    //         buttonProximoPasso.removeEventListener('click', onProximoPasso);
-    //     });
-    //
-    //     const buttonExecutar = document.getElementById('button6');
-    //     // Adiciona um event listener ao botão
-    //     buttonExecutar.addEventListener('click', function onExecutar() {
-    //         // Emite um console log quando o botão é pressionado
-    //         resolve(inputElement.value);
-    //         buttonExecutar.removeEventListener('click', onExecutar);
-    //     });
-    // });
 }
 
 function verifica_operador_unario(valor) {
@@ -320,6 +342,9 @@ export function getValue(expressao) {
                 globalVar.variaveis_vm[escopo_real]['variaveis'][expressao] = {'valor': Number(NaN)};
             }
             resultado = globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['valor'];
+            if (Array.isArray(resultado)){
+                return resultado;
+            }
         }
     }
 
@@ -448,7 +473,7 @@ export function formataStringFloat(template, values) {
 
 export function carrega_parametros(lista_param){
     let parametros = [];
-    for (let i=0; i<=lista_param.length;i++){
+    for (let i=0; i<lista_param.length;i++){
         parametros.push(getValue(lista_param[i]));
     }
     return parametros;
@@ -555,6 +580,32 @@ export function inicializa_variaveis_globais(codigo_c3e){
             adiciona_funcao_a_pilha_de_funcao(c3e.result.substring(1));
             setValue(0, c3e.result.substring(1), false);
         }
+        if (c3e.parametros){
+            let parametros = c3e.result.split(',');
+            for (let i=0; i < parametros.length; i++){
+                if (verifica_se_eh_vetor(parametros[i])) {
+                    let dados = extrai_variavel_e_posicao_vetor(parametros[i]);
+                    let posicao = getValue(dados["posicao"]);
+                    globalVar.variaveis_vm[globalVar.vm_escopo]['variaveis'][dados.variavel] = {
+                        'valor': inicializa_vetor(dados['variavel'], posicao),
+                        'tipo': c3e.tipo_variavel
+                    };
+                } else if (verifica_se_eh_matriz(parametros[i])) {
+                    let dados = extrai_variavel_e_posicao_matriz(parametros[i]);
+                    let posicao1 = getValue(dados["posicoes"][0]);
+                    let posicao2 = getValue(dados["posicoes"][0]);
+                    globalVar.variaveis_vm[globalVar.vm_escopo]['variaveis'][dados.variavel] = {
+                        'valor': inicializa_matriz(dados['variavel'], posicao1, posicao2),
+                        'tipo': c3e.tipo_variavel
+                    };
+                } else {
+                    if (parametros[i]){
+                        setValue(0, parametros[i], false);
+                        modifica_historico_variavel(parametros[i], 0);
+                    }
+                }
+            }
+        }
         if (globalVar.vm_escopo === 0 && !c3e.escopo && !c3e.salto && !c3e.escrita && !c3e.label && !c3e.leitura){
             let arg1 = getValue(c3e.arg1);
             if (!arg1){
@@ -566,8 +617,10 @@ export function inicializa_variaveis_globais(codigo_c3e){
                     let dados = extrai_variavel_e_posicao_matriz(c3e.result);
                     inicializa_matriz(dados['variavel'], dados["posicoes"][0], dados["posicoes"][1]);
                 } else {
-                    setValue(0, c3e.result, false);
-                    modifica_historico_variavel(c3e.result, 0);
+                    if (c3e.result){
+                        setValue(0, c3e.result, false);
+                        modifica_historico_variavel(c3e.result, 0);
+                    }
                 }
             } else {
                 let arg2 = '';
@@ -580,7 +633,6 @@ export function inicializa_variaveis_globais(codigo_c3e){
                 } else {
                     result = arg1;
                 }
-
                 setValue(result, c3e.result, false);
                 modifica_historico_variavel(c3e.result, result);
             }

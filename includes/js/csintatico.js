@@ -31,6 +31,57 @@ function backtracking(funcao){
     }
 }
 
+function verifica_se_eh_vetor(valor) {
+    // Regex para variável ou constante: [a-zA-Z_]\w*
+    // Regex para expressão dentro dos colchetes: aceita variáveis, números, operadores, e parênteses
+    //const arrayNotationRegex = /^[a-zA-Z_]\w*(\[\s*([a-zA-Z_]\w*|\d+|@\w+|\[[a-zA-Z_]\w*|\d+|@\w+\])\s*\])+$/;
+    //const arrayNotationRegex = /^[a-zA-Z_]\w*(\[(?:[a-zA-Z_]\w*|\d+|@\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@\d+|[+\-*/()])*\])*\])*\])$/;
+    // const arrayNotationRegex = /^[a-zA-Z_]\w*(\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()])*\])*\])*\])$/;
+    // 7 aninhações
+    const arrayNotationRegex = /^[a-zA-Z_]\w*(\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()])*\])*\])*\])*\])*\])*\])*\])$/;
+    return arrayNotationRegex.test(valor);
+}
+
+function verifica_se_eh_matriz(valor) {
+    // Regex para variável ou constante: [a-zA-Z_]\w*
+    // Regex para expressões dentro dos colchetes: [a-zA-Z0-9_+\-*/()@ ]
+    let matrixNotationRegex = /^[a-zA-Z_]\w*(\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()])*\])*\])*\]?)\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()]|\[(?:[a-zA-Z_]\w*|\d+|@t\d+|[+\-*/()])*\])*\])*\]?$/;
+    return matrixNotationRegex.test(valor);
+}
+
+function verifica_vetor_matriz_numeral(identificador){
+    let escopo = globalVarC.index_escopo;
+    let armazena_escopo = escopo;
+    let identificador_ajustado = identificador.split('[')[0];
+    for (let index=escopo; index>=0;index = globalVarC.tabela_de_simbolos[index]['escopo_pai']){
+        if (identificador_ajustado in globalVarC.tabela_de_simbolos[index]['variaveis']){
+            armazena_escopo = index;
+            break;
+        }
+        if (index === 0){
+            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador_ajustado + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            return false;
+        }
+    }
+    let matriz_vetor = globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador_ajustado].matriz_vetor;
+    if (matriz_vetor !== ''){
+        if (matriz_vetor === 'matriz'){
+            let eh_matriz = verifica_se_eh_matriz(identificador);
+            if (!eh_matriz){
+                globalVarC.dic_control['msg_erro'] = "Variável '" + identificador_ajustado + "' não é matriz" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                return false;
+            }
+        } else {
+            let eh_vetor = verifica_se_eh_vetor(identificador);
+            if (!eh_vetor){
+                globalVarC.dic_control['msg_erro'] = "Variável '" + identificador_ajustado + "' não é vetor" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 function verifica_existencia_escopo_tabela_simbolos(escopo){
     if (!globalVarC.tabela_de_simbolos[escopo]){
         globalVarC.tabela_de_simbolos.push({'escopo_pai': globalVarC.index_escopo_pai, 'variaveis': {}});
@@ -57,6 +108,27 @@ function verifica_variavel_declarada_em_escopos(escopo, variavel){
         }
         if (index === 0){
             break;
+        }
+    }
+    return true;
+}
+
+function verifica_func_void(identificador, escopo){
+    let armazena_escopo = escopo;
+    for (let index=escopo; index>=0;index = globalVarC.tabela_de_simbolos[index]['escopo_pai']){
+        if (identificador in globalVarC.tabela_de_simbolos[index]['variaveis']){
+            armazena_escopo = index;
+            break;
+        }
+        if (index === 0){
+            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            return false;
+        }
+    }
+    if (globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador].eh_funcao) {
+        if (globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador]['tipo']['tipo'] === 'void'){
+            globalVarC.dic_control['msg_erro'] = "Não é possível atribuir o resultado de uma função 'void' a uma variável." + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            return false;
         }
     }
     return true;
@@ -258,7 +330,7 @@ function Param(){
             return false;
         }
     } else {
-        backtracking('pop');
+        //backtracking('pop');
         return false;
     }
 }
@@ -353,7 +425,9 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
             //     return false;
             // }
         } else {
+            globalVarC.verifica_vetor_matriz_numeral = false;
             if (Expressao()){
+                globalVarC.verifica_vetor_matriz_numeral = true;
                 let parametros_funcao = globalVarC.lista_parametros_func.pop();
                 if (globalVarC.tk === globalVarC.TKs['TKFechaParenteses']) {
                     let label = '$' + arg1;
@@ -419,6 +493,11 @@ function ExpressaoPrima(lado_atribuicao) {
         //     }
         // }
         if (verifica_variavel_declarada(globalVarC.index_escopo, globalVarC.lexico.toString().replace(/\x00/g, ''))){
+            if (lado_atribuicao !== 'esquerdo'){
+                if (!verifica_func_void(globalVarC.identificador, globalVarC.index_escopo)){
+                    return false;
+                }
+            }
             getToken();
             return globalVarC.identificador;
         } else {
@@ -457,6 +536,7 @@ function ExpressaoPrima(lado_atribuicao) {
 
 function ExpressPos(lado_atribuicao){
     let arg1 = globalVarC.lexico.toString().replace(/\x00/g, '');
+    let armazena_tk = globalVarC.tk;
     let result = ExpressaoPrima(lado_atribuicao);
     if (result){
         if (typeof result !== 'string'){
@@ -473,8 +553,16 @@ function ExpressPos(lado_atribuicao){
             globalVarC.dimensao = 0;
             if (temp2){
                 if (typeof temp2 === 'string'){
+                    // nao verifica quando é chamada de função
+                    if (globalVarC.verifica_vetor_matriz_numeral && armazena_tk === globalVarC.TKs['TKId'] && !verifica_vetor_matriz_numeral(temp2)){
+                        return false;
+                    }
                     return temp2;
                 } else {
+                    // nao verifica quando é chamada de função
+                    if (globalVarC.verifica_vetor_matriz_numeral && armazena_tk === globalVarC.TKs['TKId'] && !verifica_vetor_matriz_numeral(result)){
+                        return false;
+                    }
                     return result;
                 }
             } else {
@@ -1113,6 +1201,48 @@ function ExpressAtrib(lado_atribuicao){
 }
 
 
+function ExpressCondicPrintf(){
+    var arg1 = globalVarC.lexico.toString().replace(/\x00/g, '');
+    let result = ExpressCondic();
+    if (result){
+        if (typeof result !== 'string'){
+            return arg1;
+        } else {
+            return result;
+        }
+    } else {
+        return false;
+    }
+}
+
+
+function ExpressaoRestantePrintf(){
+    if (globalVarC.tk === globalVarC.TKs['TKVirgula']){
+        getToken();
+        globalVarC.dimensao = 0;
+        let result = ExpressCondicPrintf();
+        if (result){
+            let temp2 = ExpressaoRestantePrintf();
+            if (temp2){
+
+                if (typeof temp2 === 'string') {
+                    return result + ',' + temp2;
+                } else {
+                    return result;
+                }
+
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+}
+
+
 function ExpressaoRestante(lado_atribuicao, printf){
     if (globalVarC.tk === globalVarC.TKs['TKVirgula']){
         getToken();
@@ -1594,7 +1724,7 @@ function InstrEscrita(){
             if (globalVarC.tk === globalVarC.TKs["TKString"]){
                 let printf = globalVarC.lexico.toString().replace(/\x00/g, '');
                 getToken();
-                let result = ExpressaoRestante('', true);
+                let result = ExpressaoRestantePrintf();
                 if(result){
                     if (globalVarC.tk === globalVarC.TKs["TKFechaParenteses"]){
                         getToken();
@@ -1940,7 +2070,12 @@ function DecFunc(){
                         parametros = '';
                     } else {
                         for (let i in parametros.split(',')){
-                            lista_parametros[parametros.split(',')[i]] = {'tipo': globalVarC.tabela_de_simbolos[globalVarC.index_escopo]['variaveis'][parametros.split(',')[i]]['tipo']['tipo']};
+                            let parametro = parametros.split(',')[i];
+                            if (parametro.split('[').length > 1){
+                                parametro = parametro.split('[')[0];
+                            }
+                            lista_parametros[parametros.split(',')[i]] = {
+                                'tipo': globalVarC.tabela_de_simbolos[globalVarC.index_escopo]['variaveis'][parametro]['tipo']['tipo']};
                         }
                     }
                     geraInstrucao('', '', '', parametros, globalVarC.count_line, false, false, true, false, false, lista_parametros);
@@ -2036,14 +2171,14 @@ function Dec2(){
     }
     backtracking('pop');
     if (DecFunc()){
-        geraInstrucao('', '', '', '#' + 0, globalVarC.count_line, false, false, true, false, true);
         if ('main' in globalVarC.tabela_de_simbolos[0]['variaveis']) {
             globalVarC.dic_control["encontrou_main"] = true;
         } else {
             if (!globalVarC.achou_return){
-                geraInstrucao('', '', '', 'return', globalVarC.count_line, true);
+                geraInstrucao('', '0', '', 'return', globalVarC.count_line, true);
             }
         }
+        geraInstrucao('', '', '', '#' + 0, globalVarC.count_line, false, false, true, false, true);
         return true;
     } else if (DecLibDefine()){
         return true;

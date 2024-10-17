@@ -27,6 +27,7 @@ function inicializa_compilacao(){
     globalVarC.achou_return = false;
     globalVarC.lista_parametros_func = [];
     globalVarC.empilha_operacao_aritmetica = [];
+    globalVarC.verifica_vetor_matriz_numeral = true;
 }
 
 
@@ -78,6 +79,7 @@ export function compiler(debug=false, codigo, worker){
                     worker.postMessage({'saida_console': 'Não encontrou a função de entrada main'});
                 }
             }
+            worker.postMessage({'finalizou_execucao': true, 'c3e': ''});
             // $("#button4")[0].hidden = false;
             // $("#button5")[0].hidden = true;
             // $("#button2")[0].hidden = false;
@@ -90,6 +92,7 @@ export function compiler(debug=false, codigo, worker){
         console.log(e);
 
         worker.postMessage({'saida_console': globalVarC.dic_control['msg_erro']});
+        worker.postMessage({'finalizou_execucao': true, 'c3e': ''});
 
         // $("#button4")[0].hidden = false;
         // $("#button5")[0].hidden = true;
