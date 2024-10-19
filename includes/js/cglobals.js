@@ -80,6 +80,8 @@ export var globalVarC = {
     code: '',
     count_column: 0,
     count_line: 1,
+    count_column_last: 0,
+    count_line_last: 1,
     caracter: null,
     code_position: -1,
     lexico: '',
@@ -117,7 +119,7 @@ export var globalVarC = {
     // REGEX PRINTF
     regexPrintf: /%([+-]?(?:\d+|\*)?(?:\.\d+|\.\*)?(?:hh|h|l|ll|L|z|j|t)?[diuoxXfFeEgGaAcspn%])/g,
     // Números inteiros
-    regexNumero: /\d+/,
+    regexNumero: /^-?\d+(\.\d+)?$/,
     regexNumeroInteiro: /^-?\d+$/,
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     lista_param_printf: [],

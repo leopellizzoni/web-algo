@@ -14,6 +14,8 @@ export function proxC(){
 }
 
 export function getToken(){
+	globalVarC.count_column_last = globalVarC.count_column;
+	globalVarC.count_line_last = globalVarC.count_line;
     var fim = false;
     var estado = 0;
 	var loopInfinito = false;

@@ -31,6 +31,92 @@ function backtracking(funcao){
     }
 }
 
+function verifica_var_float(args){
+    let escopo = globalVarC.index_escopo;
+    let armazena_escopo = escopo;
+    let identificador;
+    for (let i=0; i<args.length; i++){
+        identificador = args[i].split('[')[0];
+        if (globalVarC.regexNumero.test(identificador)) {
+            if (!Number.isInteger(Number(identificador))) {
+                globalVarC.dic_control['msg_erro'] = "Operação de resto não é permitida entre valores do tipo float " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                return true;
+            }
+            continue;
+        }
+        for (let index=escopo; index>=0;index = globalVarC.tabela_de_simbolos[index]['escopo_pai']){
+            if (identificador in globalVarC.tabela_de_simbolos[index]['variaveis']){
+                armazena_escopo = index;
+                break;
+            }
+            if (index === 0){
+                globalVarC.dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                return false;
+            }
+        }
+        if (globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador].tipo.tipo === 'float'){
+            globalVarC.dic_control['msg_erro'] = "Operação de resto não é permitida entre valores do tipo float " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            return true;
+        }
+    }
+    return false;
+}
+
+function retorna_tipo_variavel(arg1, arg2){
+    let escopo = globalVarC.index_escopo;
+    let armazena_escopo = escopo;
+    let tipo_arg1;
+    arg1 = arg1.split('[')[0];
+    if (globalVarC.regexNumero.test(arg1)){
+        tipo_arg1 = 'int';
+        if (!Number.isInteger(Number(arg1))){
+            tipo_arg1 = 'float';
+        }
+    } else {
+        for (let index=escopo; index>=0;index = globalVarC.tabela_de_simbolos[index]['escopo_pai']){
+            if (arg1 in globalVarC.tabela_de_simbolos[index]['variaveis']){
+                armazena_escopo = index;
+                break;
+            }
+            if (index === 0){
+                globalVarC.dic_control['msg_erro'] = "Variável '" + arg1 + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                return false;
+            }
+        }
+        tipo_arg1 = globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][arg1].tipo;
+    }
+
+    let tipo_arg2;
+    armazena_escopo = escopo;
+    arg2 = arg2.split('[')[0];
+    if (globalVarC.regexNumero.test(arg2)){
+        tipo_arg2 = 'int';
+        if (!Number.isInteger(Number(arg2))){
+            tipo_arg2 = 'float';
+        }
+    } else {
+        for (let index=escopo; index>=0;index = globalVarC.tabela_de_simbolos[index]['escopo_pai']){
+            if (arg2 in globalVarC.tabela_de_simbolos[index]['variaveis']){
+                armazena_escopo = index;
+                break;
+            }
+            if (index === 0){
+                globalVarC.dic_control['msg_erro'] = "Variável '" + arg2 + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                return false;
+            }
+        }
+        tipo_arg2 = globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][arg2].tipo.tipo;
+    }
+
+    if (tipo_arg1 === 'float' || tipo_arg2 === 'float'){
+        return {'tipo':'float',
+                'tk': globalVarC.TKs['TKFloat']};
+    } else {
+        return {'tipo':'int',
+                'tk': globalVarC.TKs['TKInt']};
+    }
+}
+
 function verifica_se_eh_vetor(valor) {
     // Regex para variável ou constante: [a-zA-Z_]\w*
     // Regex para expressão dentro dos colchetes: aceita variáveis, números, operadores, e parênteses
@@ -631,8 +717,10 @@ function ExpressMultiplRestante(temp, arg1){
         if (result) {
             if (typeof result !== 'string') {
                 geraInstrucao('/', arg1, arg2, temp, globalVarC.count_line);
+                tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(arg1, arg2), temp);
             } else {
                 geraInstrucao('/', arg1, result, temp, globalVarC.count_line);
+                tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(arg1, result), temp);
             }
             let temp2 = ExpressMultiplRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -653,8 +741,10 @@ function ExpressMultiplRestante(temp, arg1){
         if (result) {
             if (typeof result !== 'string') {
                 geraInstrucao('*', arg1, arg2, temp, globalVarC.count_line);
+                tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(arg1, result), temp);
             } else {
                 geraInstrucao('*', arg1, result, temp, globalVarC.count_line);
+                tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(arg1, result), temp);
             }
             let temp2 = ExpressMultiplRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -674,9 +764,17 @@ function ExpressMultiplRestante(temp, arg1){
         let result = ExpressUnaria();
         if (result) {
             if (typeof result !== 'string') {
+                if (verifica_var_float([arg1, arg2])){
+                    return false;
+                }
                 geraInstrucao('%', arg1, arg2, temp, globalVarC.count_line);
+                tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(arg1, arg2), temp);
             } else {
+                if (verifica_var_float([arg1, result])){
+                    return false;
+                }
                 geraInstrucao('%', arg1, result, temp, globalVarC.count_line);
+                tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(arg1, result), temp);
             }
             let temp2 = ExpressMultiplRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -1966,7 +2064,7 @@ function Declaracao(){
                 return true;
             } else {
                 globalVarC.dic_control['encontrou_expressao'] = true;
-                globalVarC.dic_control['msg_erro'] = "não encontrou o caracter ';' na declaração da variável " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "não encontrou o caracter ';' na declaração da variável " + ' (' + globalVarC.count_line_last + ', ' + globalVarC.count_column_last + ')' + '\n';
                 return false;
             }
         } else {
