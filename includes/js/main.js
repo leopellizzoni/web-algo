@@ -6,7 +6,7 @@ function getUserInput2() {
 
         // Adiciona um event listener para a tecla "Enter"
         inputElement.addEventListener('keydown', function onEnter(event) {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && inputElement.value !== '') {
                 // Resolve a Promise com o valor do input
                 resolve(inputElement.value);
                 textareaElement.value += inputElement.value + '\n';

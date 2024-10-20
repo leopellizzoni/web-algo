@@ -79,7 +79,7 @@ function retorna_tipo_variavel(arg1, arg2){
                 break;
             }
             if (index === 0){
-                globalVarC.dic_control['msg_erro'] = "Variável '" + arg1 + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "Variável '" + arg1 + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#1' + '\n';
                 return false;
             }
         }
@@ -101,7 +101,7 @@ function retorna_tipo_variavel(arg1, arg2){
                 break;
             }
             if (index === 0){
-                globalVarC.dic_control['msg_erro'] = "Variável '" + arg2 + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "Variável '" + arg2 + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#2' + '\n';
                 return false;
             }
         }
@@ -145,7 +145,7 @@ function verifica_vetor_matriz_numeral(identificador){
             break;
         }
         if (index === 0){
-            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador_ajustado + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador_ajustado + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#3' + '\n';
             return false;
         }
     }
@@ -207,7 +207,7 @@ function verifica_func_void(identificador, escopo){
             break;
         }
         if (index === 0){
-            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#4' + '\n';
             return false;
         }
     }
@@ -230,7 +230,7 @@ function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica
             break;
         }
         if (index === 0){
-            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#5' + '\n';
             return false;
         }
     }
@@ -367,8 +367,12 @@ function OperadorAtrib(){
 }
 
 
-function Tipo(){
+function Tipo(esta_no_for=false){
     if (globalVarC.tk === globalVarC.TKs['TKInt'] || globalVarC.tk === globalVarC.TKs['TKVoid'] || globalVarC.tk === globalVarC.TKs['TKFloat'] || globalVarC.tk === globalVarC.TKs['TKDouble']){
+        if (esta_no_for){
+            globalVarC.dic_control['msg_erro'] = "Declarações de variáveis dentro do laço 'for' não são permitidas. Declare a variável antes do laço. " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            return false;
+        }
         getToken();
         return true;
     } else {
@@ -545,6 +549,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
         }
         let temp = newTemp();
         geraInstrucao('', globalVarC.identificador, '', temp, globalVarC.count_line);
+        tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(globalVarC.identificador, '0'), temp);
         geraInstrucao('+', globalVarC.identificador, 1, globalVarC.identificador, globalVarC.count_line);
         if (ExpressaoPosRestante(lado_atribuicao)) {
             return temp;
@@ -559,6 +564,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
         getToken();
         let temp = newTemp();
         geraInstrucao('', globalVarC.identificador, '', temp, globalVarC.count_line);
+        tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(globalVarC.identificador, '0'), temp);
         geraInstrucao('-', globalVarC.identificador, 1, globalVarC.identificador, globalVarC.count_line);
         if (ExpressaoPosRestante(lado_atribuicao)) {
             return temp;
@@ -1600,6 +1606,9 @@ function InstrIteracao(){
         getToken();
         if (globalVarC.tk === globalVarC.TKs['TKAbreParenteses']){
             getToken();
+            if (Tipo(true)){
+                return false;
+            }
             if (InstrExpress('esquerdo')){
                 geraInstrucao('', '', '', labelInicio, globalVarC.count_line, false, false, true);
                 let result = InstrExpress();
@@ -2006,6 +2015,11 @@ function DecInicial(tipo){
     let variavel = globalVarC.lexico.toString().replace(/\x00/g, '');
     if (Dec(tipo, variavel)){
         if (globalVarC.tk === globalVarC.TKs['TKIgual']){
+            if (verifica_variavel_declarada(globalVarC.index_escopo, variavel, 0, false, true)){
+                globalVarC.dic_control['msg_erro'] = "Inicialização inválida na variável '" + variavel + "' (" + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.continua = false;
+                return false;
+            }
             getToken();
             let result = ExpressAtrib();
             if (result){
@@ -2266,6 +2280,9 @@ function Dec2(){
     backtracking('push');
     if (Declaracao()){
         return true;
+    }
+    if (!globalVarC.continua){
+        return false;
     }
     backtracking('pop');
     if (DecFunc()){
