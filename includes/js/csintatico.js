@@ -589,7 +589,7 @@ function ExpressaoPrima(lado_atribuicao) {
             if (globalVarC.tk === globalVarC.TKs['TKIgual']) {
                 backtracking('push');
                 getToken();
-                if (!verifica_func_void(globalVarC.lexico.toString().replace(/\x00/g, ''), globalVarC.index_escopo)) {
+                if (globalVarC.tk === globalVarC.TKs['TKId'] && !verifica_func_void(globalVarC.lexico.toString().replace(/\x00/g, ''), globalVarC.index_escopo)) {
                     backtracking('pop');
                     globalVarC.dic_control['msg_erro'] = "Não é possível atribuir o resultado de uma função 'void' a uma variável." + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     return false;
@@ -1859,7 +1859,7 @@ function InstrEscrita(){
                             }
                             if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
                                 if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
-                                    geraInstrucao('', '', '', "printf(" + printf + "," + result + ")", globalVarC.count_line-1, false, true);
+                                    geraInstrucao('', '', '', "printf(" + printf + "," + result + ")", globalVarC.count_line, false, true);
                                     getToken();
                                     return true;
                                 } else {

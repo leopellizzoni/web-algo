@@ -2,6 +2,18 @@
     --bs-gutter-x: 0;
 }
 
+body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            height: 100vh;
+            /*display: flex;*/
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            overflow: hidden; /* Impede o scroll na página */
+        }
+
 /* Estilo para o marcador de breakpoint */
 .CodeMirror-gutter-elt.breakpoints {
     cursor: pointer;
@@ -65,6 +77,7 @@ div#tela_aguarde p#aguarde_msg {
 table {
     width: 100%;
     border-collapse: collapse;
+    display: block;
 }
 thead {
     background-color: #f2f2f2;
@@ -76,6 +89,7 @@ th, td {
     padding: 8px 12px;
     border: 1px solid #ddd;
     text-align: left;
+    white-space: nowrap;
 }
 
 .input-insere-dados{
@@ -84,4 +98,18 @@ th, td {
 
 .line-decoration {
   background-color: rgba(213, 213, 179, 0.25); /* Example decoration: change background color */
+}
+
+/* Fixando a segunda coluna */
+        th:nth-child(2),
+        td:nth-child(2) {
+            position: sticky;
+            left: 0;
+            background-color: #f2f2f2;
+            z-index: 1; /* Garante que a segunda coluna fique acima do restante */
+        }
+
+
+.modal {
+    overflow: auto;
 }

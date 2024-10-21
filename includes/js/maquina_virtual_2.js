@@ -2,8 +2,8 @@
 import { globalVar } from './globals.js';
 import { inicializa_escopos, indexa_linhas, inicializa_variaveis_globais, getUserDebug,
     verifica_se_eh_return, verifica_temporaria, getValue, setValue, realiza_atribuicao_parametros, altera_escopo_pai,
-    verifica_se_eh_chamada_de_funcao, carrega_parametros, empilha_variaveis_recursao, parsePrintf, formataStringInt,
-    formataStringFloat, formataStringQuebraLinha, parseScanf, getUserInput, verifica_se_eh_vetor,
+    verifica_se_eh_chamada_de_funcao, carrega_parametros, empilha_variaveis_recursao, parsePrintf,
+    formataString, formataStringQuebraLinha, parseScanf, getUserInput, verifica_se_eh_vetor,
     extrai_variavel_e_posicao_vetor, inicializa_vetor, verifica_se_eh_matriz, extrai_variavel_e_posicao_matriz,
     inicializa_matriz, calcula_argumentos} from './funcoes_mv.js';
 
@@ -135,10 +135,11 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
                         }
                     }
                 } else if (c3e.escrita) {
+                    globalVar.index = 0;
                     let quebra_printf = parsePrintf(c3e.result);
                     let parametros = quebra_printf.params.slice(1);
-                    let formatarString = formataStringInt(quebra_printf.formattedString, parametros);
-                    formatarString = formataStringFloat(formatarString, parametros);
+                    // let formatarString = formataStringInt(quebra_printf.formattedString, parametros, c3e.linha);
+                    let formatarString = formataString(quebra_printf.formattedString, parametros, c3e.linha);
                     formatarString = formataStringQuebraLinha(formatarString);
                     worker.postMessage({'saida_console': formatarString.replace(/"/g, '')});
                 } else if (c3e.leitura) {

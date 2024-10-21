@@ -381,6 +381,28 @@ export function getToken(){
 						proxC();
 						break;
 					}
+					if (globalVarC.caracter === '.'){  //
+						proxC();
+						let contador = 1;
+						while (globalVarC.regexNumero.test(globalVarC.caracter)){
+							globalVarC.lexico += globalVarC.caracter;
+							proxC();
+							contador++;
+						}
+						if (globalVarC.caracter === 'f'){  // float
+							globalVarC.lexico += globalVarC.caracter;
+							globalVarC.lista_param_printf.push('float');
+							proxC();
+							break;
+						}
+						if (globalVarC.caracter === 'd'){  // integer
+							globalVarC.lexico = globalVarC.lexico.slice(0, -contador);
+							globalVarC.lexico += globalVarC.caracter;
+							globalVarC.lista_param_printf.push('int');
+							proxC();
+							break;
+						}
+					}
 					globalVarC.dic_control['msg_erro'] = 'Erro encontrado na expressão %' + globalVarC.caracter + '. Conversão de tipo desconhecida. (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
 					globalVarC.erro_lexico = true;
 					throw 'Erro léxico';

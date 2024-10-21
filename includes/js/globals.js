@@ -15,6 +15,9 @@ export var globalVar = {
     vai_ler: false,
     historico_variaveis: {},
     warning_msg: '',
-    worker: ''
+    worker: '',
+    regexNumero: /^-?\d+(\.\d+)?$/,
+    regexNumeroInteiro: /^-?\d+$/,
+    index: 0,
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 };

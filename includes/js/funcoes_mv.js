@@ -64,7 +64,6 @@ export function realiza_atribuicao_parametros(parametros, dados_param, parametro
         let eh_matriz = verifica_se_eh_matriz(parametros[i]);
         let dados;
         let escopo_real;
-        debugger;
         if (eh_vetor) {
             dados = extrai_variavel_e_posicao_vetor(parametros[i]);
             escopo_real = globalVar.vm_escopo;
@@ -290,7 +289,7 @@ function verificarPosicaoExiste(array, posicao) {
 }
 
 
-export function getValue(expressao) {
+export function getValue(expressao, retorna_tipo=false) {
     let resultado;
     let operador = false;
     if (verifica_operador_unario(expressao)) {
@@ -302,12 +301,23 @@ export function getValue(expressao) {
     let eh_vetor;
     // VERIFICA SE EXPRESSÃO CONDICIONAL NÃO É NUMÉRICO
     if (verifica_constante(expressao)) {
+        if (retorna_tipo){
+            if (globalVar.regexNumero.test(expressao)){
+                if (!Number.isInteger(Number(expressao))){
+                    return 'float';
+                }
+                return 'int';
+            }
+        }
         resultado = expressao;
     } else if (verifica_temporaria(expressao)) {
         let escopo_real = verifica_existencia_variavel_escopo(expressao);
         resultado = Number(globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['valor']);
         while (verifica_temporaria(resultado)){
             resultado = Number(globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['valor']);
+        }
+        if (retorna_tipo){
+            return globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['tipo'];
         }
     } else {
         eh_vetor = verifica_se_eh_vetor(expressao);
@@ -319,6 +329,9 @@ export function getValue(expressao) {
             let escopo_real = verifica_existencia_variavel_escopo(dados.variavel);
             if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao)){
                 resultado = Number(globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao]);
+                if (retorna_tipo){
+                    return globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['tipo'];
+                }
             } else {
                 throw `Erro: A posição ${posicao} não existe no vetor.`;
             }
@@ -330,6 +343,9 @@ export function getValue(expressao) {
             if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao1)){
                 if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1], posicao2)){
                     resultado = Number(globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao1][posicao2]);
+                    if (retorna_tipo){
+                        return globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['tipo'];
+                    }
                 } else {
                     throw `Erro: A posição ${posicao2} não existe no vetor.`;
                 }
@@ -342,6 +358,9 @@ export function getValue(expressao) {
                 globalVar.variaveis_vm[escopo_real]['variaveis'][expressao] = {'valor': Number(NaN)};
             }
             resultado = globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['valor'];
+            if (retorna_tipo){
+                return globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['tipo'];
+            }
             if (Array.isArray(resultado)){
                 return resultado;
             }
@@ -443,31 +462,46 @@ export function parsePrintf(valor) {
     };
 }
 
-export function formataStringInt(template, values) {
-    let index = 0;
-    let arg;
-    return template.replace(/%d/g, () => {
-        arg = getValue(values[index]);
-        index++;
-        return Math.floor(arg);
-    });
-}
+// export function formataStringInt(template, values, linha) {
+//     let arg;
+//     return template.replace(/%d/g, () => {
+//         let tipo = getValue(values[globalVar.index], true);
+//         if (tipo !== 'int'){
+//             throw `Erro: esperava argumento do tipo 'int' e encontrou argumento do tipo ${tipo} (linha: ${linha})`;
+//         }
+//         arg = getValue(values[globalVar.index]);
+//         globalVar.index++;
+//         return Math.floor(arg);
+//     });
+// }
 
-export function formataStringFloat(template, values) {
-    let index = 0;
+export function formataString(template, values, linha) {
     let arg;
-    return template.replace(/%(\.\d+)?f/g, (match, decimals) => {
-        arg = getValue(values[index]);
-        index++;
+    return template.replace(/%(\.\d+)?[fd]/g, (match, decimals, type) => {
+        let tipo = getValue(values[globalVar.index], true);
+        if (match === '%f' || decimals){
+            if (tipo === 'int'){
+                throw `Erro: esperava argumento do tipo 'float ou double' e encontrou argumento do tipo ${tipo} (linha: ${linha})`;
+            }
+            arg = getValue(values[globalVar.index]);
+            globalVar.index++;
 
-        if (decimals) {
-            // Se o formato for do tipo %.nf, extrair o número de casas decimais
-            let precision = parseInt(decimals.slice(1)); // Remove o ponto (.) e converte para inteiro
-            return parseFloat(arg).toFixed(precision);
+            if (decimals) {
+                // Se o formato for do tipo %.nf, extrair o número de casas decimais
+                let precision = parseInt(decimals.slice(1)); // Remove o ponto (.) e converte para inteiro
+                return parseFloat(arg).toFixed(precision);
+            } else {
+                // Se for apenas %f, retorna o valor original como float
+                return parseFloat(arg).toFixed(6);
+            }
         } else {
-            // Se for apenas %f, retorna o valor original como float
-            return parseFloat(arg).toFixed(6);
-        }
+            if (tipo !== 'int'){
+                throw `Erro: esperava argumento do tipo 'int' e encontrou argumento do tipo ${tipo} (linha: ${linha})`;
+            }
+            arg = getValue(values[globalVar.index]);
+            globalVar.index++;
+            return Math.floor(arg);
+            }
     });
 }
 
