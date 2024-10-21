@@ -612,7 +612,7 @@ export function inicializa_variaveis_globais(codigo_c3e){
         }
         if (c3e.label && verifica_se_eh_chamada_de_funcao(c3e.result)){
             adiciona_funcao_a_pilha_de_funcao(c3e.result.substring(1));
-            setValue(0, c3e.result.substring(1), false);
+            setValue(0, c3e.result.substring(1), false, c3e.tipo_variavel);
         }
         if (c3e.parametros){
             let parametros = c3e.result.split(',');

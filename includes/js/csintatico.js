@@ -304,6 +304,7 @@ function tabela_simbolos(escopo, acao, tipo, variavel, tamanho, dimensao_vetor, 
             return true;
         }
     }
+    return true;
 }
 
 
@@ -384,7 +385,7 @@ function NomeFunc(tipo){
     let variavel = globalVarC.lexico.toString().replace(/\x00/g, '');
     if (globalVarC.tk === globalVarC.TKs['TKId']){
         let labelFunc = '$' + variavel;
-        geraInstrucao('', '', '', labelFunc, globalVarC.count_line, false, false, true);
+        geraInstrucao('', '', '', labelFunc, globalVarC.count_line, false, false, true, false, false, false, tipo.tipo);
         tabela_simbolos(globalVarC.index_escopo, 'grava', tipo, variavel, false, false, false, true);
         getToken();
         return true;
@@ -1453,7 +1454,7 @@ function InstrCondicional(esta_em_laco){
         if (globalVarC.tk === globalVarC.TKs['TKAbreParenteses']){
             getToken();
             globalVarC.dimensao = 0;
-            let result = Expressao('esquerdo');
+            let result = Expressao();
             if (result){
                 if (globalVarC.tk === globalVarC.TKs['TKFechaParenteses']) {
                     getToken();
@@ -1523,7 +1524,7 @@ function InstrIteracao(){
         if (globalVarC.tk === globalVarC.TKs['TKAbreParenteses']){
             getToken();
             globalVarC.dimensao = 0;
-            let result = Expressao('esquerdo');
+            let result = Expressao();
             if (result){
                 let labelFim = newLabel();
                 geraInstrucao('goto', result, labelFim, 'ifFalse', globalVarC.count_line, true);
@@ -1535,7 +1536,9 @@ function InstrIteracao(){
                     if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
                         geraInstrucao('', labelInicio, '', 'goto', globalVarC.count_line, true);
                         geraInstrucao('', '', '', labelFim, globalVarC.count_line, false, false, true);
-                        globalVarC.index_escopo = globalVarC.tabela_de_simbolos.length;
+                        globalVarC.index_escopo = globalVarC.index_escopo_pai;
+                        globalVarC.index_escopo_pai = globalVarC.tabela_de_simbolos[globalVarC.index_escopo]['escopo_pai'];
+                        geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
                         return true;
                     }
                 } else {
@@ -1577,6 +1580,7 @@ function InstrIteracao(){
                         geraInstrucao('goto', result, labelFim, 'ifFalse', globalVarC.count_line, true);
                         geraInstrucao('', labelInicio, '', 'goto', globalVarC.count_line, true);
                         geraInstrucao('', '', '', labelFim, globalVarC.count_line, false, false, true);
+                        geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
                         if (globalVarC.tk === globalVarC.TKs['TKFechaParenteses']){
                             getToken();
                             if (globalVarC.tk === globalVarC.TKs['TKPontoEVirgula']){
@@ -2150,6 +2154,7 @@ function ListaDec(n_permite_dec){
 
 
 function CorpoFunc(esta_no_laco){
+    verifica_existencia_escopo_tabela_simbolos(globalVarC.index_escopo);
     if (globalVarC.tk === globalVarC.TKs['TKAbreChaves']) {
         getToken();
         if (globalVarC.tk === globalVarC.TKs['TKFechaChaves']) {
