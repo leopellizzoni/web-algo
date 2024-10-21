@@ -54,8 +54,8 @@ function verifica_var_float(args){
                 return false;
             }
         }
-        if (globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador].tipo.tipo === 'float'){
-            globalVarC.dic_control['msg_erro'] = "Operação de resto não é permitida entre valores do tipo float " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+        if (['float', 'double'].includes(globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador].tipo.tipo)){
+            globalVarC.dic_control['msg_erro'] = `Operação de resto não é permitida entre valores do tipo ${globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador].tipo.tipo} ` + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return true;
         }
     }
@@ -83,7 +83,7 @@ function retorna_tipo_variavel(arg1, arg2){
                 return false;
             }
         }
-        tipo_arg1 = globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][arg1].tipo;
+        tipo_arg1 = globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][arg1].tipo.tipo;
     }
 
     let tipo_arg2;
@@ -585,12 +585,17 @@ function ExpressaoPrima(lado_atribuicao) {
         //     }
         // }
         if (verifica_variavel_declarada(globalVarC.index_escopo, globalVarC.lexico.toString().replace(/\x00/g, ''))){
-            if (lado_atribuicao !== 'esquerdo'){
-                if (!verifica_func_void(globalVarC.identificador, globalVarC.index_escopo)){
+            getToken();
+            if (globalVarC.tk === globalVarC.TKs['TKIgual']) {
+                backtracking('push');
+                getToken();
+                if (!verifica_func_void(globalVarC.lexico.toString().replace(/\x00/g, ''), globalVarC.index_escopo)) {
+                    backtracking('pop');
+                    globalVarC.dic_control['msg_erro'] = "Não é possível atribuir o resultado de uma função 'void' a uma variável." + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     return false;
                 }
+                backtracking('pop');
             }
-            getToken();
             return globalVarC.identificador;
         } else {
             throw 'Variável não declarada';
@@ -835,8 +840,10 @@ function ExpressAddRestante(temp, arg1) {
         if (result) {
             if (typeof result !== 'string'){
                 geraInstrucao('+', arg1, arg2, temp, globalVarC.count_line);
+                tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(arg1, arg2), temp);
             } else {
                 geraInstrucao('+', arg1, result, temp, globalVarC.count_line);
+                tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(arg1, result), temp);
             }
             let temp2 = ExpressAddRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -857,8 +864,10 @@ function ExpressAddRestante(temp, arg1) {
         if (result) {
             if (typeof result !== 'string'){
                 geraInstrucao('-', arg1, arg2, temp, globalVarC.count_line);
+                tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(arg1, arg2), temp);
             } else {
                 geraInstrucao('-', arg1, result, temp, globalVarC.count_line);
+                tabela_simbolos(globalVarC.index_escopo, 'grava', retorna_tipo_variavel(arg1, result), temp);
             }
             let temp2 = ExpressAddRestante(newTemp(), temp);
             if (typeof temp2 === 'string'){
@@ -1265,6 +1274,11 @@ function ExpressAtrib(lado_atribuicao){
                         }
                     } else {
                         if (operador !== '='){
+                            if (operador === '%='){
+                                if (verifica_var_float([id, result])){
+                                    return false;
+                                }
+                            }
                             geraInstrucao(operador[0], id, result, id, globalVarC.count_line);
                         } else {
                             geraInstrucao('', result, '', id, globalVarC.count_line);
@@ -1449,8 +1463,8 @@ function InstrCondicional(esta_em_laco){
                     globalVarC.index_escopo = globalVarC.tabela_de_simbolos.length;
                     verifica_existencia_escopo_tabela_simbolos(globalVarC.index_escopo);
                     geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
-                    globalVarC.index_escopo -= 1;
-                    if (Instr(esta_em_laco)) {
+                    if (Instr(esta_em_laco,'condicional')) {
+                        globalVarC.index_escopo -= 1;
                         if (globalVarC.tk === globalVarC.TKs['TKElse']){
                             geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
                             let labelSaidaElse = newLabel();
@@ -1461,8 +1475,8 @@ function InstrCondicional(esta_em_laco){
                             geraInstrucao('', '', '', labelElse, globalVarC.count_line, false, false, true);
                             geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
                             getToken();
-                            globalVarC.index_escopo -= 2;
-                            if (Instr()){
+                            //globalVarC.index_escopo -= 2;
+                            if (Instr(esta_em_laco, 'condicional')){
                                 geraInstrucao('', '', '', labelSaidaElse, globalVarC.count_line, false, false, true);
                                 return true;
                             }
@@ -1550,7 +1564,7 @@ function InstrIteracao(){
         globalVarC.index_escopo_pai = globalVarC.index_escopo;
         globalVarC.index_escopo = globalVarC.tabela_de_simbolos.length;
         geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
-        if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim})) {
+        if (Instr({'labelInicio': labelInicio, 'labelFim': labelFim}, 'de iteração')) {
             globalVarC.index_escopo = globalVarC.index_escopo_pai;
             globalVarC.index_escopo_pai = globalVarC.tabela_de_simbolos[globalVarC.index_escopo]['escopo_pai'];
             geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
@@ -1614,13 +1628,16 @@ function InstrIteracao(){
                 let result = InstrExpress();
                 if (result){
                     let labelFim = newLabel();
+                    if (typeof result !== 'string') {
+                        result = 1;
+                    }
                     geraInstrucao('goto', result, labelFim, 'ifFalse', globalVarC.count_line, true);
                     let labelInstr = newLabel();
                     geraInstrucao('', labelInstr, '', 'goto', globalVarC.count_line, true);
                     let labelIncremento = newLabel();
                     geraInstrucao('', '', '', labelIncremento, globalVarC.count_line, false, false, true);
                     geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
-                    if(Expressao('esquerdo')){
+                    if(globalVarC.tk === globalVarC.TKs['TKFechaParenteses'] || Expressao('esquerdo')){
                         geraInstrucao('', labelInicio, '', 'goto', globalVarC.count_line, true);
                         if (globalVarC.tk === globalVarC.TKs['TKFechaParenteses']){
                             getToken();
@@ -1628,7 +1645,7 @@ function InstrIteracao(){
                             globalVarC.index_escopo_pai = globalVarC.index_escopo;
                             globalVarC.index_escopo = globalVarC.tabela_de_simbolos.length;
                             geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
-                            if (Instr({'labelInicio': labelIncremento, 'labelFim': labelFim})){
+                            if (Instr({'labelInicio': labelIncremento, 'labelFim': labelFim}, 'de iteração')){
                                 geraInstrucao('', labelIncremento, '', 'goto', globalVarC.count_line, true);
                                 geraInstrucao('', '', '', labelFim, globalVarC.count_line, false, false, true);
                                 globalVarC.index_escopo = globalVarC.index_escopo_pai;
@@ -1675,12 +1692,12 @@ function InstrSalto(esta_no_laco){
                 return true;
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                    globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' no comando continue " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 }
                 return false;
             }
         } else {
-            globalVarC.dic_control['msg_erro'] = "Comando continue não está dentro de um laço" + '\n';
+            globalVarC.dic_control['msg_erro'] = "Comando continue não está dentro de um laço" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKBreak']){
@@ -1697,7 +1714,7 @@ function InstrSalto(esta_no_laco){
                 return false;
             }
         } else {
-            globalVarC.dic_control['msg_erro'] = "Comando break não está dentro de um laço" + '\n';
+            globalVarC.dic_control['msg_erro'] = "Comando break não está dentro de um laço" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKReturn']){
@@ -1843,6 +1860,7 @@ function InstrEscrita(){
                             if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
                                 if (printf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
                                     geraInstrucao('', '', '', "printf(" + printf + "," + result + ")", globalVarC.count_line-1, false, true);
+                                    getToken();
                                     return true;
                                 } else {
                                     globalVarC.dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros no comando printf" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
@@ -1850,9 +1868,9 @@ function InstrEscrita(){
                                 }
                             } else {
                                 geraInstrucao('', '', '', "printf(" + printf + ")", globalVarC.count_line, false, true);
+                                getToken();
                                 return true;
                             }
-                            getToken();
                         } else {
                             if (globalVarC.dic_control['msg_erro'] === '') {
                                 globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' no comando printf " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
@@ -1886,7 +1904,7 @@ function InstrEscrita(){
 }
 
 
-function Instr(esta_em_laco) {
+function Instr(esta_em_laco=false, n_permite_dec=false) {
     if (InstrCondicional(esta_em_laco)) {
         return true;
     } else if (InstrExpress('esquerdo')) {
@@ -1898,7 +1916,7 @@ function Instr(esta_em_laco) {
     } else if (InstrSalto(esta_em_laco)){
         globalVarC.dic_control['encontrou_expressao'] = true;
         return true;
-    } else if (ListaDec()){
+    } else if (ListaDec(n_permite_dec)){
         globalVarC.dic_control['encontrou_expressao'] = true;
         return true;
     } else if (InstrEscrita()){
@@ -2021,6 +2039,9 @@ function DecInicial(tipo){
                 return false;
             }
             getToken();
+            if (globalVarC.tk === globalVarC.TKs['TKId'] && !verifica_func_void(globalVarC.lexico.toString().replace(/\x00/g, ''), globalVarC.index_escopo)) {
+                return false;
+            }
             let result = ExpressAtrib();
             if (result){
                 geraInstrucao('', result, '', variavel, globalVarC.count_line);
@@ -2057,6 +2078,11 @@ function ListaDecInicialRestante(tipo){
 function ListaDecInicial(tipo){
     if (DecInicial(tipo)){
         if (ListaDecInicialRestante(tipo)){
+            if (globalVarC.tk !== globalVarC.TKs['TKAbreParenteses'] && globalVarC.tk !== globalVarC.TKs['TKPontoEVirgula']){
+                globalVarC.continua = false;
+                globalVarC.dic_control['msg_erro'] = "não encontrou o caracter ';' na declaração da variável " + ' (' + globalVarC.count_line_last + ', ' + globalVarC.count_column_last + ')' + '\n';
+                return false;
+            }
             return true;
         } else {
             return false;
@@ -2106,8 +2132,12 @@ function ListaDecRestante(){
 }
 
 
-function ListaDec(){
+function ListaDec(n_permite_dec){
     if (Declaracao()){
+        if (n_permite_dec){
+            globalVarC.dic_control['msg_erro'] += `Nãp é possível declarar variável em estrutura ${n_permite_dec} simples ` + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            return false;
+        }
         if (ListaDecRestante()){
             return true;
         } else {
@@ -2226,7 +2256,7 @@ function DecFunc(){
                 }
             } else {
                 if (globalVarC.dic_control['msg_erro'] === ''){
-                    globalVarC.dic_control['msg_erro'] += "não encontrou o caracter '(' na declaracao da função" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] += "não encontrou o caracter '(' na declaracao da função" + ' (' + globalVarC.count_line_last + ', ' + globalVarC.count_column_last + ')' + '\n';
                 }
                 return false;
             }

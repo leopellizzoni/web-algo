@@ -618,7 +618,7 @@ export function inicializa_variaveis_globais(codigo_c3e){
                     inicializa_matriz(dados['variavel'], dados["posicoes"][0], dados["posicoes"][1]);
                 } else {
                     if (c3e.result){
-                        setValue(0, c3e.result, false);
+                        setValue(0, c3e.result, false, c3e.tipo_variavel);
                         modifica_historico_variavel(c3e.result, 0);
                     }
                 }
@@ -634,7 +634,7 @@ export function inicializa_variaveis_globais(codigo_c3e){
                     result = arg1;
                 }
                 setValue(result, c3e.result, false);
-                modifica_historico_variavel(c3e.result, result);
+                // modifica_historico_variavel(c3e.result, result);
             }
 
         }

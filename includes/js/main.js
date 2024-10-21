@@ -130,6 +130,8 @@ var dic_control = {'c3e': '',
 
 function inicia_worker(debug=false){
   var worker= new Worker('includes/js/worker.js', { type: 'module' });
+  let $table = $('#tabela_variaveis');
+  $table.find('tbody').remove();
   esta_no_debug = false;
   textareaElement.value = "";
   saveDataAndReload(false);
