@@ -15,6 +15,7 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
     let arg2;
     let qtd_escopos = codigo_c3e.shift();
     let returns = [];
+    let qtd_operacoes = 0;
     globalVar.vm_funcoes = [];
     globalVar.pilha_funcoes = [];
     globalVar.variaveis_vm = [];
@@ -29,12 +30,13 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
     inicializa_variaveis_globais(codigo_c3e);
     try {
         for (let i = 0; i < codigo_c3e.length; i++) {
+            qtd_operacoes += 1;
             c3e = codigo_c3e[i];
             globalVar.linha = c3e.linha;
             if (c3e.result) {
                 // DEPURADOR
                 if (globalVar.debug_compiler) {
-                    if (globalVar.linha_anterior !== c3e.linha && !c3e.label) {
+                    if (globalVar.linha_anterior !== c3e.linha && !c3e.label && !c3e.escopo) {
                         // globalVar.vai_ler = true;
                         globalVar.linha_atual = c3e.linha;
                         await getUserDebug(worker);
@@ -199,6 +201,7 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
             worker.postMessage({'saida_console': globalVar.warning_msg});
         }
         worker.postMessage({'saida_console': '\n\nPrograma compilado e executado com sucesso.'});
+        worker.postMessage({'saida_console': `\nO programa executado gerou um custo de: ${qtd_operacoes}.`});
         worker.postMessage({'finalizou_execucao': true, 'c3e': c3e_txt});
 
     } catch (e){

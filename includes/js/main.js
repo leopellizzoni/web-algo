@@ -118,6 +118,7 @@ function carrega_historico_variaveis(){
 
 function modifica_cor_linhas_editor_texto(linha_atual, linha_anterior) {
     addLineDecoration(linha_atual - 1, 'line-decoration');
+    editor.scrollIntoView({ line: linha_atual-1, ch: 0 }, 200); // O segundo parâmetro é o tempo de animação em milissegundos (opcional)
     editor.removeLineClass(linha_anterior - 1, 'wrap', 'line-decoration');
 }
 

@@ -2,6 +2,13 @@
     --bs-gutter-x: 0;
 }
 
+@media (min-width: 576px) {
+    .CodeMirror {
+      width: 100%; /* Ocupa toda a largura disponível */
+      height: calc(100vh - 350px); /* Altura total da janela menos 50px (para considerar um header ou margem) */
+    }
+}
+
 body {
             margin: 0;
             padding: 0;

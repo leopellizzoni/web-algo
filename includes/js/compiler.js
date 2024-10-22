@@ -50,7 +50,7 @@ export function compiler(debug=false, codigo, worker){
     getToken();
     try{
         if (Programa()) {
-            worker.postMessage({'saida_console': 'Léxico OK' + '\nSintático OK\n\n'});
+            // worker.postMessage({'saida_console': 'Léxico OK' + '\nSintático OK\n\n'});
             let contador = 1;
             globalVarC.instrucoes.forEach(inst => {
                 if (inst.result) {

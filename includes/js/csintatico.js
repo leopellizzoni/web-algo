@@ -280,7 +280,8 @@ function tabela_simbolos(escopo, acao, tipo, variavel, tamanho, dimensao_vetor, 
             'dimensao': {},
             'matriz_vetor': '',
             'define': define,
-            'eh_funcao': funcao};
+            'eh_funcao': funcao,
+            'linha': globalVarC.count_line};
     }
     if (acao === 'tamanho'){
         if (dimensao_vetor === 1){
@@ -1811,7 +1812,7 @@ function InstrLeitura(){
                             }
                             if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
                                 if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
-                                    geraInstrucao('', '', '', "scanf(" + scanf + "," + result + ")", globalVarC.count_line-1, false, false, false, true);
+                                    geraInstrucao('', '', '', "scanf(" + scanf + "," + result + ")", globalVarC.count_line, false, false, false, true);
                                     return true;
                                 } else {
                                     globalVarC.dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
@@ -2342,7 +2343,7 @@ function Dec2(){
 function ListaDec2(){
     if (Dec2()){
         if (globalVarC.dic_control['encontrou_main']){
-            geraInstrucaoInicial('', '$main', '', 'goto', globalVarC.count_line, true);
+            geraInstrucaoInicial('', '$main', '', 'goto', globalVarC.tabela_de_simbolos[0]['variaveis']['main'].linha, true);
             return true;
         }
         if (ListaDec2()){

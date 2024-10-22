@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebAlgo Web</title>
+    <title>C-Compiler Web</title>
     <!-- Inclua o CSS do CodeMirror -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.css">
     <!-- Escolha um dos temas do CodeMirror -->
@@ -16,6 +16,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="includes/css/main.css">
     <link href="includes/css/sidebars.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="includes/media/favicon-32x32.png">
     <style>
       .bd-placeholder-img {
         font-size: 1.125rem;
@@ -119,18 +120,18 @@
                 </a>
               </li>
             </ul>
-<!--            <div class="dropdown border-top">-->
-<!--              <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">-->
-<!--                <img src="https://github.com/mdo.png" alt="mdo" width="24" height="24" class="rounded-circle">-->
-<!--              </a>-->
-<!--              <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">-->
-<!--                <li><a class="dropdown-item" href="#">New project...</a></li>-->
+            <div class="dropdown border-top">
+              <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="includes/media/5556512.png" alt="mdo" width="24" height="24" class="rounded-circle">
+              </a>
+              <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser3">
+                <li><a class="dropdown-item" href="#">Informações</a></li>
 <!--                <li><a class="dropdown-item" href="#">Settings</a></li>-->
 <!--                <li><a class="dropdown-item" href="#">Profile</a></li>-->
 <!--                <li><hr class="dropdown-divider"></li>-->
 <!--                <li><a class="dropdown-item" href="#">Sign out</a></li>-->
-<!--              </ul>-->
-<!--            </div>-->
+              </ul>
+            </div>
         </div>
         <div style="width: 100%; margin: 10px;">
             <div id="tela_aguarde" class="mostra_tela">
@@ -371,7 +372,7 @@
             height: "30em", // Definir a altura do editor para 30 linhas
             extraKeys: { "Ctrl-Space": "autocomplete" } // Trigger autocomplete
         });
-        editor.setSize(null, 400);
+        // editor.setSize(null, 400);
 
         // Captura o elemento input e textarea
         var inputElement = document.getElementById('inputText');
