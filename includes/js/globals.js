@@ -7,7 +7,7 @@ export var globalVar = {
     vm_escopos: {},
     parametros_chamadas_funcao: [],
     pilha_funcoes: [],
-    vm_funcoes: [],
+    vm_funcoes: {},
     index_goto: {},
     debug_compiler: false,
     linha_atual: 0,
@@ -19,5 +19,6 @@ export var globalVar = {
     regexNumero: /^-?\d+(\.\d+)?$/,
     regexNumeroInteiro: /^-?\d+$/,
     index: 0,
+    linha: '',
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 };

@@ -1,6 +1,12 @@
 /* jshint esversion: 6 */
 import { globalVar } from './globals.js';
 
+function verifica_tamanho_variavel(valor, tipo, variavel){
+    if (tipo.tipo === 'int' && (valor > 2147483647 || valor < -2147483647)){
+        throw `Erro: overflow detectado. O valor excede o limite máximo permitido para o tipo 'int' na variavel ${variavel} (linha: ${globalVar.linha})`;
+    }
+}
+
 export function inicializa_escopos(qtd_escopos){
     while(qtd_escopos >= 0){
         globalVar.variaveis_vm.push({'variaveis': {}, 'escopo_pai': 0});
@@ -9,7 +15,7 @@ export function inicializa_escopos(qtd_escopos){
 }
 
 function modifica_historico_variavel(variavel, valor){
-    if (!(globalVar.vm_funcoes.includes(variavel))){
+    if (!(variavel in globalVar.vm_funcoes)){
         if (variavel in globalVar.historico_variaveis){
             globalVar.historico_variaveis[variavel].push(valor);
         } else {
@@ -317,7 +323,10 @@ export function getValue(expressao, retorna_tipo=false) {
             resultado = Number(globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['valor']);
         }
         if (retorna_tipo){
-            return globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['tipo'];
+            if (globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['tipo']){
+                return globalVar.variaveis_vm[escopo_real]['variaveis'][expressao]['tipo']
+            }
+            return '@';
         }
     } else {
         eh_vetor = verifica_se_eh_vetor(expressao);
@@ -333,7 +342,7 @@ export function getValue(expressao, retorna_tipo=false) {
                     return globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['tipo'];
                 }
             } else {
-                throw `Erro: A posição ${posicao} não existe no vetor.`;
+                throw `Erro: A posição ${posicao} não existe no vetor (linha: ${globalVar.linha}).`;
             }
         } else if (eh_matriz){
             dados = extrai_variavel_e_posicao_matriz(expressao);
@@ -347,10 +356,10 @@ export function getValue(expressao, retorna_tipo=false) {
                         return globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['tipo'];
                     }
                 } else {
-                    throw `Erro: A posição ${posicao2} não existe no vetor.`;
+                    throw `Erro: A posição ${posicao2} não existe no vetor (linha: ${globalVar.linha}).`;
                 }
             } else {
-                throw `Erro: A posição ${posicao1} não existe no vetor.`;
+                throw `Erro: A posição ${posicao1} não existe no vetor (linha: ${globalVar.linha}).`;
             }
         } else {
             let escopo_real = verifica_existencia_variavel_escopo(expressao);
@@ -395,10 +404,13 @@ export function setValue(valor, variavel, verifica_existencia_de_variavel=true, 
         let posicao = getValue(dados.posicao);
         // FAZER TESTE DE TAMANHO DO VETOR EM CASO DE ERRO ESTOURAR ERRO DE TAMANHO DE MATRIZ.
         if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao)){
+            if (globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel].tipo){
+                verifica_tamanho_variavel(Number(formata_numero_conforme_tipo(getValue(valor), globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['tipo'])), globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel], dados.variavel);
+            }
             globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'][posicao] = Number(formata_numero_conforme_tipo(getValue(valor), globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['tipo']));
             modifica_historico_variavel(dados.variavel, globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel]['valor'].slice());
         } else {
-            throw `Erro: A posição ${posicao} não existe no vetor.`;
+            throw `Erro: A posição ${posicao} não existe no vetor (linha: ${globalVar.linha}).`;
         }
     } else if (eh_matriz){
         dados = extrai_variavel_e_posicao_matriz(variavel);
@@ -412,13 +424,16 @@ export function setValue(valor, variavel, verifica_existencia_de_variavel=true, 
         // FAZER TESTE DE TAMANHO DO VETOR EM CASO DE ERRO ESTOURAR ERRO DE TAMANHO.
         if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'], posicao1)){
             if (verificarPosicaoExiste(globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1], posicao2)){
+                if (globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel].tipo){
+                    verifica_tamanho_variavel(Number(formata_numero_conforme_tipo(getValue(valor), globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['tipo'])), globalVar.variaveis_vm[escopo_real]['variaveis'][dados.variavel], dados.variavel);
+                }
                 globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'][posicao1][posicao2] = Number(formata_numero_conforme_tipo(getValue(valor), globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['tipo']));
                 modifica_historico_variavel(dados.variavel, globalVar.variaveis_vm[escopo_real]["variaveis"][dados.variavel]['valor'].slice());
             } else {
-                throw `Erro: A posição ${posicao2} não existe no vetor.`;
+                throw `Erro: A posição ${posicao2} não existe no vetor (linha: ${globalVar.linha}).`;
             }
         } else {
-            throw `Erro: A posição ${posicao1} não existe no vetor.`;
+            throw `Erro: A posição ${posicao1} não existe no vetor (linha: ${globalVar.linha}).`;
         }
     } else {
         if (verifica_existencia_de_variavel){
@@ -432,6 +447,9 @@ export function setValue(valor, variavel, verifica_existencia_de_variavel=true, 
             if (tipo_variavel){
                 globalVar.variaveis_vm[escopo_real]['variaveis'][variavel]['tipo'] = tipo_variavel;
             }
+        }
+        if (globalVar.variaveis_vm[escopo_real]['variaveis'][variavel].tipo){
+            verifica_tamanho_variavel(Number(formata_numero_conforme_tipo(getValue(valor), globalVar.variaveis_vm[escopo_real]['variaveis'][variavel]['tipo'])), globalVar.variaveis_vm[escopo_real]['variaveis'][variavel], variavel);
         }
         globalVar.variaveis_vm[escopo_real]['variaveis'][variavel]['valor'] = Number(formata_numero_conforme_tipo(getValue(valor), globalVar.variaveis_vm[escopo_real]['variaveis'][variavel]['tipo']));
         if (!verifica_temporaria(variavel)){
@@ -480,7 +498,7 @@ export function formataString(template, values, linha) {
     return template.replace(/%(\.\d+)?[fd]/g, (match, decimals, type) => {
         let tipo = getValue(values[globalVar.index], true);
         if (match === '%f' || decimals){
-            if (tipo === 'int'){
+            if (tipo !== '@' && tipo === 'int'){
                 throw `Erro: esperava argumento do tipo 'float ou double' e encontrou argumento do tipo ${tipo} (linha: ${linha})`;
             }
             arg = getValue(values[globalVar.index]);
@@ -495,7 +513,7 @@ export function formataString(template, values, linha) {
                 return parseFloat(arg).toFixed(6);
             }
         } else {
-            if (tipo !== 'int'){
+            if (tipo !== '@' && tipo !== 'int'){
                 throw `Erro: esperava argumento do tipo 'int' e encontrou argumento do tipo ${tipo} (linha: ${linha})`;
             }
             arg = getValue(values[globalVar.index]);
@@ -532,6 +550,19 @@ export function parseScanf(valor) {
     const paramsString = valor.slice(valor.indexOf(formattedString) + formattedString.length + 2, valor.lastIndexOf(')')).trim(); // Adjust index to get correct parameters
     const params = paramsString.split(/\s*,\s*/).map(param => param.replace(/^&\s*/, ''));
 
+    for (let i=0; i<params.length; i++){
+        let tipo = getValue(params[i], true);
+        if (formattedString.slice(i*2, (i+1)*2) === '%f'){
+            if (tipo === 'int'){
+                throw `Erro: esperava argumento do tipo 'int' e encontrou argumento do tipo ${tipo} (linha: ${globalVar.linha})`;
+            }
+        } else {
+            if (tipo !== 'int'){
+                throw `Erro: esperava argumento do tipo '${tipo}' e encontrou argumento do tipo int (linha: ${globalVar.linha})`;
+            }
+        }
+    }
+
     return {
         formattedString,
         params
@@ -549,7 +580,7 @@ export function calcula_argumentos(arg1, arg2, op){
         if (Number(arg2) === 0){
             globalVar.warning_msg = `\nAtenção: divisão por 0 encontrada em ${arg1}/${arg2}`;
         }
-        return parseInt(Number(arg1) / Number(arg2));
+        return Number(arg1) / Number(arg2);
     }
     if (op === '*') {
         return parseFloat((Number(arg1) * Number(arg2)).toFixed(3));
@@ -592,20 +623,26 @@ function verifica_se_eh_escopo(label){
 }
 
 function adiciona_funcao_a_pilha_de_funcao(funcao){
-    if (globalVar.vm_funcoes.indexOf(funcao) === -1){
-        globalVar.vm_funcoes.push(funcao);
+    if (!(funcao in globalVar.vm_funcoes)){
+        globalVar.vm_funcoes[funcao] = {'escopos': []};
     }
 }
 
 export function inicializa_variaveis_globais(codigo_c3e){
     let esta_em_funcao = false;
     let c3e;
+    let funcao;
     globalVar.vm_escopo = 0;  // variavel global
     globalVar.vm_escopo_pai = 0;
     for (let i = 0; i < codigo_c3e.length; i++) {
         c3e = codigo_c3e[i];
         if (c3e.escopo && c3e.label){
             globalVar.vm_escopo = parseInt(c3e.result.substring(1));
+            if (c3e.result.substring(1) !== '0'){
+                if (!(globalVar.vm_funcoes[funcao]['escopos'].includes(c3e.result.substring(1)))){
+                    globalVar.vm_funcoes[funcao]['escopos'].push(c3e.result.substring(1));
+                }
+            }
         }
         if (c3e.salto && c3e.result == 'goto' && verifica_se_eh_chamada_de_funcao(c3e.arg1)){
             adiciona_funcao_a_pilha_de_funcao(c3e.arg1.substring(1));
@@ -613,6 +650,7 @@ export function inicializa_variaveis_globais(codigo_c3e){
         if (c3e.label && verifica_se_eh_chamada_de_funcao(c3e.result)){
             adiciona_funcao_a_pilha_de_funcao(c3e.result.substring(1));
             setValue(0, c3e.result.substring(1), false, c3e.tipo_variavel);
+            funcao = c3e.result.substring(1);
         }
         if (c3e.parametros){
             let parametros = c3e.result.split(',');
@@ -622,7 +660,7 @@ export function inicializa_variaveis_globais(codigo_c3e){
                     let posicao = getValue(dados["posicao"]);
                     globalVar.variaveis_vm[globalVar.vm_escopo]['variaveis'][dados.variavel] = {
                         'valor': inicializa_vetor(dados['variavel'], posicao),
-                        'tipo': c3e.tipo_variavel
+                        'tipo': c3e.parametros[parametros[i]].tipo
                     };
                 } else if (verifica_se_eh_matriz(parametros[i])) {
                     let dados = extrai_variavel_e_posicao_matriz(parametros[i]);
@@ -630,11 +668,11 @@ export function inicializa_variaveis_globais(codigo_c3e){
                     let posicao2 = getValue(dados["posicoes"][0]);
                     globalVar.variaveis_vm[globalVar.vm_escopo]['variaveis'][dados.variavel] = {
                         'valor': inicializa_matriz(dados['variavel'], posicao1, posicao2),
-                        'tipo': c3e.tipo_variavel
+                        'tipo': c3e.parametros[parametros[i]].tipo
                     };
                 } else {
                     if (parametros[i]){
-                        setValue(0, parametros[i], false);
+                        setValue(0, parametros[i], false, c3e.parametros[parametros[i]].tipo);
                         modifica_historico_variavel(parametros[i], 0);
                     }
                 }

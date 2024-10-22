@@ -30,6 +30,7 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
     try {
         for (let i = 0; i < codigo_c3e.length; i++) {
             c3e = codigo_c3e[i];
+            globalVar.linha = c3e.linha;
             if (c3e.result) {
                 // DEPURADOR
                 if (globalVar.debug_compiler) {
@@ -91,8 +92,10 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
                             } else {
 
                                 if (c3e.arg1 === globalVar.pilha_funcoes[globalVar.pilha_funcoes.length - 1]) {
-                                    // empilha variaveis de chamada recursiva no mesmo escopo
-                                    empilha_variaveis_recursao(Number(codigo_c3e[globalVar.index_goto[c3e.arg1] + 1].result.substring(1)));
+                                    for (let i=0; i<globalVar.vm_funcoes[c3e.arg1.substring(1)]['escopos'].length; i++){
+                                        // empilha variaveis de chamada recursiva no mesmo escopo
+                                        empilha_variaveis_recursao(Number(globalVar.vm_funcoes[c3e.arg1.substring(1)]['escopos'][i]));
+                                    }
                                 }
                             }
                             globalVar.pilha_funcoes.push(c3e.arg1);
@@ -104,9 +107,13 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
                         if (c3e.arg1) {
                             let dados = returns.pop();
                             // desempilha recursão caso houver
-                            if ('recursao' in globalVar.variaveis_vm[globalVar.vm_escopo] && globalVar.variaveis_vm[globalVar.vm_escopo]['recursao'].length > 0){
-                                globalVar.variaveis_vm[globalVar.vm_escopo]['variaveis'] = globalVar.variaveis_vm[globalVar.vm_escopo]['recursao'].pop();
+                            for (let i=0; i<globalVar.vm_funcoes[dados.identificador]['escopos'].length; i++){
+                                let escopo_atual = globalVar.vm_funcoes[dados.identificador]['escopos'][i];
+                                if ('recursao' in globalVar.variaveis_vm[escopo_atual] && globalVar.variaveis_vm[escopo_atual]['recursao'].length > 0) {
+                                    globalVar.variaveis_vm[escopo_atual]['variaveis'] = globalVar.variaveis_vm[escopo_atual]['recursao'].pop();
+                                }
                             }
+
                             globalVar.vm_escopo = dados['escopo'];
                             globalVar.vm_escopo_pai = dados['escopo_pai'];
                             if (!verifica_temporaria(c3e.arg1)) {
@@ -143,6 +150,7 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
                     formatarString = formataStringQuebraLinha(formatarString);
                     worker.postMessage({'saida_console': formatarString.replace(/"/g, '')});
                 } else if (c3e.leitura) {
+                    debugger;
                     let quebra_scanf = parseScanf(c3e.result);
                     let values = quebra_scanf.params;
                     for (let i = 0; i < values.length; i++) {
@@ -194,6 +202,7 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
         worker.postMessage({'finalizou_execucao': true, 'c3e': c3e_txt});
 
     } catch (e){
+        debugger;
         worker.postMessage({'saida_console': '\n\n' + e});
         worker.postMessage({'finalizou_execucao': true, 'c3e': c3e_txt});
     }
