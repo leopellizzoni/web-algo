@@ -137,5 +137,6 @@ export var globalVarC = {
     verifica_vetor_matriz_numeral: true,
     continua: true,
     regexAscii: /^[\x00-\x7F]+$/,
+    funcao_corrente: '',
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 };

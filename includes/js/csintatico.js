@@ -1598,7 +1598,7 @@ function InstrIteracao(){
                                 return true;
                             } else {
                                 if (globalVarC.dic_control['msg_erro'] === '') {
-                                    globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                                    globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ';' após comando while " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                                 }
                                 return false;
                             }
@@ -1697,6 +1697,8 @@ function InstrIteracao(){
 
 
 function InstrSalto(esta_no_laco){
+    let linha;
+    let coluna;
     if (globalVarC.tk === globalVarC.TKs['TKContinue']){
         if (esta_no_laco){
             geraInstrucao('', esta_no_laco['labelInicio'], '', 'goto', globalVarC.count_line, true);
@@ -1733,6 +1735,8 @@ function InstrSalto(esta_no_laco){
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKReturn']){
         globalVarC.achou_return = true;
+        linha = globalVarC.count_line;
+        coluna = globalVarC.count_column;
         getToken();
         if (globalVarC.tk === globalVarC.TKs['TKPontoEVirgula']){
             getToken();
@@ -1747,13 +1751,13 @@ function InstrSalto(esta_no_laco){
                     return true;
                 } else {
                     if (globalVarC.dic_control['msg_erro'] === '') {
-                        globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ';' no return " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                        globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ';' no return da função ${globalVarC.funcao_corrente}" + ' (' + linha + ', ' + coluna + ')' + '\n';
                     }
                     return false;
                 }
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                    globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] += `ERRO: não encontrou ';' no return da função ${globalVarC.funcao_corrente}` + ' (' + linha + ', ' + coluna + ')' + '\n';
                 }
                 return false;
             }
@@ -2248,6 +2252,7 @@ function DecFunc(){
                         if (tipo['tipo'] !== 'void'){
                             globalVarC.obriga_return = true;
                         }
+                        globalVarC.funcao_corrente = nome_func;
                         if (CorpoFunc()){
                             globalVarC.index_escopo_pai = 0;
                             globalVarC.index_escopo = 0;
