@@ -513,7 +513,7 @@ export function formataString(template, values, linha) {
                 return parseFloat(arg).toFixed(6);
             }
         } else {
-            if (tipo !== '@' && tipo !== 'int'){
+            if (tipo !== '@' && tipo !== 'int' && tipo !== 'char'){
                 throw `Erro: esperava argumento do tipo 'int' e encontrou argumento do tipo ${tipo} (linha: ${linha})`;
             }
             arg = getValue(values[globalVar.index]);

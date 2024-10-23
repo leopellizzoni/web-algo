@@ -332,6 +332,11 @@ export function getToken(){
 					estado = 2;
 					break;
 				}
+				if (globalVarC.caracter === "'"){ // verifica '"'
+					proxC();
+					estado = 4;
+					break;
+				}
 				if (globalVarC.caracter === '\n' || globalVarC.caracter === '\t' || globalVarC.caracter === ' '){
 					globalVarC.lexico = globalVarC.lexico.slice(0, -1);
 					proxC();
@@ -354,7 +359,7 @@ export function getToken(){
 					globalVarC.lexico += '"';
 					globalVarC.lexico += '\0';
 					proxC();
-					globalVarC.tk = globalVarC.TKs['TKString'];
+					globalVarC.tk = globalVarC.TKs['TKStringStdio'];
 					break;
 				}
 
@@ -366,7 +371,7 @@ export function getToken(){
 				globalVarC.lexico += '\0';
 				return;
 
-			// String
+			// String Stdio
 			case 2:
 				if (globalVarC.caracter === '%'){  // verifica parametro float, double ou int
 					proxC();
@@ -421,7 +426,7 @@ export function getToken(){
 				}
 				if (globalVarC.caracter === '"') { // verifica '"'
 					globalVarC.lexico += '\0';
-					globalVarC.tk = globalVarC.TKs['TKString'];
+					globalVarC.tk = globalVarC.TKs['TKStringStdio'];
 					proxC();
 					return;
 				}
@@ -450,6 +455,27 @@ export function getToken(){
 					proxC();
 					break;
 				}
+
+			// String Stdio
+			case 4:
+				if (globalVarC.regexAscii.test(globalVarC.caracter)){
+					if (globalVarC.caracter === "'") { // verifica '"'
+						globalVarC.lexico += '\0';
+						globalVarC.tk = globalVarC.TKs['TKString'];
+						proxC();
+						return;
+					}
+					proxC();
+					break;
+				}
+				if (loopInfinito){
+					return;
+				}
+				if (globalVarC.code.length === globalVarC.code_position){
+					loopInfinito = true;
+				}
+				proxC();
+				break;
         }
     }
 }

@@ -31,6 +31,10 @@ function backtracking(funcao){
     }
 }
 
+function obterCodigoASCII(caractere) {
+  return caractere.charCodeAt(0);
+}
+
 function verifica_var_float(args){
     let escopo = globalVarC.index_escopo;
     let armazena_escopo = escopo;
@@ -370,7 +374,7 @@ function OperadorAtrib(){
 
 
 function Tipo(esta_no_for=false){
-    if (globalVarC.tk === globalVarC.TKs['TKInt'] || globalVarC.tk === globalVarC.TKs['TKVoid'] || globalVarC.tk === globalVarC.TKs['TKFloat'] || globalVarC.tk === globalVarC.TKs['TKDouble']){
+    if (globalVarC.tk === globalVarC.TKs['TKInt'] || globalVarC.tk === globalVarC.TKs['TKVoid'] || globalVarC.tk === globalVarC.TKs['TKFloat'] || globalVarC.tk === globalVarC.TKs['TKDouble'] || globalVarC.tk === globalVarC.TKs['TKChar']){
         if (esta_no_for){
             globalVarC.dic_control['msg_erro'] = "Declarações de variáveis dentro do laço 'for' não são permitidas. Declare a variável antes do laço. " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
@@ -614,6 +618,11 @@ function ExpressaoPrima(lado_atribuicao) {
             }
             return false;
         }
+    } else if (globalVarC.tk === globalVarC.TKs['TKString']) {
+        let arg1 = globalVarC.lexico.toString().replace(/\x00/g, '');
+        arg1 = obterCodigoASCII(arg1[1]);
+        getToken();
+        return arg1.toString();
     } else if(globalVarC.tk === globalVarC.TKs['TKAbreParenteses']){
         getToken();
         let result = Expressao();
@@ -1798,7 +1807,7 @@ function InstrLeitura(){
         getToken();
         if (globalVarC.tk === globalVarC.TKs["TKAbreParenteses"]){
             getToken();
-            if (globalVarC.tk === globalVarC.TKs["TKString"]){
+            if (globalVarC.tk === globalVarC.TKs["TKStringStdio"]){
                 let scanf = globalVarC.lexico.toString().replace(/\x00/g, '');
                 getToken();
                 let result = LeituraRestante();
@@ -1852,7 +1861,7 @@ function InstrEscrita(){
         getToken();
         if (globalVarC.tk === globalVarC.TKs["TKAbreParenteses"]){
             getToken();
-            if (globalVarC.tk === globalVarC.TKs["TKString"]){
+            if (globalVarC.tk === globalVarC.TKs["TKStringStdio"]){
                 let printf = globalVarC.lexico.toString().replace(/\x00/g, '');
                 getToken();
                 let result = ExpressaoRestantePrintf();

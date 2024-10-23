@@ -50,11 +50,13 @@ var TKs = {
     "TKContinue": 47,
     "TKPrintf": 48,
     "TKScanf": 49,
-    "TKString": 50,
+    "TKStringStdio": 50,
     "TKEnderecoVariavel": 51,
     "TKDefine": 52,
     "TKStdioh": 53,
-    "TKInclude": 54
+    "TKInclude": 54,
+    "TKString": 55,
+    "TKChar": 56,
 };
 
 // Palavras reservadas da linguagem
@@ -73,7 +75,8 @@ var reserved_words = {
     "continue": TKs['TKContinue'],
     "printf": TKs["TKPrintf"],
     "scanf": TKs["TKScanf"],
-    "end_reserved_words": TKs['TKId']
+    "end_reserved_words": TKs['TKId'],
+    "char": TKs['TKChar'],
 };
 
 export var globalVarC = {
@@ -133,5 +136,6 @@ export var globalVarC = {
     vm_funcoes: [],
     verifica_vetor_matriz_numeral: true,
     continua: true,
+    regexAscii: /^[\x00-\x7F]+$/,
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 };
