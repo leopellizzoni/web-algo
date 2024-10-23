@@ -22,6 +22,8 @@ function getUserInput2() {
     });
 }
 
+let ativa_proximo_passo = false;
+
 function getUserDebug2() {
 
     return new Promise((resolve) => {
@@ -30,6 +32,7 @@ function getUserDebug2() {
 
         // Adiciona um event listener ao botão
         buttonProximoPasso.addEventListener('click', function onProximoPasso() {
+            ativa_proximo_passo = true;
             // Emite um console log quando o botão é pressionado
             resolve(inputElement.value);
             buttonProximoPasso.removeEventListener('click', onProximoPasso);
@@ -38,6 +41,7 @@ function getUserDebug2() {
         const buttonExecutar = document.getElementById('button6');
         // Adiciona um event listener ao botão
         buttonExecutar.addEventListener('click', function onExecutar() {
+            ativa_proximo_passo = false;
             // Emite um console log quando o botão é pressionado
             resolve(inputElement.value);
             buttonExecutar.removeEventListener('click', onExecutar);
@@ -143,14 +147,14 @@ function inicia_worker(debug=false){
   if (debug){
       $("#button5")[0].hidden = false;
       $("#button6")[0].hidden = false;
-      debug_compiler = true;
+      debug_compiler = lista_breakpoints;
   } else {
       $("#button5")[0].hidden = true;
       $("#button6")[0].hidden = true;
       debug_compiler = false;
   }
   mostra_tela_aguarde('Compilando...');
-  worker.postMessage({ code: editor.getValue(), debug: debug});
+  worker.postMessage({ code: editor.getValue(), debug: debug_compiler});
 
   // Ouvir a resposta do Worker
     worker.onmessage = async function(event) {
@@ -169,6 +173,12 @@ function inicia_worker(debug=false){
             editor.setOption("readOnly", false);
             textareaElement.scrollTop = textareaElement.scrollHeight;
             dic_control.c3e =  event.data.c3e;
+            let count = 0;
+            editor.eachLine(function(lineHandle) {
+                // Remove all classes from the line
+                editor.removeLineClass(count, 'wrap', 'line-decoration');
+                count++;
+            });
             setTimeout(function (){
                 esconde_tela_aguarde();
             }, 500);
@@ -186,7 +196,7 @@ function inicia_worker(debug=false){
             setTimeout(function (){
                 document.getElementById('inputText').removeAttribute('disabled');
                 $("#inputText").addClass('input-insere-dados');
-                $("#inputText")[0].placeholder = 'Digite um valor de entrada para variável ';
+                $("#inputText")[0].placeholder = `Digite um valor de entrada para variável '${event.data.var}'`;
                 $("#inputText").focus();
                 textareaElement.scrollTop = textareaElement.scrollHeight;
             }, 50);
@@ -203,10 +213,12 @@ function inicia_worker(debug=false){
                 esconde_tela_aguarde();
             }, 500);
             modifica_cor_linhas_editor_texto(event.data.linha_atual, event.data.linha_anterior);
-            esta_no_debug = true;
-            await getUserDebug2();
-            esta_no_debug = false;
-            worker.postMessage('');
+            if (event.data.debugger){
+                esta_no_debug = true;
+                await getUserDebug2();
+                esta_no_debug = false;
+                worker.postMessage({'ativa_proximo_passo': ativa_proximo_passo});
+            }
         }
     };
 }

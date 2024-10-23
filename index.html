@@ -458,15 +458,16 @@
         }
 
         function retira_depuracao(){
-            debug_compiler = false;
-            let count = 0;
-            $("#button5")[0].hidden = true;
-            $("#button6")[0].hidden = true;
-            editor.eachLine(function(lineHandle) {
-                // Remove all classes from the line
-                editor.removeLineClass(count, 'wrap', 'line-decoration');
-                count++;
-            });
+            return true;
+            // debug_compiler = false;
+            // let count = 0;
+            // $("#button5")[0].hidden = true;
+            // $("#button6")[0].hidden = true;
+            // editor.eachLine(function(lineHandle) {
+            //     // Remove all classes from the line
+            //     editor.removeLineClass(count, 'wrap', 'line-decoration');
+            //     count++;
+            // });
         }
 
         function cancelarExecucao(){
@@ -479,6 +480,16 @@
             }
             $("#modal_C3E").modal('show');
         }
+        let lista_breakpoints = []
+        editor.on("gutterClick", function(cm, linha) {
+            let index = lista_breakpoints.indexOf(linha+1);
+            if (index !== -1){
+                lista_breakpoints.splice(index, 1);
+            } else {
+                lista_breakpoints.push(linha+1);
+            }
+
+        });
     </script>
     <script href="includes/js/sidebars.js"></script>
 </body>

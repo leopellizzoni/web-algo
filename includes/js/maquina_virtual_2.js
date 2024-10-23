@@ -35,13 +35,18 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
             globalVar.linha = c3e.linha;
             if (c3e.result) {
                 // DEPURADOR
-                if (globalVar.debug_compiler) {
-                    if (globalVar.linha_anterior !== c3e.linha && !c3e.label && !c3e.escopo) {
-                        // globalVar.vai_ler = true;
-                        globalVar.linha_atual = c3e.linha;
-                        await getUserDebug(worker);
-                        // globalVar.vai_ler = false;
+                if (globalVar.debug_compiler && (globalVar.debug_compiler.includes(c3e.linha) || globalVar.ativa_proximo_passo || c3e.leitura)) {
+                    if (c3e.leitura){
+                        worker.postMessage({'debugger': false, 'linha_atual': c3e.linha, 'linha_anterior': globalVar.linha_anterior});
                         globalVar.linha_anterior = c3e.linha;
+                    } else {
+                        if (globalVar.linha_anterior !== c3e.linha && !c3e.label && !c3e.escopo) {
+                            // globalVar.vai_ler = true;
+                            globalVar.linha_atual = c3e.linha;
+                            await getUserDebug(worker);
+                            // globalVar.vai_ler = false;
+                            globalVar.linha_anterior = c3e.linha;
+                        }
                     }
                 }
                 if (c3e.escopo) {
@@ -152,12 +157,11 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
                     formatarString = formataStringQuebraLinha(formatarString);
                     worker.postMessage({'saida_console': formatarString.replace(/"/g, '')});
                 } else if (c3e.leitura) {
-                    debugger;
                     let quebra_scanf = parseScanf(c3e.result);
                     let values = quebra_scanf.params;
                     for (let i = 0; i < values.length; i++) {
                         //configura_leitura(true, worker);
-                        let userInput = await getUserInput(worker);
+                        let userInput = await getUserInput(worker, values[i]);
                         //configura_leitura(false, worker);
                         setValue(userInput, values[i]);
                     }
@@ -205,7 +209,6 @@ export async function executaC3E2(codigo_c3e, c3e_txt, worker) {
         worker.postMessage({'finalizou_execucao': true, 'c3e': c3e_txt});
 
     } catch (e){
-        debugger;
         worker.postMessage({'saida_console': '\n\n' + e});
         worker.postMessage({'finalizou_execucao': true, 'c3e': c3e_txt});
     }

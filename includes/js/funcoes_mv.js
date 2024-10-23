@@ -125,11 +125,11 @@ export function indexa_linhas(codigo_c3e) {
     }
 }
 
-export function getUserInput(worker) {
+export function getUserInput(worker, variavel) {
     return new Promise((resolve) => {
 
         // Envia a solicitação ao script principal
-        worker.postMessage({'le': true});
+        worker.postMessage({'le': true, 'var': variavel});
 
         // Aguardar a resposta do script principal
         worker.onmessage = (event) => {
@@ -147,6 +147,7 @@ export function getUserDebug(worker) {
 
         // Aguardar a resposta do script principal
         worker.onmessage = (event) => {
+            globalVar.ativa_proximo_passo = event.data.ativa_proximo_passo;
           resolve(event.data); // Resolve a Promise com o dado recebido
         };
     });

@@ -57,6 +57,7 @@ var TKs = {
     "TKInclude": 54,
     "TKString": 55,
     "TKChar": 56,
+    "TKMathh": 57,
 };
 
 // Palavras reservadas da linguagem

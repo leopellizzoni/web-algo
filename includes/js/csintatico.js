@@ -1745,7 +1745,7 @@ function InstrSalto(esta_no_laco){
             let  result = Expressao();
             if (result) {
                 if (globalVarC.tk === globalVarC.TKs['TKPontoEVirgula']) {
-                    geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, true, true);
+                    geraInstrucao('', '', '', '#' + globalVarC.index_escopo, globalVarC.count_line, false, false, true, false, true);
                     geraInstrucao('', result, '', 'return', globalVarC.count_line, true);
                     getToken();
                     return true;
@@ -2328,6 +2328,10 @@ function DecLibDefine(){
         if (globalVarC.tk === globalVarC.TKs['TKStdioh']){
             getToken();
             globalVarC.dic_control["bibliotecas"]["stdio"] = true;
+            return true;
+        } else if (globalVarC.tk === globalVarC.TKs['TKMath']){
+            getToken();
+            globalVarC.dic_control["bibliotecas"]["math"] = true;
             return true;
         }
     } else {

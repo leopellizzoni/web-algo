@@ -178,11 +178,11 @@ export function getToken(){
 						proxC();
 						estado = 3;
 						break;
-					} else if (globalVarC.caracter === '/'){
-						 globalVarC.lexico += '/';
-						 proxC();
-						 estado = 3;
-						 break;
+					// } else if (globalVarC.caracter === '/'){
+					// 	 globalVarC.lexico += '/';
+					// 	 proxC();
+					// 	 estado = 3;
+					// 	 break;
 					} else { // '/'
 						globalVarC.lexico += '\0';
 				 		globalVarC.tk = globalVarC.TKs['TKDiv'];
@@ -319,7 +319,6 @@ export function getToken(){
 						globalVarC.tk = globalVarC.TKs['TKDefine'];
 						return;
 					} else if (globalVarC.lexico === '#include'){
-						proxC();
 						globalVarC.tk = globalVarC.TKs['TKInclude'];
 						return;
 					} else {
@@ -449,9 +448,9 @@ export function getToken(){
 						proxC();
 						return getToken();
 					}
-				} else if (globalVarC.caracter === '\n'){
-					proxC();
-					return getToken();
+				// } else if (globalVarC.caracter === '\n'){
+				// 	proxC();
+				// 	return getToken();
 				} else if (globalVarC.caracter === ''){
 					return getToken();
 				} else {
