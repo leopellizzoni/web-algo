@@ -1570,6 +1570,7 @@ function InstrIteracao(){
             return false;
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKDo']){
+        debugger;
         let labelInicio = newLabel();
         let labelFim = newLabel();
         geraInstrucao('', '', '', labelInicio, globalVarC.count_line, false, false, true);
@@ -1804,6 +1805,7 @@ function LeituraRestante(){
 
 function InstrLeitura(){
     if (globalVarC.tk === globalVarC.TKs["TKScanf"]){
+        debugger;
         if (!globalVarC.dic_control['bibliotecas'].stdio){
             globalVarC.dic_control['msg_erro'] = "Biblioteca <stdio.h> deve ser declarada para utilização do printf" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
@@ -1828,16 +1830,17 @@ function InstrLeitura(){
                             if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 > 0 || qtd_args > 0) {
                                 if (scanf.toString().replace('"', '').replace(/\x00/g, '').split('%').length - 1 === qtd_args) {
                                     geraInstrucao('', '', '', "scanf(" + scanf + "," + result + ")", globalVarC.count_line, false, false, false, true);
+                                    getToken();
                                     return true;
                                 } else {
                                     globalVarC.dic_control['msg_erro'] = "Número de argumentos difere do número de parâmetros" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                                     return false;
                                 }
                             } else {
+                                getToken();
                                 geraInstrucao('', '', '', "scanf(" + printf + ")", globalVarC.count_line, false, false, false, true);
                                 return true;
                             }
-                            getToken();
                         } else {
                             if (globalVarC.dic_control['msg_erro'] === '') {
                                 globalVarC.dic_control['msg_erro'] += "não encontrou ';' " + ' (' + linha + ', ' + coluna + ')' + '\n';
