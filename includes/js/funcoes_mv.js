@@ -8,6 +8,8 @@ function verifica_tamanho_variavel(valor, tipo, variavel){
     // }
 }
 
+// teste
+
 export function inicializa_escopos(qtd_escopos){
     while(qtd_escopos >= 0){
         globalVar.variaveis_vm.push({'variaveis': {}, 'escopo_pai': 0});
