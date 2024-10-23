@@ -1570,7 +1570,6 @@ function InstrIteracao(){
             return false;
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKDo']){
-        debugger;
         let labelInicio = newLabel();
         let labelFim = newLabel();
         geraInstrucao('', '', '', labelInicio, globalVarC.count_line, false, false, true);
@@ -1805,7 +1804,6 @@ function LeituraRestante(){
 
 function InstrLeitura(){
     if (globalVarC.tk === globalVarC.TKs["TKScanf"]){
-        debugger;
         if (!globalVarC.dic_control['bibliotecas'].stdio){
             globalVarC.dic_control['msg_erro'] = "Biblioteca <stdio.h> deve ser declarada para utilização do printf" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
