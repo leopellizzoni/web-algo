@@ -2,9 +2,10 @@
 import { globalVar } from './globals.js';
 
 function verifica_tamanho_variavel(valor, tipo, variavel){
-    if (tipo.tipo === 'int' && (valor > 2147483647 || valor < -2147483647)){
-        throw `Erro: overflow detectado. O valor excede o limite máximo permitido para o tipo 'int' na variavel ${variavel} (linha: ${globalVar.linha})`;
-    }
+    return true;
+    // if (tipo.tipo === 'int' && (valor > 2147483647 || valor < -2147483647)){
+    //     throw `Erro: overflow detectado. O valor excede o limite máximo permitido para o tipo 'int' na variavel ${variavel} (linha: ${globalVar.linha})`;
+    // }
 }
 
 export function inicializa_escopos(qtd_escopos){

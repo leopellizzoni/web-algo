@@ -33,6 +33,7 @@ function inicializa_compilacao(){
 
 export function compiler(debug=false, codigo, worker){
     globalVarC.code = codigo;
+    globalVarC.worker = worker;
     // if (vai_ler) {
     //     saveDataAndReload();
     // } else {

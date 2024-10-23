@@ -259,9 +259,10 @@ export function getToken(){
 								}
 							}
 						}
-						globalVarC.dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + globalVarC.lexico + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+						globalVarC.dic_control['msg_erro'] = 'ERRO: token ' + globalVarC.lexico + ' não identificado (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
 						globalVarC.erro_lexico = true;
-						throw 'Erro léxico';
+						globalVarC.worker.postMessage({'saida_console': globalVarC.dic_control['msg_erro']});
+						globalVarC.worker.postMessage({'finalizou_execucao': true, 'c3e': ''});
 
 					} else { // '<'
 						globalVarC.lexico += '\0';
@@ -322,9 +323,10 @@ export function getToken(){
 						globalVarC.tk = globalVarC.TKs['TKInclude'];
 						return;
 					} else {
-						globalVarC.dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + globalVarC.lexico + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+						globalVarC.dic_control['msg_erro'] = 'ERRO: token ' + globalVarC.lexico + ' não identificado (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
 						globalVarC.erro_lexico = true;
-						throw 'Erro léxico';
+						globalVarC.worker.postMessage({'saida_console': globalVarC.dic_control['msg_erro']});
+						globalVarC.worker.postMessage({'finalizou_execucao': true, 'c3e': ''});
 					}
 				}
 				if (globalVarC.caracter === '"'){ // verifica '"'
@@ -346,9 +348,10 @@ export function getToken(){
 					globalVarC.tk = -1;
 					return true;
 				}
-				globalVarC.dic_control['msg_erro'] = 'Erro léxico encontrado no caractere ' + globalVarC.lexico + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+				globalVarC.dic_control['msg_erro'] = 'ERRO: token ' + globalVarC.lexico + ' não identificado (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
 				globalVarC.erro_lexico = true;
-				throw 'Erro léxico';
+				globalVarC.worker.postMessage({'saida_console': globalVarC.dic_control['msg_erro']});
+				globalVarC.worker.postMessage({'finalizou_execucao': true, 'c3e': ''});
 			// Token
             case 1:
                 if (globalVarC.regexIdentificadorNumero.test(globalVarC.caracter)){

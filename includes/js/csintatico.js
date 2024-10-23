@@ -2266,6 +2266,10 @@ function DecFunc(){
                                     return false;
                                 }
                             } else {
+                                if (globalVarC.achou_return){
+                                    globalVarC.dic_control['msg_erro'] += "ERRO: return não é permitido em função do tipo 'void' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                                    return false;
+                                }
                                 return true;
                             }
                         }
