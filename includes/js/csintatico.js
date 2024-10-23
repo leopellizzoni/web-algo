@@ -43,7 +43,7 @@ function verifica_var_float(args){
         identificador = args[i].split('[')[0];
         if (globalVarC.regexNumero.test(identificador)) {
             if (!Number.isInteger(Number(identificador))) {
-                globalVarC.dic_control['msg_erro'] = "Operação de resto não é permitida entre valores do tipo float " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: operação de resto não é permitida entre valores do tipo float " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 return true;
             }
             continue;
@@ -54,12 +54,12 @@ function verifica_var_float(args){
                 break;
             }
             if (index === 0){
-                globalVarC.dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 return false;
             }
         }
         if (['float', 'double'].includes(globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador].tipo.tipo)){
-            globalVarC.dic_control['msg_erro'] = `Operação de resto não é permitida entre valores do tipo ${globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador].tipo.tipo} ` + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = `ERRO: operação de resto não é permitida entre valores do tipo ${globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador].tipo.tipo} ` + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return true;
         }
     }
@@ -83,7 +83,7 @@ function retorna_tipo_variavel(arg1, arg2){
                 break;
             }
             if (index === 0){
-                globalVarC.dic_control['msg_erro'] = "Variável '" + arg1 + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#1' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + arg1 + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#1' + '\n';
                 return false;
             }
         }
@@ -105,7 +105,7 @@ function retorna_tipo_variavel(arg1, arg2){
                 break;
             }
             if (index === 0){
-                globalVarC.dic_control['msg_erro'] = "Variável '" + arg2 + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#2' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + arg2 + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#2' + '\n';
                 return false;
             }
         }
@@ -149,7 +149,7 @@ function verifica_vetor_matriz_numeral(identificador){
             break;
         }
         if (index === 0){
-            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador_ajustado + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#3' + '\n';
+            globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + identificador_ajustado + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#3' + '\n';
             return false;
         }
     }
@@ -158,13 +158,13 @@ function verifica_vetor_matriz_numeral(identificador){
         if (matriz_vetor === 'matriz'){
             let eh_matriz = verifica_se_eh_matriz(identificador);
             if (!eh_matriz){
-                globalVarC.dic_control['msg_erro'] = "Variável '" + identificador_ajustado + "' não é matriz" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + identificador_ajustado + "' não é matriz" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 return false;
             }
         } else {
             let eh_vetor = verifica_se_eh_vetor(identificador);
             if (!eh_vetor){
-                globalVarC.dic_control['msg_erro'] = "Variável '" + identificador_ajustado + "' não é vetor" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + identificador_ajustado + "' não é vetor" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 return false;
             }
         }
@@ -181,7 +181,7 @@ function verifica_existencia_escopo_tabela_simbolos(escopo){
 function verifica_funcao_declarada(variavel){
     if (variavel in globalVarC.tabela_de_simbolos[0]['variaveis']){
         if (globalVarC.tabela_de_simbolos[0]['variaveis'][variavel]['tipo']['eh_funcao']){
-            globalVarC.dic_control['msg_erro'] = 'Variável "' + variavel + '" não pode ser utilizada pois já esta sendo utilizada por função (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = 'ERRO: variável "' + variavel + '" não pode ser utilizada pois já esta sendo utilizada por função (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
         }
     }
@@ -192,7 +192,7 @@ function verifica_variavel_declarada_em_escopos(escopo, variavel){
     for (let index=escopo; index>=0;index = globalVarC.tabela_de_simbolos[index]['escopo_pai']){
         if (variavel in globalVarC.tabela_de_simbolos[index]['variaveis']){
             if (index === escopo){
-                globalVarC.dic_control['msg_erro'] = 'Variável "' + variavel + '" já declarada no mesmo escopo (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = 'ERRO: variável "' + variavel + '" já declarada no mesmo escopo (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 return false;
             }
         }
@@ -211,13 +211,13 @@ function verifica_func_void(identificador, escopo){
             break;
         }
         if (index === 0){
-            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#4' + '\n';
+            globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#4' + '\n';
             return false;
         }
     }
     if (globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador].eh_funcao) {
         if (globalVarC.tabela_de_simbolos[armazena_escopo]['variaveis'][identificador]['tipo']['tipo'] === 'void'){
-            globalVarC.dic_control['msg_erro'] = "Não é possível atribuir o resultado de uma função 'void' a uma variável." + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = "ERRO: não é possível atribuir o resultado de uma função 'void' a uma variável." + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
         }
     }
@@ -234,7 +234,7 @@ function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica
             break;
         }
         if (index === 0){
-            globalVarC.dic_control['msg_erro'] = "Variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#5' + '\n';
+            globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + identificador + "' não declarada" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')#5' + '\n';
             return false;
         }
     }
@@ -252,7 +252,7 @@ function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica
             return true;
         } else {
             if (globalVarC.dic_control['msg_erro'] === '') {
-                globalVarC.dic_control['msg_erro'] += "Dimensão do vetor '" + identificador + "' diferente do especificado" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] += "ERRO: dimensão do vetor '" + identificador + "' diferente do especificado" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -262,7 +262,7 @@ function verifica_variavel_declarada(escopo, identificador, dimensao=0, verifica
             return true;
         } else {
             if (globalVarC.dic_control['msg_erro'] === '') {
-                globalVarC.dic_control['msg_erro'] += "Variável encontrada '" + identificador + "' não está especificada com função" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] += "ERRO: variável encontrada '" + identificador + "' não está especificada com função" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -275,7 +275,7 @@ function tabela_simbolos(escopo, acao, tipo, variavel, tamanho, dimensao_vetor, 
     verifica_existencia_escopo_tabela_simbolos(escopo);
     if (acao === 'grava'){
         if (variavel in globalVarC.tabela_de_simbolos[escopo]['variaveis']){
-            globalVarC.dic_control['msg_erro'] = "variável '" + variavel + "' já especificada no mesmo escopo" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + variavel + "' já especificada no mesmo escopo" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
         }
         globalVarC.tabela_de_simbolos[escopo]['variaveis'][variavel.toString()] = {
@@ -376,7 +376,7 @@ function OperadorAtrib(){
 function Tipo(esta_no_for=false){
     if (globalVarC.tk === globalVarC.TKs['TKInt'] || globalVarC.tk === globalVarC.TKs['TKVoid'] || globalVarC.tk === globalVarC.TKs['TKFloat'] || globalVarC.tk === globalVarC.TKs['TKDouble'] || globalVarC.tk === globalVarC.TKs['TKChar']){
         if (esta_no_for){
-            globalVarC.dic_control['msg_erro'] = "Declarações de variáveis dentro do laço 'for' não são permitidas. Declare a variável antes do laço. " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = "ERRO: declarações de variáveis dentro do laço 'for' não são permitidas. Declare a variável antes do laço. " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
         }
         getToken();
@@ -475,7 +475,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
         return true;
     } else if (globalVarC.tk === globalVarC.TKs['TKAbreColchete']) {
         if (arg1 && !verifica_variavel_declarada(globalVarC.index_escopo, arg1, 0, false, true)){
-            globalVarC.dic_control['msg_erro'] = " variável '" + arg1 + "' não é vetor " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + arg1 + "' não é vetor " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
         }
         getToken();
@@ -532,14 +532,14 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
                         parametros = parametros_funcao;
                     }
                     if (globalVarC.tabela_de_simbolos[0]['variaveis'][arg1]['qtd_parametros_func'] !== parametros_funcao.split(',').length){
-                        globalVarC.dic_control['msg_erro'] = "Quantidade de parâmetros da chamada de função '" + arg1  + "' difere do esperado (" + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                        globalVarC.dic_control['msg_erro'] = "ERRO: quantidade de parâmetros da chamada de função '" + arg1  + "' difere do esperado (" + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     }
                     geraInstrucao('', label, parametros, 'goto', globalVarC.count_line, true, false, false, false, false, false, busca_tipo_variavel(arg1));
                     getToken();
                     return true;
                 } else {
                     if (globalVarC.dic_control['msg_erro'] === ''){
-                        globalVarC.dic_control['msg_erro'] = "não encontrou o caracter ')' na chamada da função " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                        globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou ')' na chamada da função " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     }
                     return false;
                 }
@@ -550,7 +550,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
     } else if (globalVarC.tk === globalVarC.TKs['TKDuploMais']){
         getToken();
         if (globalVarC.empilha_operacao_aritmetica.length > 0){
-            globalVarC.dic_control['msg_erro'] = `Comportamento indefinido em ${globalVarC.empilha_operacao_aritmetica[0]}${globalVarC.identificador}++. Não é permitido usar operadores pré e pós na mesma variável em uma única expressão (${globalVarC.count_line}, ${globalVarC.count_column}).`;
+            globalVarC.dic_control['msg_erro'] = `ERRO: comportamento indefinido em ${globalVarC.empilha_operacao_aritmetica[0]}${globalVarC.identificador}++. Não é permitido usar operadores pré e pós na mesma variável em uma única expressão (${globalVarC.count_line}, ${globalVarC.count_column}).`;
             return false;
         }
         let temp = newTemp();
@@ -564,7 +564,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKDuploMenos']){
         if (globalVarC.empilha_operacao_aritmetica.length > 0){
-            globalVarC.dic_control['msg_erro'] = `Comportamento indefinido em ${globalVarC.empilha_operacao_aritmetica[0]}${globalVarC.identificador}--. Não é permitido usar operadores pré e pós na mesma variável em uma única expressão (${globalVarC.count_line}, ${globalVarC.count_column}).`;
+            globalVarC.dic_control['msg_erro'] = `ERRO: comportamento indefinido em ${globalVarC.empilha_operacao_aritmetica[0]}${globalVarC.identificador}--. Não é permitido usar operadores pré e pós na mesma variável em uma única expressão (${globalVarC.count_line}, ${globalVarC.count_column}).`;
             return false;
         }
         getToken();
@@ -597,7 +597,7 @@ function ExpressaoPrima(lado_atribuicao) {
                 getToken();
                 if (globalVarC.tk === globalVarC.TKs['TKId'] && !verifica_func_void(globalVarC.lexico.toString().replace(/\x00/g, ''), globalVarC.index_escopo)) {
                     backtracking('pop');
-                    globalVarC.dic_control['msg_erro'] = "Não é possível atribuir o resultado de uma função 'void' a uma variável." + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] = "ERRO: não é possível atribuir o resultado de uma função 'void' a uma variável." + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     return false;
                 }
                 backtracking('pop');
@@ -614,7 +614,7 @@ function ExpressaoPrima(lado_atribuicao) {
             return arg1;
         } else {
             if (globalVarC.dic_control['msg_erro'] === '') {
-                globalVarC.dic_control['msg_erro'] += "operador do lado esquerdo de uma atribuição requere um identificador válido " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] += "ERRO: operador do lado esquerdo de uma atribuição requere um identificador válido " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -692,7 +692,7 @@ function ExpressUnaria(lado_atribuicao){
         getToken();
         if (globalVarC.tk === globalVarC.TKs['TKCteInt'] || globalVarC.tk === globalVarC.TKs['TKCteDouble']){
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = `Operação inválida ++${globalVarC.lexico}. O operador de incremento não pode ser aplicado a uma constante. `  + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = `ERRO: operação inválida ++${globalVarC.lexico}. O operador de incremento não pode ser aplicado a uma constante. `  + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -708,7 +708,7 @@ function ExpressUnaria(lado_atribuicao){
         getToken();
         if (globalVarC.tk === globalVarC.TKs['TKCteInt'] || globalVarC.tk === globalVarC.TKs['TKCteDouble']){
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = `Operação inválida --${globalVarC.lexico}. O operador de decremento não pode ser aplicado a uma constante. `  + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = `ERRO: operação inválida --${globalVarC.lexico}. O operador de decremento não pode ser aplicado a uma constante. `  + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -752,7 +752,7 @@ function ExpressMultiplRestante(temp, arg1){
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '/' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '/' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -776,7 +776,7 @@ function ExpressMultiplRestante(temp, arg1){
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '*' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '*' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -806,7 +806,7 @@ function ExpressMultiplRestante(temp, arg1){
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '%' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '%' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -864,7 +864,7 @@ function ExpressAddRestante(temp, arg1) {
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '+' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '+' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -888,7 +888,7 @@ function ExpressAddRestante(temp, arg1) {
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '-' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '-' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -910,7 +910,7 @@ function ExpressAddRestante(temp, arg1) {
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '!' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '!' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -965,7 +965,7 @@ function ExpressRelacionalRestante(temp, arg1){
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '<' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '<' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -987,7 +987,7 @@ function ExpressRelacionalRestante(temp, arg1){
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '>' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '>' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -1009,7 +1009,7 @@ function ExpressRelacionalRestante(temp, arg1){
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '<=' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '<=' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -1031,7 +1031,7 @@ function ExpressRelacionalRestante(temp, arg1){
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '>=' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '>=' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -1086,7 +1086,7 @@ function ExpressIgualRestante(temp, arg1){
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '==' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '==' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -1108,7 +1108,7 @@ function ExpressIgualRestante(temp, arg1){
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] = "Não encontrou expressão após '!=' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou expressão após '!=' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -1444,7 +1444,7 @@ function InstrExpress(lado_atribuicao){
                     return result;
                 } else {
                     if (globalVarC.dic_control['msg_erro'] === '') {
-                        globalVarC.dic_control['msg_erro'] = "não encontrou o caracter ';' ao final do comando " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                        globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou ';' ao final do comando " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     }
                     return false;
                 }
@@ -1500,25 +1500,25 @@ function InstrCondicional(esta_em_laco){
                         }
                     } else {
                         if (globalVarC.dic_control['msg_erro'] === '') {
-                            globalVarC.dic_control['msg_erro'] = "Instrução era esperada após ')' no comando if " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                            globalVarC.dic_control['msg_erro'] = "ERRO: instrução era esperada após ')' no comando if " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                         }
                         return false;
                     }
                 } else {
                     if (globalVarC.dic_control['msg_erro'] === '') {
-                        globalVarC.dic_control['msg_erro'] = "não encontrou o caracter ')' ao final da expressão no comando if " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                        globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou ')' ao final da expressão no comando if " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     }
                     return false;
                 }
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                    globalVarC.dic_control['msg_erro'] = "não encontrou o expressão antes de ')' no comando if " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou o expressão antes de ')' no comando if " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 }
                 return false;
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === '') {
-                globalVarC.dic_control['msg_erro'] = "não encontrou o caracter '(' ao final da expressão no comando if " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou '(' ao final da expressão no comando if " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -1553,19 +1553,19 @@ function InstrIteracao(){
                     }
                 } else {
                     if (globalVarC.dic_control['msg_erro'] === '') {
-                        globalVarC.dic_control['msg_erro'] = "não encontrou o caracter ')' ao final da expressão no comando while  " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                        globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou ')' ao final da expressão no comando while  " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     }
                     return false;
                 }
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                    globalVarC.dic_control['msg_erro'] = "não encontrou o expressão antes de ')' no comando while " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou o expressão antes de ')' no comando while " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 }
                 return false;
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === '') {
-                globalVarC.dic_control['msg_erro'] = "não encontrou o caracter ')' ao final da expressão no comando while  " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou ')' ao final da expressão no comando while  " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -1598,31 +1598,31 @@ function InstrIteracao(){
                                 return true;
                             } else {
                                 if (globalVarC.dic_control['msg_erro'] === '') {
-                                    globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                                    globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                                 }
                                 return false;
                             }
                         } else {
                             if (globalVarC.dic_control['msg_erro'] === ''){
-                                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ')' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                                globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ')' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                             }
                             return false;
                         }
                     } else {
                         if (globalVarC.dic_control['msg_erro'] === '') {
-                            globalVarC.dic_control['msg_erro'] = "não encontrou o expressão antes de ')' no comando while " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                            globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou o expressão antes de ')' no comando while " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                         }
                         return false;
                     }
                 } else {
                     if (globalVarC.dic_control['msg_erro'] === '') {
-                        globalVarC.dic_control['msg_erro'] += "não encontrou o caracter '(' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                        globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou '(' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     }
                     return false;
                 }
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                    globalVarC.dic_control['msg_erro'] = "não encontrou o comando while em laço de repetição do" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou o comando while em laço de repetição do" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 }
                 return false;
             }
@@ -1671,7 +1671,7 @@ function InstrIteracao(){
                             }
                         } else {
                             if (globalVarC.dic_control['msg_erro'] === '') {
-                                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ')' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                                globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ')' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                             }
                             return false;
                         }
@@ -1686,7 +1686,7 @@ function InstrIteracao(){
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === '') {
-                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter '(' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou '(' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -1706,12 +1706,12 @@ function InstrSalto(esta_no_laco){
                 return true;
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                    globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' no comando continue " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ';' no comando continue " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 }
                 return false;
             }
         } else {
-            globalVarC.dic_control['msg_erro'] = "Comando continue não está dentro de um laço" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = "ERRO: comando continue não está dentro de um laço" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKBreak']){
@@ -1723,12 +1723,12 @@ function InstrSalto(esta_no_laco){
                 return true;
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                     globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' no comando break " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                     globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ';' no comando break " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                  }
                 return false;
             }
         } else {
-            globalVarC.dic_control['msg_erro'] = "Comando break não está dentro de um laço" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = "ERRO: comando break não está dentro de um laço" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             return false;
         }
     } else if (globalVarC.tk === globalVarC.TKs['TKReturn']){
@@ -1747,13 +1747,13 @@ function InstrSalto(esta_no_laco){
                     return true;
                 } else {
                     if (globalVarC.dic_control['msg_erro'] === '') {
-                        globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' no return " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                        globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ';' no return " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     }
                     return false;
                 }
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                    globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] += "ERRO: não encontrou ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 }
                 return false;
             }
@@ -1790,7 +1790,7 @@ function LeituraRestante(){
                 return false;
             }
         } else {
-            globalVarC.dic_control['msg_erro'] = "Não encontrou o caracter '&' no scanf" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            globalVarC.dic_control['msg_erro'] = "Não encontrou '&' no scanf" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
         }
     } else {
         return true;
@@ -1836,7 +1836,7 @@ function InstrLeitura(){
                             getToken();
                         } else {
                             if (globalVarC.dic_control['msg_erro'] === '') {
-                                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + linha + ', ' + coluna + ')' + '\n';
+                                globalVarC.dic_control['msg_erro'] += "não encontrou ';' " + ' (' + linha + ', ' + coluna + ')' + '\n';
                             }
                             return false;
                         }
@@ -1891,13 +1891,13 @@ function InstrEscrita(){
                             }
                         } else {
                             if (globalVarC.dic_control['msg_erro'] === '') {
-                                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' no comando printf " + ' (' + linha + ', ' + coluna + ')' + '\n';
+                                globalVarC.dic_control['msg_erro'] += "não encontrou ';' no comando printf " + ' (' + linha + ', ' + coluna + ')' + '\n';
                             }
                             return false;
                         }
                     } else {
                         if (globalVarC.dic_control['msg_erro'] === '') {
-                            globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ')' no comando printf " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                            globalVarC.dic_control['msg_erro'] += "não encontrou ')' no comando printf " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                         }
                         return false;
                     }
@@ -1906,13 +1906,13 @@ function InstrEscrita(){
                 }
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                    globalVarC.dic_control['msg_erro'] += 'não encontrou o caracter " no printf ' + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] += 'não encontrou " no printf ' + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 }
                 return false;
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === '') {
-                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter '(' no printf " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] += "não encontrou '(' no printf " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -2007,7 +2007,7 @@ function DecRestante(tipo, variavel, vetor_matriz){
                 }
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                    globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ']' na declaração da variável " + variavel + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] += "não encontrou ']' na declaração da variável " + variavel + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 }
                  return false;
             }
@@ -2098,7 +2098,7 @@ function ListaDecInicial(tipo){
         if (ListaDecInicialRestante(tipo)){
             if (globalVarC.tk !== globalVarC.TKs['TKAbreParenteses'] && globalVarC.tk !== globalVarC.TKs['TKPontoEVirgula']){
                 globalVarC.continua = false;
-                globalVarC.dic_control['msg_erro'] = "não encontrou o caracter ';' na declaração da variável " + ' (' + globalVarC.count_line_last + ', ' + globalVarC.count_column_last + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "não encontrou ';' na declaração da variável " + ' (' + globalVarC.count_line_last + ', ' + globalVarC.count_column_last + ')' + '\n';
                 return false;
             }
             return true;
@@ -2122,12 +2122,12 @@ function Declaracao(){
                 return true;
             } else {
                 globalVarC.dic_control['encontrou_expressao'] = true;
-                globalVarC.dic_control['msg_erro'] = "não encontrou o caracter ';' na declaração da variável " + ' (' + globalVarC.count_line_last + ', ' + globalVarC.count_column_last + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] = "não encontrou ';' na declaração da variável " + ' (' + globalVarC.count_line_last + ', ' + globalVarC.count_column_last + ')' + '\n';
                 return false;
             }
         } else {
             if (globalVarC.dic_control['msg_erro'] === '') {
-                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] += "não encontrou ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -2180,7 +2180,7 @@ function CorpoFunc(esta_no_laco){
                 return true;
             } else {
                 if (globalVarC.dic_control['msg_erro'] === '') {
-                    globalVarC.dic_control['msg_erro'] += "não encontrou o caracter '}' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] += "não encontrou '}' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                 }
                 return false;
             }
@@ -2193,16 +2193,16 @@ function CorpoFunc(esta_no_laco){
         //             getToken();
         //             return true;
         //         } else {
-        //             globalVarC.dic_control['msg_erro'] += "Não encontrou o caracter '}' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+        //             globalVarC.dic_control['msg_erro'] += "Não encontrou '}' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
         //             return false;
         //         }
         //     } else {
-        //         globalVarC.dic_control['msg_erro'] += "Não encontrou o caracter '}' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+        //         globalVarC.dic_control['msg_erro'] += "Não encontrou '}' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
         //         return false;
         //     }
         } else {
             if (globalVarC.dic_control['msg_erro'] === ''){
-                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter '}' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                globalVarC.dic_control['msg_erro'] += "não encontrou '}' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
             }
             return false;
         }
@@ -2266,7 +2266,7 @@ function DecFunc(){
                         }
                     } else {
                         if (globalVarC.dic_control['msg_erro'] === ''){
-                            globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ')' na declaracao da função" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                            globalVarC.dic_control['msg_erro'] += "não encontrou ')' na declaracao da função" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                         }
                         return false;
                     }
@@ -2275,7 +2275,7 @@ function DecFunc(){
                 }
             } else {
                 if (globalVarC.dic_control['msg_erro'] === ''){
-                    globalVarC.dic_control['msg_erro'] += "não encontrou o caracter '(' na declaracao da função" + ' (' + globalVarC.count_line_last + ', ' + globalVarC.count_column_last + ')' + '\n';
+                    globalVarC.dic_control['msg_erro'] += "não encontrou '(' na declaracao da função" + ' (' + globalVarC.count_line_last + ', ' + globalVarC.count_column_last + ')' + '\n';
                 }
                 return false;
             }
