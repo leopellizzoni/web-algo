@@ -1781,7 +1781,7 @@ function LeituraRestante(){
                 return false;
             }
         } else {
-            globalVarC.dic_control['msg_erro'] = "Não encontrou o caracter '&' no scanf" + '\n';
+            globalVarC.dic_control['msg_erro'] = "Não encontrou o caracter '&' no scanf" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
         }
     } else {
         return true;
@@ -1804,6 +1804,8 @@ function InstrLeitura(){
                 let result = LeituraRestante();
                 if(result){
                     if (globalVarC.tk === globalVarC.TKs["TKFechaParenteses"]){
+                        let linha = globalVarC.count_line;
+                        let coluna = globalVarC.count_column;
                         getToken();
                         if (globalVarC.tk === globalVarC.TKs["TKPontoEVirgula"]){
                             let qtd_args = 0;
@@ -1825,7 +1827,7 @@ function InstrLeitura(){
                             getToken();
                         } else {
                             if (globalVarC.dic_control['msg_erro'] === '') {
-                                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' " + ' (' + linha + ', ' + coluna + ')' + '\n';
                             }
                             return false;
                         }
@@ -1856,6 +1858,8 @@ function InstrEscrita(){
                 let result = ExpressaoRestantePrintf();
                 if(result){
                     if (globalVarC.tk === globalVarC.TKs["TKFechaParenteses"]){
+                        let linha = globalVarC.count_line;
+                        let coluna = globalVarC.count_column;
                         getToken();
                         if (globalVarC.tk === globalVarC.TKs["TKPontoEVirgula"]) {
                             let qtd_args = 0;
@@ -1878,7 +1882,7 @@ function InstrEscrita(){
                             }
                         } else {
                             if (globalVarC.dic_control['msg_erro'] === '') {
-                                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' no comando printf " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                                globalVarC.dic_control['msg_erro'] += "não encontrou o caracter ';' no comando printf " + ' (' + linha + ', ' + coluna + ')' + '\n';
                             }
                             return false;
                         }
