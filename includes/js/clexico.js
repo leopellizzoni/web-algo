@@ -238,12 +238,12 @@ export function getToken(){
 						proxC();
 						globalVarC.tk = globalVarC.TKs['TKMenorIgual'];
 						return;
-					} else if (globalVarC.regexIdentificador.test(globalVarC.caracter) && globalVarC.caracter === 's'){
+					} else if (globalVarC.regexIdentificador.test(globalVarC.caracter) && (globalVarC.caracter === 's' || globalVarC.caracter === 'm')){
 						while (globalVarC.regexIdentificador.test(globalVarC.caracter)){
 							globalVarC.lexico += globalVarC.caracter;
 							proxC();
 						}
-						if (globalVarC.lexico === '<stdio'){
+						if (globalVarC.lexico === '<stdio' || globalVarC.lexico === '<math'){
 							if (globalVarC.caracter === '.'){
 								globalVarC.lexico += globalVarC.caracter;
 								proxC();
@@ -253,7 +253,11 @@ export function getToken(){
 									if (globalVarC.caracter === '>'){
 										globalVarC.lexico += globalVarC.caracter;
 										proxC();
-										globalVarC.tk = globalVarC.TKs['TKStdioh'];
+										if (globalVarC.lexico === '<stdio.h>'){
+											globalVarC.tk = globalVarC.TKs['TKStdioh'];
+										} else {
+											globalVarC.tk = globalVarC.TKs['TKMathh'];
+										}
 										return;
 									}
 								}

@@ -35,6 +35,14 @@ function obterCodigoASCII(caractere) {
   return caractere.charCodeAt(0);
 }
 
+function verifica_se_eh_funcao(identificador){
+    if (identificador in globalVarC.tabela_de_simbolos[0]['variaveis']){
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function verifica_var_float(args){
     let escopo = globalVarC.index_escopo;
     let armazena_escopo = escopo;
@@ -522,21 +530,36 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
             // }
         } else {
             globalVarC.verifica_vetor_matriz_numeral = false;
-            if (Expressao()){
+            let result = Expressao();
+            if (result){
                 globalVarC.verifica_vetor_matriz_numeral = true;
                 let parametros_funcao = globalVarC.lista_parametros_func.pop();
                 if (globalVarC.tk === globalVarC.TKs['TKFechaParenteses']) {
-                    let label = '$' + arg1;
-                    let parametros = '';
-                    if (parametros_funcao){
-                        parametros = parametros_funcao;
+                    if (arg1 === 'power') {
+                        geraInstrucao('*', result, result, globalVarC.identificador, globalVarC.count_line);
+                        getToken();
+                        return true;
+                    } else if (arg1 === 'sqrt'){
+                        geraInstrucao('sqrt', result, result, globalVarC.identificador, globalVarC.count_line);
+                        getToken();
+                        return true;
+                    } else if (arg1 === 'abs'){
+                        geraInstrucao('abs', result, result, globalVarC.identificador, globalVarC.count_line);
+                        getToken();
+                        return true;
+                    } else {
+                        let label = '$' + arg1;
+                        let parametros = '';
+                        if (parametros_funcao){
+                            parametros = parametros_funcao;
+                        }
+                        if (globalVarC.tabela_de_simbolos[0]['variaveis'][arg1]['qtd_parametros_func'] !== parametros_funcao.split(',').length){
+                            globalVarC.dic_control['msg_erro'] = "ERRO: quantidade de parâmetros da chamada de função '" + arg1  + "' difere do esperado (" + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                        }
+                        geraInstrucao('', label, parametros, 'goto', globalVarC.count_line, true, false, false, false, false, false, busca_tipo_variavel(arg1));
+                        getToken();
+                        return true;
                     }
-                    if (globalVarC.tabela_de_simbolos[0]['variaveis'][arg1]['qtd_parametros_func'] !== parametros_funcao.split(',').length){
-                        globalVarC.dic_control['msg_erro'] = "ERRO: quantidade de parâmetros da chamada de função '" + arg1  + "' difere do esperado (" + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
-                    }
-                    geraInstrucao('', label, parametros, 'goto', globalVarC.count_line, true, false, false, false, false, false, busca_tipo_variavel(arg1));
-                    getToken();
-                    return true;
                 } else {
                     if (globalVarC.dic_control['msg_erro'] === ''){
                         globalVarC.dic_control['msg_erro'] = "ERRO: não encontrou ')' na chamada da função " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
@@ -590,7 +613,7 @@ function ExpressaoPrima(lado_atribuicao) {
         //         return false;
         //     }
         // }
-        if (verifica_variavel_declarada(globalVarC.index_escopo, globalVarC.lexico.toString().replace(/\x00/g, ''))){
+        if (verifica_variavel_declarada(globalVarC.index_escopo, globalVarC.lexico.toString().replace(/\x00/g, '')) || verifica_se_eh_funcao(globalVarC.lexico.toString().replace(/\x00/g, ''))){
             getToken();
             if (globalVarC.tk === globalVarC.TKs['TKIgual']) {
                 backtracking('push');
@@ -1802,6 +1825,50 @@ function LeituraRestante(){
 }
 
 
+function InstrMath(){
+    if (globalVarC.tk === globalVarC.TKs["TKPower"]){
+        if (!globalVarC.dic_control['bibliotecas'].math){
+            globalVarC.dic_control['msg_erro'] = "Biblioteca <math.h> deve ser declarada para utilização do power" + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            return false;
+        }
+        getToken();
+        if (globalVarC.tk === globalVarC.TKs["TKAbreParenteses"]){
+            getToken();
+            let result = ExpressaoRestantePrintf();
+            if(result){
+                if (globalVarC.tk === globalVarC.TKs["TKFechaParenteses"]) {
+                    let linha = globalVarC.count_line;
+                    let coluna = globalVarC.count_column;
+                    getToken();
+                    if (globalVarC.tk === globalVarC.TKs["TKPontoEVirgula"]) {
+
+                        getToken();
+                        return true;
+                    } else {
+                        if (globalVarC.dic_control['msg_erro'] === '') {
+                            globalVarC.dic_control['msg_erro'] += "não encontrou ';' no comando printf " + ' (' + linha + ', ' + coluna + ')' + '\n';
+                        }
+                        return false;
+                    }
+                } else {
+                    if (globalVarC.dic_control['msg_erro'] === '') {
+                        globalVarC.dic_control['msg_erro'] += "não encontrou ')' no comando power " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+                    }
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            if (globalVarC.dic_control['msg_erro'] === '') {
+                globalVarC.dic_control['msg_erro'] += "não encontrou '(' no comando power " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
+            }
+            return false;
+        }
+    }
+}
+
+
 function InstrLeitura(){
     if (globalVarC.tk === globalVarC.TKs["TKScanf"]){
         if (!globalVarC.dic_control['bibliotecas'].stdio){
@@ -1942,10 +2009,13 @@ function Instr(esta_em_laco=false, n_permite_dec=false) {
     } else if (ListaDec(n_permite_dec)){
         globalVarC.dic_control['encontrou_expressao'] = true;
         return true;
-    } else if (InstrEscrita()){
+    } else if (InstrEscrita()) {
         globalVarC.dic_control['encontrou_expressao'] = true;
-        return true;}
-    else if (InstrLeitura()){
+        return true;
+    // } else if (InstrMath()){
+    //     globalVarC.dic_control['encontrou_expressao'] = true;
+    //     return true;
+    } else if (InstrLeitura()){
         globalVarC.dic_control['encontrou_expressao'] = true;
         return true;
     } else if (CorpoFunc(esta_em_laco)){
@@ -2329,8 +2399,16 @@ function DecLibDefine(){
             getToken();
             globalVarC.dic_control["bibliotecas"]["stdio"] = true;
             return true;
-        } else if (globalVarC.tk === globalVarC.TKs['TKMath']){
+        } else if (globalVarC.tk === globalVarC.TKs['TKMathh']){
+            geraInstrucao('', '', '', '$power', globalVarC.count_line, false, false, true, false, false, false, 'int');
+            geraInstrucao('', '', '', '$sqrt', globalVarC.count_line, false, false, true, false, false, false, 'int');
+            geraInstrucao('', '', '', '$abs', globalVarC.count_line, false, false, true, false, false, false, 'int');
             getToken();
+            var tipo = {'tk': globalVarC.TKs['TKInt'],
+                             'tipo': 'int'};
+            tabela_simbolos(0, 'grava', tipo, 'power');
+            tabela_simbolos(0, 'grava', tipo, 'sqrt');
+            tabela_simbolos(0, 'grava', tipo, 'abs');
             globalVarC.dic_control["bibliotecas"]["math"] = true;
             return true;
         }

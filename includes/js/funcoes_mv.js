@@ -616,6 +616,12 @@ export function calcula_argumentos(arg1, arg2, op){
     if (op === '||') {
         return Number(arg1) || Number(arg2) ? 1 : 0;
     }
+    if (op === 'sqrt'){
+        return Number(Math.sqrt(arg1));
+    }
+    if (op === 'abs'){
+        return Number(Math.abs(arg1));
+    }
 }
 
 function verifica_se_eh_escopo(label){
