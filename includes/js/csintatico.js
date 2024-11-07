@@ -536,15 +536,15 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
                 let parametros_funcao = globalVarC.lista_parametros_func.pop();
                 if (globalVarC.tk === globalVarC.TKs['TKFechaParenteses']) {
                     if (arg1 === 'power') {
-                        geraInstrucao('*', result, result, globalVarC.identificador, globalVarC.count_line);
+                        geraInstrucao('*', result, result, 'power', globalVarC.count_line);
                         getToken();
                         return true;
                     } else if (arg1 === 'sqrt'){
-                        geraInstrucao('sqrt', result, result, globalVarC.identificador, globalVarC.count_line);
+                        geraInstrucao('sqrt', result, result, 'sqrt', globalVarC.count_line);
                         getToken();
                         return true;
                     } else if (arg1 === 'abs'){
-                        geraInstrucao('abs', result, result, globalVarC.identificador, globalVarC.count_line);
+                        geraInstrucao('abs', result, result, 'abs', globalVarC.count_line);
                         getToken();
                         return true;
                     } else {
