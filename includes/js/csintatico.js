@@ -484,7 +484,7 @@ function ExpressaoPosRestante(lado_atribuicao, arg1) {
     } else if (globalVarC.tk === globalVarC.TKs['TKAbreColchete']) {
         if (arg1 && !verifica_variavel_declarada(globalVarC.index_escopo, arg1, 0, false, true)){
             globalVarC.dic_control['msg_erro'] = "ERRO: variável '" + arg1 + "' não é vetor " + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
-            return false;
+            throw 'Variável não é vetor';
         }
         getToken();
         let result = Expressao();
@@ -618,7 +618,7 @@ function ExpressaoPrima(lado_atribuicao) {
             if (globalVarC.tk === globalVarC.TKs['TKIgual']) {
                 backtracking('push');
                 getToken();
-                if (globalVarC.tk === globalVarC.TKs['TKId'] && !verifica_func_void(globalVarC.lexico.toString().replace(/\x00/g, ''), globalVarC.index_escopo)) {
+                if (globalVarC.tk === globalVarC.TKs['TKId'] && verifica_variavel_declarada(globalVarC.index_escopo, globalVarC.lexico.toString().replace(/\x00/g, '')) && !verifica_func_void(globalVarC.lexico.toString().replace(/\x00/g, ''), globalVarC.index_escopo)) {
                     backtracking('pop');
                     globalVarC.dic_control['msg_erro'] = "ERRO: não é possível atribuir o resultado de uma função 'void' a uma variável." + ' (' + globalVarC.count_line + ', ' + globalVarC.count_column + ')' + '\n';
                     return false;
