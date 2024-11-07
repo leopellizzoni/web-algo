@@ -370,7 +370,10 @@
             indentUnit: 4, // Definir o número de espaços em branco para a tecla Tab e para o recuo
             tabSize: 4, // Definir o tamanho do Tab como quatro espaços em branco
             height: "30em", // Definir a altura do editor para 30 linhas
-            extraKeys: { "Ctrl-Space": "autocomplete" } // Trigger autocomplete
+            extraKeys: { "Ctrl-Space": "autocomplete",
+                         "Ctrl-L": function() { // Definindo o atalho Ctrl + L
+                                      indentarTodoCodigo();
+                                    }} // Trigger autocomplete
         });
         // editor.setSize(null, 400);
 
@@ -490,6 +493,13 @@
             }
 
         });
+
+        function indentarTodoCodigo() {
+          const totalLinhas = editor.lineCount();
+          for (let i = 0; i < totalLinhas; i++) {
+            editor.indentLine(i, "smart");
+          }
+        }
     </script>
     <script href="includes/js/sidebars.js"></script>
 </body>
