@@ -106,6 +106,9 @@
       <symbol id="geo-fill" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999zm2.493 8.574a.5.5 0 0 1-.411.575c-.712.118-1.28.295-1.655.493a1.319 1.319 0 0 0-.37.265.301.301 0 0 0-.057.09V14l.002.008a.147.147 0 0 0 .016.033.617.617 0 0 0 .145.15c.165.13.435.27.813.395.751.25 1.82.414 3.024.414s2.273-.163 3.024-.414c.378-.126.648-.265.813-.395a.619.619 0 0 0 .146-.15.148.148 0 0 0 .015-.033L12 14v-.004a.301.301 0 0 0-.057-.09 1.318 1.318 0 0 0-.37-.264c-.376-.198-.943-.375-1.655-.493a.5.5 0 1 1 .164-.986c.77.127 1.452.328 1.957.594C12.5 13 13 13.4 13 14c0 .426-.26.752-.544.977-.29.228-.68.413-1.116.558-.878.293-2.059.465-3.34.465-1.281 0-2.462-.172-3.34-.465-.436-.145-.826-.33-1.116-.558C3.26 14.752 3 14.426 3 14c0-.599.5-1 .961-1.243.505-.266 1.187-.467 1.957-.594a.5.5 0 0 1 .575.411z"/>
       </symbol>
+<symbol id="search-icon" viewBox="0 0 16 16">
+  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+</symbol>
     </svg>
     <main>
         <div class="d-flex flex-column flex-shrink-0 bg-light" style="width: 4.5rem;">
@@ -119,6 +122,11 @@
                   <svg class="bi" width="24" height="24" role="img" aria-label="Orders"><use xlink:href="#table"/></svg>
                 </a>
               </li>
+  <li>
+    <a href="#" class="nav-link py-3 border-bottom" title="Buscar Algoritmo" data-bs-toggle="modal" data-bs-target="#buscarAlgoritmoModal">
+      <svg class="bi" width="24" height="24" role="img" aria-label="Buscar"><use xlink:href="#search-icon"/></svg>
+    </a>
+  </li>
             </ul>
             <div class="dropdown border-top">
               <a href="#" class="d-flex align-items-center justify-content-center p-3 link-dark text-decoration-none dropdown-toggle" id="dropdownUser3" data-bs-toggle="dropdown" aria-expanded="false">
@@ -146,6 +154,46 @@
             </div>
 
             <div class="row execution">
+<!-- Modal com os selects -->
+<div class="modal fade" id="buscarAlgoritmoModal" tabindex="-1" aria-labelledby="buscarAlgoritmoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="buscarAlgoritmoLabel">Selecionar Algoritmo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="tipoAlgoritmo" class="form-label">Tipo de Algoritmo:</label>
+            <select class="form-select" id="tipoAlgoritmo">
+		<option selected>Sequencial</option>
+		<option>Condicional</option>
+		<option>Iterativo</option>
+		<option>Vetores</option>
+		<option>Matrizes</option>
+		<option>Funções</option>
+		<option>Recursividade</option>
+		<option>Geral</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="problemas" class="form-label">Problemas:</label>
+            <select class="form-select" id="problemas">
+              <option>G00000001</option>
+              <option>G00000002</option>
+              <option>G00000003</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary">Carregar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
                 <div class="col-8">
                     <p id="question">1 - Faça uma programa que leia dois valores, realize a soma dos valores lidos e escreva o resultado.</p>
                 </div>
@@ -500,6 +548,11 @@
             editor.indentLine(i, "smart");
           }
         }
+
+        if (!localStorage.getItem('clientId')) {
+            localStorage.setItem('clientId', crypto.randomUUID());
+        }
+        const clientId = localStorage.getItem('clientId');
     </script>
     <script href="includes/js/sidebars.js"></script>
 </body>
