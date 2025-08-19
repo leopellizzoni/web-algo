@@ -1,4 +1,4 @@
-package br.ucs.middleware;
+package br.ucs.webalgo.middleware;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
