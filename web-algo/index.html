@@ -32,6 +32,10 @@
         }
       }
     </style>
+    <script type="module">
+        import { isAuthenticated } from './includes/js/auth/auth.js';
+        if (!isAuthenticated()) location.replace('login.html');
+    </script>
   <script>
       function mostra_tela_aguarde(msg){
             "use strict";
@@ -136,8 +140,8 @@
                 <li><a class="dropdown-item" href="#">Informações</a></li>
 <!--                <li><a class="dropdown-item" href="#">Settings</a></li>-->
 <!--                <li><a class="dropdown-item" href="#">Profile</a></li>-->
-<!--                <li><hr class="dropdown-divider"></li>-->
-<!--                <li><a class="dropdown-item" href="#">Sign out</a></li>-->
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" id="logoutBtn">Sign out</a></li>
               </ul>
             </div>
         </div>
@@ -554,6 +558,7 @@
         }
         const clientId = localStorage.getItem('clientId');
     </script>
-    <script href="includes/js/sidebars.js"></script>
+    <script src="includes/js/sidebars.js"></script>
+    <script type="module" src="includes/js/auth/appGuard.js"></script>
 </body>
 </html>
